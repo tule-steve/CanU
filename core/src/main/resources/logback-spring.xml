@@ -4,15 +4,21 @@
     <property scope="context" name="log-pattern"
               value="${am.logback.pattern:-%date %highlight([%-4level]) [%-10.10thread] [%30.30logger]: %message%n%xException}"/>
 
-    <appender class="ch.qos.logback.core.rolling.RollingFileAppender" name="ROLLING_FILE">
-        <file>${am.logback.log_dir:-./logs}/app.log</file>
-        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
-            <fileNamePattern>${am.logback.log_dir:-./logs}/%d{yyyy/MM,aux}/app_%d{yyyy-MM-dd}.%i.gz</fileNamePattern>
-            <maxFileSize>50MB</maxFileSize>
-            <maxHistory>${am.logback.file.max-history:-30}</maxHistory>
+    <appender name="FILE"
+              class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>./logs/myproject.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>./logs/myproject.%d{yyyy-MM-dd}.%i.log.gz</fileNamePattern>
+            <timeBasedFileNamingAndTriggeringPolicy
+                    class="ch.qos.logback.core.rolling.SizeAndTimeBasedFNATP">
+                <maxFileSize>50MB</maxFileSize>
+            </timeBasedFileNamingAndTriggeringPolicy>
+            <maxHistory>30</maxHistory>
         </rollingPolicy>
+
         <encoder>
-            <pattern>${log-pattern}</pattern>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%level] [%thread] [%logger:%line] %msg%n
+            </pattern>
         </encoder>
     </appender>
 
@@ -27,11 +33,18 @@
     </appender>
 
     <!-- https://hibernate.atlassian.net/browse/HV-1323 -->
-    <logger name="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator" level="ERROR"/>
-    <logger name="org.hibernate.validator" level="ERROR"/>
+    <!--<logger name="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator" level="ERROR"/>
+    <logger name="org.hibernate.validator" level="ERROR"/>-->
 
-    <root level="debug">
-        <appender-ref ref="${am.logback.output:-STDOUT}"/>
+    <root level="info">
+        <springProfile name="dev">
+            <appender-ref ref="STDOUT" />
+        </springProfile>
+
+        <springProfile name="qc">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="FILE"/>
+        </springProfile>
     </root>
 
 </configuration>

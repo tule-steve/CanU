@@ -1,8 +1,0 @@
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/OAuth2ResourceServer.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/OAuth2AuthorizationServer.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/controller/TwoFactorAuthenticationController.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/CustomOAuth2RequestFactory.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/RequestLogginFilter.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/SecurityConfig.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/SecurityWebApplicationInitializer.java
-/Users/yamada/Documents/tu.le/workspace/freelancer/CodeGame/OAuth2/src/main/java/com/codegame/security/config/TwoFactorAuthenticationFilter.java
