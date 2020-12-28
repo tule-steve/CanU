@@ -1,8 +1,0 @@
-com/codegame/security/config/RequestLogginFilter.class
-com/codegame/security/controller/TwoFactorAuthenticationController.class
-com/codegame/security/config/SecurityWebApplicationInitializer.class
-com/codegame/security/config/SecurityConfig.class
-com/codegame/security/config/CustomOAuth2RequestFactory.class
-com/codegame/security/config/OAuth2AuthorizationServer.class
-com/codegame/security/config/TwoFactorAuthenticationFilter.class
-com/codegame/security/config/OAuth2ResourceServer.class
