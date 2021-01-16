@@ -1,4 +1,4 @@
-package com.codegame.security.config;
+package com.canu.security.config;
 
 import org.springframework.web.filter.AbstractRequestLoggingFilter;
 

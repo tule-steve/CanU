@@ -1,4 +1,4 @@
-package com.codegame.security.config;
+package com.canu.security.config;
 
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;

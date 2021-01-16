@@ -1,4 +1,4 @@
-package com.codegame;
+package com.canu;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;

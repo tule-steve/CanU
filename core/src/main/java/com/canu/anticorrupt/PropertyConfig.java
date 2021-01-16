@@ -1,4 +1,4 @@
-package com.codegame.anticorrupt;
+package com.canu.anticorrupt;
 
 import org.springframework.context.annotation.Configuration;
 
