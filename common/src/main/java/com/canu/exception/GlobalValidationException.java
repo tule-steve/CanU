@@ -1,4 +1,4 @@
-package com.codegame.exception;
+package com.canu.exception;
 
 import lombok.Data;
 import lombok.RequiredArgsConstructor;

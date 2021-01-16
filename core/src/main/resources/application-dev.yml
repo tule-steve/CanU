@@ -45,6 +45,16 @@ spring:
             enable: true
 
 
+  #spring.security:
+  security:
+    oauth2:
+      client:
+        registration:
+          facebook:
+            client-id: 2122962537991193
+            client-secret: b266119b238d7a7941793a057872baea
+
+
   jackson:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
@@ -57,18 +67,4 @@ server:
     max-threads: 10
     min-spare-threads: 5
 
-#JWT athentication
-security:
-  jwt:
-    header: Authorization
-    prefix: Bearer
-    expiration: 86400
-    inbound_secret: 31977626-cac4-4e8f-906c-678911baa430
-    shared_secret: 31977626-cac4-4e8f-906c-678911baa430
-    shared_expire_after: 1440
-    shared_client_id: 5c0fa4f4-2051-4999-8db8-78b95f48409b
-
-
-  #enable mapping json to enum type on object field
-  #spring.jackson.mapper.accept-case-insensitive-enums=true
 

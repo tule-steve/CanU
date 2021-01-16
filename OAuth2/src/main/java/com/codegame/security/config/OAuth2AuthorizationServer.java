@@ -55,28 +55,7 @@ public class OAuth2AuthorizationServer extends AuthorizationServerConfigurerAdap
         config.setAllowedHeaders(Collections.singletonList("*"));
         corsConfigMap.put("/oauth/token", config);
         endpoints.getFrameworkEndpointHandlerMapping().setCorsConfigurations(corsConfigMap);
-        endpoints.authenticationManager(authenticationManager)
-                 //2fa
-                 .requestFactory(customOAuth2RequestFactory());
-    }
-
-    @Bean
-    public DefaultOAuth2RequestFactory customOAuth2RequestFactory() {
-        return new CustomOAuth2RequestFactory(clientDetailsService);
-    }
-
-    @Bean
-    public FilterRegistrationBean twoFactorAuthenticationFilterRegistration() {
-        FilterRegistrationBean registration = new FilterRegistrationBean();
-        registration.setFilter(twoFactorAuthenticationFilter());
-        registration.addUrlPatterns("/oauth/token");
-        registration.setName("twoFactorAuthenticationFilter");
-        return registration;
-    }
-
-    @Bean
-    public TwoFactorAuthenticationFilter twoFactorAuthenticationFilter() {
-        return new TwoFactorAuthenticationFilter();
+        endpoints.authenticationManager(authenticationManager);
     }
 
     @Override
@@ -86,10 +65,7 @@ public class OAuth2AuthorizationServer extends AuthorizationServerConfigurerAdap
                 .withClient("clientapp")
                 .secret(passwordEncoder.encode("123456"))
                 .authorizedGrantTypes("password")
-                //begin 2fa
-                //			.authorities("READ_ONLY_CLIENT")
-                .authorities(TwoFactorAuthenticationFilter.ROLE_TWO_FACTOR_AUTHENTICATION_ENABLED)
-                //end 2fa
+                .authorities("READ_ONLY_CLIENT")
                 .scopes("read_profile_info")
                 .resourceIds("oauth2-resource")
                 .redirectUris("/login")

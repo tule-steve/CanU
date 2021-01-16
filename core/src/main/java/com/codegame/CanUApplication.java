@@ -7,10 +7,10 @@ import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 
 @SpringBootApplication
-public class CodeGameApplication {
+public class CanUApplication {
 
     public static void main(String[] args) {
-        SpringApplication springApplication = new SpringApplication(CodeGameApplication.class);
+        SpringApplication springApplication = new SpringApplication(CanUApplication.class);
         springApplication.run(args);
     }
 

@@ -1,5 +1,7 @@
 package com.codegame.security.config;
 
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.web.servlet.FilterRegistrationBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -10,6 +12,7 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.oauth2.client.OAuth2ClientContext;
 
 @Configuration
 @Order(30)
@@ -64,11 +67,6 @@ public class SecurityConfig extends WebSecurityConfigurerAdapter {
     @Bean
     public AuthenticationManager authenticationManagerBean() throws Exception {
         return super.authenticationManagerBean();
-    }
-
-    @Bean
-    public OTPTemplate getOTPTemplate() throws Exception{
-        return new OTPTemplate();
     }
 
 }

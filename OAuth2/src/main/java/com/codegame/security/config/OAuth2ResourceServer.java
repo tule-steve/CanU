@@ -15,13 +15,23 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
     @Override
     public void configure(HttpSecurity http) throws Exception {
         http.cors().and()
-//            .anonymous().disable()
+            //            .anonymous().disable()
             //            .requestMatchers().antMatchers("/api/**", "**/secure/**").and()
             .authorizeRequests()
             .antMatchers("/secure/two_factor_authentication/**", "/api/**").permitAll()
-//            .antMatchers("/api/**").access("hasAnyRole('ADMIN','USER')")
+            //            .antMatchers("/api/**").access("hasAnyRole('ADMIN','USER')")
             .anyRequest().authenticated()
+
+            //            .and()
+            //            .oauth2Login()
             .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler());
+            .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler())
+            .and()
+            .logout()
+            .logoutSuccessUrl("/login")
+            .deleteCookies("JSESSIONID")
+            .invalidateHttpSession(true)
+            .permitAll();
+        ;
     }
 }
