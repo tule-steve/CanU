@@ -27,7 +27,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Configuration
-@EnableConfigurationProperties
 @Order(30)
 public class SecurityConfig extends WebSecurityConfigurerAdapter {
 
