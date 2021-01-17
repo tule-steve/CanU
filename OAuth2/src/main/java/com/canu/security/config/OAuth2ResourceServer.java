@@ -34,9 +34,6 @@ import java.util.List;
 @EnableResourceServer
 public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
 
-    @Autowired
-    private OAuth2ClientContext oauth2ClientContext;
-
     @Value("${google.resource.userInfoUri}")
     private String googleResUri;
 
