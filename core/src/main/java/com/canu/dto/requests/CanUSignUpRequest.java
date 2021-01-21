@@ -1,4 +1,4 @@
-package com.canu.dto;
+package com.canu.dto.requests;
 
 import com.fasterxml.jackson.databind.PropertyNamingStrategy;
 import com.fasterxml.jackson.databind.annotation.JsonNaming;

@@ -11,7 +11,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Data
-@Table(name = "skill_set")
+@Table(name = "performanceTest_d")
 public class SkillSetModel {
 
     @Id

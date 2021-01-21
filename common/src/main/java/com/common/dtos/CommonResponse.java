@@ -16,4 +16,8 @@ public class CommonResponse {
     public static CommonResponse buildOkData(String message){
         return builder().status(HttpStatus.OK.getReasonPhrase()).message(message).build();
     }
+
+    public static CommonResponse buildBadRequestData(String message){
+        return builder().status(HttpStatus.BAD_REQUEST.getReasonPhrase()).message(message).build();
+    }
 }

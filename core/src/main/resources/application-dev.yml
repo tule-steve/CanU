@@ -21,7 +21,8 @@ spring:
     hibernate:
       naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       dialect: org.hibernate.dialect.MySQL5Dialect
-      ddl-auto: none
+      #ddl-auto: create-drop
+      ddl-auto: create
 
     #spring.jpa
     generate-ddl: false

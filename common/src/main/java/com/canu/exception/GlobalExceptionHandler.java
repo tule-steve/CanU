@@ -1,5 +1,6 @@
 package com.canu.exception;
 
+import com.common.dtos.CommonResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
@@ -46,7 +47,7 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(GlobalValidationException.class)
     public final ResponseEntity<Object> handleApplicationExceptions(GlobalValidationException ex) {
-        return new ResponseEntity(ex, HttpStatus.BAD_REQUEST);
+        return new ResponseEntity(CommonResponse.buildBadRequestData(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     @Override

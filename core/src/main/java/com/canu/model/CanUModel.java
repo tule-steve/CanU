@@ -1,19 +1,15 @@
 package com.canu.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.Builder;
 import lombok.Data;
 
 import javax.persistence.*;
-
-import java.util.HashSet;
-import java.util.Set;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Data
-@Table(name = "canu_profile")
+@Table(name = "performanceTest_u")
 public class CanUModel {
 
     @JsonIgnore
@@ -39,6 +35,14 @@ public class CanUModel {
 
     @Column(name = "address")
     String address;
+
+    @OneToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cani_id")
+    private CanIModel canIModel;
+
+    @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
+    private AuthProviderModel socialData;
+
 
 
 

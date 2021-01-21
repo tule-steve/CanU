@@ -1,9 +1,7 @@
-package com.canu.controller.cani;
+package com.canu.controller;
 
-import com.canu.dto.CanUSignUpRequest;
-import com.canu.model.CanIModel;
-import com.canu.model.CanUModel;
-import com.canu.services.CanIService;
+import com.canu.dto.requests.CanUSignUpRequest;
+import com.canu.dto.requests.SocialSignUpRequest;
 import com.canu.services.CanUService;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,16 +13,22 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping(value = "/api/v1/cani")
+@RequestMapping(value = "/api/v1/canu")
 @RequiredArgsConstructor
-public class CanIController {
+public class CanUController {
 
-    final private CanIService canIService;
-
+    final private CanUService canUService;
     @PostMapping(value = "/signup")
-    public ResponseEntity signUp(@Validated @RequestBody CanIModel request) {
-        canIService.signUp(request);
+    public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
+        canUService.signUp(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("Create account"));
     }
+
+    @PostMapping(value = "/social")
+    public ResponseEntity signUpBySocial(@Validated @RequestBody SocialSignUpRequest request) {
+        canUService.signUpBySocial(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("Create account"));
+    }
+
 
 }

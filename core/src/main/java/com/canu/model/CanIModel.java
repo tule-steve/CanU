@@ -16,12 +16,11 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Data
-@Table(name = "cani_profile")
+@Table(name = "performanceTest_i")
 public class CanIModel {
 
     @JsonIgnore
     @Id
-    @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
     Long id;
 
@@ -83,4 +82,8 @@ public class CanIModel {
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_set_id"))
     private Set<SkillSetModel> skillSets = new HashSet<>();
+
+
+    @OneToOne(mappedBy = "canIModel", fetch = FetchType.LAZY)
+    private CanUModel canUModel;
 }
