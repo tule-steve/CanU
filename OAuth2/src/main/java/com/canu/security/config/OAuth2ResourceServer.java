@@ -1,5 +1,9 @@
 package com.canu.security.config;
 
+import com.canu.security.repositories.HttpCookieOAuth2AuthorizationRequestRepository;
+import com.canu.security.services.CustomOAuth2UserService;
+import com.canu.security.services.OAuth2AuthenticationFailureHandler;
+import com.canu.security.services.OAuth2AuthenticationSuccessHandler;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.ResourceServerProperties;
@@ -34,12 +38,14 @@ import java.util.List;
 @EnableResourceServer
 public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
 
-    @Value("${google.resource.userInfoUri}")
-    private String googleResUri;
+    @Autowired
+    private CustomOAuth2UserService customOAuth2UserService;
 
+    @Autowired
+    private OAuth2AuthenticationSuccessHandler oAuth2AuthenticationSuccessHandler;
 
-    @Value("${facebook.resource.userInfoUri}")
-    private String facebookResUri;
+    @Autowired
+    private OAuth2AuthenticationFailureHandler oAuth2AuthenticationFailureHandler;
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
@@ -50,6 +56,20 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
             .antMatchers("/secure/two_factor_authentication/**", "/google/**", "/facebook/**", "/api/**").permitAll()
             //            .antMatchers("/api/**").access("hasAnyRole('ADMIN','USER')")
             .anyRequest().authenticated()
+            .and()
+            .oauth2Login()
+                .authorizationEndpoint()
+                    .baseUri("/oauth2/authorize")
+                    .authorizationRequestRepository(cookieAuthorizationRequestRepository())
+                    .and()
+                .redirectionEndpoint()
+                    .baseUri("/oauth2/callback/*")
+                    .and()
+                .userInfoEndpoint()
+                    .userService(customOAuth2UserService)
+                    .and()
+                .successHandler(oAuth2AuthenticationSuccessHandler)
+                .failureHandler(oAuth2AuthenticationFailureHandler)
 
             //            .and()
             //            .oauth2Login()
@@ -61,5 +81,15 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
             .deleteCookies("JSESSIONID")
             .invalidateHttpSession(true)
             .permitAll();
+    }
+
+    /*
+  By default, Spring OAuth2 uses HttpSessionOAuth2AuthorizationRequestRepository to save
+  the authorization request. But, since our service is stateless, we can't save it in
+  the session. We'll save the request in a Base64 encoded cookie instead.
+*/
+    @Bean
+    public HttpCookieOAuth2AuthorizationRequestRepository cookieAuthorizationRequestRepository() {
+        return new HttpCookieOAuth2AuthorizationRequestRepository();
     }
 }
