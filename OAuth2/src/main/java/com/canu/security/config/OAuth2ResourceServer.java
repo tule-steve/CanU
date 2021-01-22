@@ -43,23 +43,85 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
 
     @Override
     public void configure(HttpSecurity http) throws Exception {
-        http.cors().and()
-            //            .anonymous().disable()
-            //            .requestMatchers().antMatchers("/api/**", "**/secure/**").and()
-            .authorizeRequests()
-            .antMatchers("/secure/two_factor_authentication/**", "/google/**", "/facebook/**", "/api/**").permitAll()
-            //            .antMatchers("/api/**").access("hasAnyRole('ADMIN','USER')")
-            .anyRequest().authenticated()
+//        http.cors().and()
+//            //            .anonymous().disable()
+//            //            .requestMatchers().antMatchers("/api/**", "**/secure/**").and()
+//            .authorizeRequests()
+//            .antMatchers("/secure/two_factor_authentication/**", "/google/**", "/facebook/**", "/api/**").permitAll()
+//            //            .antMatchers("/api/**").access("hasAnyRole('ADMIN','USER')")
+//            .anyRequest().authenticated()
+//
+//            //            .and()
+//            //            .oauth2Login()
+//            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+//            .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler())
+//            .and()
+//            .addFilterAt(ssoFilter(), BasicAuthenticationFilter.class)
+//            .logout()
+//            .logoutSuccessUrl("/login")
+//            .deleteCookies("JSESSIONID")
+//            .invalidateHttpSession(true)
+//            .permitAll();
 
-            //            .and()
-            //            .oauth2Login()
-            .and().sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-            .and().exceptionHandling().accessDeniedHandler(new OAuth2AccessDeniedHandler())
+        http.csrf().disable()
+            .antMatcher("/**").authorizeRequests()
+            .antMatchers("/login/**", "/logout/**", "/").permitAll()
+            .anyRequest().authenticated()
             .and()
+            .formLogin()
+            .loginPage("/login")
+            .defaultSuccessUrl("/")
+            .permitAll()
+            .and()
+            .addFilterAt(ssoFilter(), BasicAuthenticationFilter.class)
             .logout()
             .logoutSuccessUrl("/login")
             .deleteCookies("JSESSIONID")
             .invalidateHttpSession(true)
             .permitAll();
+        ;
+    }
+
+    @Bean
+    public FilterRegistrationBean oauth2ClientFilterRegistration(OAuth2ClientContextFilter filter) {
+        FilterRegistrationBean registration = new FilterRegistrationBean();
+        registration.setFilter(filter);
+        registration.setOrder(-100);
+        return registration;
+    }
+
+    @Bean
+    @ConfigurationProperties("facebook.client")
+    public AuthorizationCodeResourceDetails facebook() {
+        return new AuthorizationCodeResourceDetails();
+    }
+
+    @Bean
+    @ConfigurationProperties("google.client")
+    public AuthorizationCodeResourceDetails google() {
+        return new AuthorizationCodeResourceDetails();
+    }
+
+    private Filter ssoFilter() {
+        CompositeFilter filter = new CompositeFilter();
+        List<Filter> filters = new ArrayList<>();
+
+        filters.add(createSsoFilter("/facebook/login", facebook(), facebookResUri));
+        filters.add(createSsoFilter("/google/login", google(), googleResUri));
+
+        filter.setFilters(filters);
+
+        return filter;
+    }
+
+    private OAuth2ClientAuthenticationProcessingFilter createSsoFilter(String filterUrl, OAuth2ProtectedResourceDetails oAuthResourceDetails, String resourceServerProperties) {
+        OAuth2ClientAuthenticationProcessingFilter oAuthFilter = new ExtOAuth2ClientAuthenticationProcessingFilter(filterUrl);
+        OAuth2RestTemplate oAuthTemplate = new OAuth2RestTemplate(oAuthResourceDetails, oauth2ClientContext);
+        oAuthFilter.setRestTemplate(oAuthTemplate);
+        UserInfoTokenServices tokenServices = new UserInfoTokenServices(resourceServerProperties, oAuthResourceDetails.getClientId());
+        tokenServices.setRestTemplate(oAuthTemplate);
+        oAuthFilter.setTokenServices(tokenServices);
+
+        return oAuthFilter;
     }
 }
