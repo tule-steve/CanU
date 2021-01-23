@@ -41,6 +41,10 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
     @Value("${facebook.resource.userInfoUri}")
     private String facebookResUri;
 
+    @Autowired
+    private OAuth2ClientContext oauth2ClientContext;
+
+
     @Override
     public void configure(HttpSecurity http) throws Exception {
 //        http.cors().and()
@@ -65,7 +69,7 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
 
         http.csrf().disable()
             .antMatcher("/**").authorizeRequests()
-            .antMatchers("/login/**", "/logout/**", "/").permitAll()
+            .antMatchers("/login/**", "/logout/**", "/", "/error", "/api/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .formLogin()
