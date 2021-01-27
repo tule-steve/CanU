@@ -22,7 +22,7 @@ spring:
       naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
       dialect: org.hibernate.dialect.MySQL5Dialect
       #ddl-auto: create-drop
-      ddl-auto: create
+      ddl-auto: update
 
     #spring.jpa
     generate-ddl: false
@@ -49,6 +49,11 @@ spring:
   jackson:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
+
+  servlet:
+    multipart:
+      max-file-size: 2MB
+      max-request-size: 2MB
 
 # tomcat server config
 server:
@@ -91,4 +96,9 @@ security:
   oauth2:
     client:
       preEstablishedRedirectUri: https://localhost:9129/
+
+app:
+  auth:
+    tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
+    tokenExpirationMsec: 864000000
 

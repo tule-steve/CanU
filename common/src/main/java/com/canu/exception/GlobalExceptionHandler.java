@@ -6,6 +6,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.core.AuthenticationException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -28,6 +30,13 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
         GlobalValidationException exception = new GlobalValidationException(ex.getMessage());
         logger.error("error: ", ex);
         return new ResponseEntity(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+    }
+
+    @ExceptionHandler(BadCredentialsException.class)
+    public final ResponseEntity<Object> handleBadCredential(BadCredentialsException ex) {
+        GlobalValidationException exception = new GlobalValidationException(ex.getMessage());
+        logger.error("error: ", ex);
+        return new ResponseEntity(CommonResponse.buildBadRequestData(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }
 
     //Handle for case using entity for DTO in controller

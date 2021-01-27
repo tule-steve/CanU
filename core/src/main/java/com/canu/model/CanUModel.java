@@ -36,6 +36,9 @@ public class CanUModel {
     @Column(name = "address")
     String address;
 
+    @Column(name = "provider_type")
+    String providerType;
+
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cani_id")
     private CanIModel canIModel;

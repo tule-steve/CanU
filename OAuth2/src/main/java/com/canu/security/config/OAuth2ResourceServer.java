@@ -11,6 +11,8 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
+import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityConfigurerAdapter;
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.oauth2.client.OAuth2ClientContext;
 import org.springframework.security.oauth2.client.OAuth2RestTemplate;
@@ -21,6 +23,7 @@ import org.springframework.security.oauth2.client.token.grant.code.Authorization
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableResourceServer;
 import org.springframework.security.oauth2.config.annotation.web.configuration.ResourceServerConfigurerAdapter;
 import org.springframework.security.oauth2.provider.error.OAuth2AccessDeniedHandler;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.authentication.www.BasicAuthenticationFilter;
 import org.springframework.web.filter.CompositeFilter;
 
@@ -31,8 +34,8 @@ import java.util.List;
 @Configuration
 @Order(20)
 @EnableConfigurationProperties
-@EnableResourceServer
-public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
+@EnableWebSecurity
+public class OAuth2ResourceServer extends WebSecurityConfigurerAdapter {
 
     @Value("${google.resource.userInfoUri}")
     private String googleResUri;
@@ -67,23 +70,30 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
 //            .invalidateHttpSession(true)
 //            .permitAll();
 
-        http.csrf().disable()
+        http
+                .cors()
+                    .and()
+                .sessionManagement()
+                    .sessionCreationPolicy(SessionCreationPolicy.STATELESS)
+                    .and()
+                .csrf()
+                    .disable()
+                .formLogin()
+                    .disable()
+                .exceptionHandling()
+                    .authenticationEntryPoint(new RestAuthenticationEntryPoint())
+                .and()
             .antMatcher("/**").authorizeRequests()
-            .antMatchers("/login/**", "/logout/**", "/", "/error", "/api/**").permitAll()
+            .antMatchers("/login/**", "/logout/**", "/", "/error", "/api/**", "/login", "/api/v1/data/**", "/image/**").permitAll()
             .anyRequest().authenticated()
-            .and()
-            .formLogin()
-            .loginPage("/login")
-            .defaultSuccessUrl("/")
-            .permitAll()
             .and()
             .addFilterAt(ssoFilter(), BasicAuthenticationFilter.class)
             .logout()
-            .logoutSuccessUrl("/login")
             .deleteCookies("JSESSIONID")
             .invalidateHttpSession(true)
             .permitAll();
-        ;
+        // Add our custom Token based authentication filter
+        http.addFilterBefore(tokenAuthenticationFilter(), BasicAuthenticationFilter.class);
     }
 
     @Bean
@@ -127,5 +137,10 @@ public class OAuth2ResourceServer extends ResourceServerConfigurerAdapter {
         oAuthFilter.setTokenServices(tokenServices);
 
         return oAuthFilter;
+    }
+
+    @Bean
+    public TokenAuthenticationFilter tokenAuthenticationFilter() {
+        return new TokenAuthenticationFilter();
     }
 }

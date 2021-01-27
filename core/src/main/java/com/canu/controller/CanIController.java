@@ -30,24 +30,4 @@ public class CanIController {
         return ResponseEntity.ok(CommonResponse.buildOkData("Create account"));
     }
 
-    @PostMapping(value = "/uploadFile")
-    public ResponseEntity uploadFile(@RequestParam("image") MultipartFile multipartFile) throws IOException {
-        String uploadDir = System.getProperty("user.dir") + "/image";
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
-        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
-
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ioe) {
-            throw new IOException("Could not save image file: " + fileName, ioe);
-        }
-
-        return ResponseEntity.ok(CommonResponse.buildOkData("update load file"));
-    }
-
 }

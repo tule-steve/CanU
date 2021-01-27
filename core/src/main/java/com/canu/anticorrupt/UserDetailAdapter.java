@@ -25,8 +25,6 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
 
     final private CanURepository canURepo;
 
-    final private CanUService canUSvc;
-
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         CanUModel user = canURepo.findByEmail(username);
