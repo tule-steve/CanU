@@ -1,7 +1,7 @@
 package com.canu.services;
 
-import com.canu.model.SocialProvider;
-import com.canu.model.User;
+import com.canu.dto.SocialProvider;
+import com.canu.dto.User;
 import lombok.NonNull;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;

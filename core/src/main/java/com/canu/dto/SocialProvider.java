@@ -1,4 +1,4 @@
-package com.canu.model;
+package com.canu.dto;
 
 public enum SocialProvider {
     GOOGLE,

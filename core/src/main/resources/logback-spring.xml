@@ -30,8 +30,15 @@
     <logger name="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator" level="ERROR"/>
     <logger name="org.hibernate.validator" level="ERROR"/>
 
-    <root level="debug">
-        <appender-ref ref="${am.logback.output:-STDOUT}"/>
+    <root level="info">
+        <springProfile name="dev">
+            <appender-ref ref="STDOUT" />
+        </springProfile>
+
+        <springProfile name="qc">
+            <appender-ref ref="STDOUT" />
+            <appender-ref ref="ROLLING_FILE"/>
+        </springProfile>
     </root>
 
 </configuration>

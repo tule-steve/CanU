@@ -63,8 +63,7 @@ public class CanUService {
 
             CanUModel uUser = canURepo.findByEmail(user.getUsername());
             if (uUser.getPassword() != null) {
-                String cryptOldPass = encoder.encode(request.getOldPassword());
-                if (!cryptOldPass.equals(uUser.getPassword())) {
+                if (!encoder.matches(request.getOldPassword(), uUser.getPassword())) {
                     throw new GlobalValidationException("old password not correctly");
                 }
             }

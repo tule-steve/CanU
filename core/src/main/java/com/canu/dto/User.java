@@ -1,4 +1,4 @@
-package com.canu.model;
+package com.canu.dto;
 
 import lombok.Data;
 
