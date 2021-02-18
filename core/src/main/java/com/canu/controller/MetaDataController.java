@@ -1,6 +1,8 @@
 package com.canu.controller;
 
+import com.canu.model.MetadataPropertyModel;
 import com.canu.model.SkillSetModel;
+import com.canu.repositories.PropertyRepository;
 import com.canu.repositories.SkillSetRepository;
 import com.canu.specifications.SkillSetFilter;
 import com.common.dtos.CommonResponse;
@@ -26,15 +28,29 @@ public class MetaDataController {
 
     private final SkillSetRepository skillSetRepo;
 
+    private final PropertyRepository propertyRepo;
+
     @GetMapping(value = "/services")
-    public Object getServices(SkillSetFilter filter){
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK",skillSetRepo.findAll(filter)));
+    public Object getServices(SkillSetFilter filter) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", skillSetRepo.findAll(filter)));
 
     }
 
     @PostMapping(value = "/init-skillset")
-    public Object initSkillSet(@RequestBody List<SkillSetModel> list){
+    public Object initSkillSet(@RequestBody List<SkillSetModel> list) {
         skillSetRepo.saveAll(list);
-        return ResponseEntity.ok("initialize data");
+        return ResponseEntity.ok(CommonResponse.buildOkData("initialize data"));
+    }
+
+    @PostMapping(value = "/add-properties")
+    public Object addOptions(@RequestBody List<MetadataPropertyModel> list) {
+        propertyRepo.saveAll(list);
+        return ResponseEntity.ok(CommonResponse.buildOkData("added " + list.size() + " option"));
+    }
+
+    @PostMapping(value = "/get-properties")
+    public Object getOptions(@RequestBody List<String> list) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", propertyRepo.findDistinctByKeyIn(list)));
     }
 }

@@ -27,7 +27,6 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<Object> handleAllExceptions(Exception ex) {
-        GlobalValidationException exception = new GlobalValidationException(ex.getMessage());
         logger.error("error: ", ex);
         return new ResponseEntity(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
     }

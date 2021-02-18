@@ -39,6 +39,7 @@ public class CanUModel {
     @Column(name = "provider_type")
     String providerType;
 
+    @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cani_id")
     private CanIModel canIModel;

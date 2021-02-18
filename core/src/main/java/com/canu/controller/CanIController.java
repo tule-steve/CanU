@@ -5,6 +5,8 @@ import com.canu.services.CanIService;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
@@ -26,8 +28,18 @@ public class CanIController {
 
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanIModel request) {
-        canIService.signUp(request);
-        return ResponseEntity.ok(CommonResponse.buildOkData("Create account"));
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        canIService.signUp(request, user.getUsername());
+        return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user"));
+    }
+
+    @GetMapping(value = "/detail")
+    public ResponseEntity getDetail() {
+
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+
+        CanIModel cani = canIService.getDetail(user.getUsername());
+        return ResponseEntity.ok(CommonResponse.buildOkData("CanI detail", cani));
     }
 
 }
