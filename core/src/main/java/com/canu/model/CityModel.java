@@ -16,7 +16,7 @@ public class CityModel {
     Long id;
 
     @Column(name = "country_id")
-    String country_id;
+    String countryId;
 
     @Column(name = "city_name")
     String countryName;

@@ -14,7 +14,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Data
-@Table(name = "performanceTest_d")
+@Table(name = "skill_set")
 @JsonNaming(PropertyNamingStrategy.SnakeCaseStrategy.class)
 public class SkillSetModel {
 

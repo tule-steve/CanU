@@ -48,5 +48,10 @@ public class CanUController {
         return canUService.uploadImage(multipartFile);
     }
 
+//    @PostMapping(value = "/request-job")
+//    public ResponseEntity requestJob(@Validated @RequestBody ChangePassWordRequest request) throws IOException {
+//        return canUService.uploadImage(multipartFile);
+//    }
+
 
 }

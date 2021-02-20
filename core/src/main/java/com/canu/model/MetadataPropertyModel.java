@@ -8,7 +8,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Data
-@Table(name = "performance_properties")
+@Table(name = "properties")
 public class MetadataPropertyModel {
     @Id
     @GeneratedValue(strategy = IDENTITY)

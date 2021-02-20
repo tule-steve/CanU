@@ -2,14 +2,14 @@ package com.canu.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -17,7 +17,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @Entity
 @Data
-@Table(name = "performanceTest_i")
+@Table(name = "cani_profile")
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CanIModel {
 
@@ -69,7 +69,6 @@ public class CanIModel {
     @Column(name = "service_name")
     String serviceType;
 
-
     @Column(name = "description")
     String description;
 
@@ -82,13 +81,19 @@ public class CanIModel {
     @Column(name = "policy")
     String policy;
 
+    @Column(name = "created_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
 
+//    @Column(name = "updated_at")
+//    @UpdateTimestamp
+//    LocalDateTime updatedAt;
 
     //ManyToMany relationship
     //Voucher is owner of this relationship -> if voucher is persisted, the JoinTable voucher_category_map is also updated.
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
-    @JoinTable(name = "performance_skill",
+    @JoinTable(name = "cani_skillset",
             joinColumns = @JoinColumn(name = "user_id"),
             inverseJoinColumns = @JoinColumn(name = "skill_set_id"))
     private List<SkillSetModel> skillSets = new ArrayList<>();
@@ -103,7 +108,7 @@ public class CanIModel {
     @OneToOne(mappedBy = "canIModel", fetch = FetchType.LAZY)
     private CanUModel canUModel;
 
-    public void setCanUModel(CanUModel canu){
+    public void setCanUModel(CanUModel canu) {
         this.canUModel = canu;
         canu.setCanIModel(this);
     }

@@ -1,15 +1,41 @@
 package com.canu.model;
 
+import com.canu.dto.responses.Member;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 
+import java.time.LocalDateTime;
+
 import static javax.persistence.GenerationType.IDENTITY;
 
+@SqlResultSetMapping(
+        name = "MemberMapping",
+        classes = {
+                @ConstructorResult(
+                        targetClass = Member.class,
+                        columns = {
+                                @ColumnResult(name = "userId", type = Long.class),
+                                @ColumnResult(name = "name"),
+                                @ColumnResult(name = "email"),
+                                @ColumnResult(name = "createdAt", type = LocalDateTime.class),
+                                @ColumnResult(name = "createdJob", type = Integer.class),
+                                @ColumnResult(name = "finishedJob", type = Integer.class),
+                                @ColumnResult(name = "processingJob", type = Integer.class)
+                        }
+                )
+        }
+)
+@NamedNativeQuery(name = "CanUModel.getMembership", query =
+        "select u.id as userId, u.name, u.email as email, u.created_at as createdAt, " +
+        "   0 as createdJob, 0 as finishedJob, 0 as processingJob " +
+        " from user u ",
+        resultSetMapping = "MemberMapping")
 @Entity
 @Data
-@Table(name = "performanceTest_u")
+@Table(name = "user")
 public class CanUModel {
 
     @JsonIgnore
@@ -17,6 +43,9 @@ public class CanUModel {
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
     Long id;
+
+    @Column(name = "name")
+    String name;
 
     @Column(name = "email")
     String email;
@@ -39,6 +68,10 @@ public class CanUModel {
     @Column(name = "provider_type")
     String providerType;
 
+    @Column(name = "created_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
+
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cani_id")
@@ -46,9 +79,5 @@ public class CanUModel {
 
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private AuthProviderModel socialData;
-
-
-
-
 
 }
