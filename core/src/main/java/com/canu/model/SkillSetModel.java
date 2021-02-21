@@ -39,7 +39,7 @@ public class SkillSetModel {
     Integer quantity;
 
     @Column(name = "icon_url")
-    Integer iconUrl;
+    String iconUrl;
 
     @Column(name = "icon_awesome_class")
     String icon_awesome_class;

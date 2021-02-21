@@ -18,10 +18,10 @@ public interface CanURepository extends JpaRepository<CanUModel, Long> {
 
     CanUModel findByEmail(String email);
 
-    List<CanUModel> findByEmail(String email, Pageable pageable);
-
     @Query(nativeQuery = true)
     List<Member> getMembership(Pageable pageable);
+
+    Optional<CanUModel> findByToken(String token);
 
 //    @Query(nativeQuery = true)
 //    List<Member> getMembership(Sort sort);

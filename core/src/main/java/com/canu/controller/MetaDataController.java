@@ -42,6 +42,12 @@ public class MetaDataController {
 
     }
 
+    @PostMapping(value = "/update-services")
+    public Object updateServices(@RequestBody List<SkillSetModel> list) {
+        List<SkillSetModel> result = skillSetRepo.saveAll(list);
+        return ResponseEntity.ok(CommonResponse.buildOkData("updated data", result));
+    }
+
     @PostMapping(value = "/init-skillset")
     public Object initSkillSet(@RequestBody List<SkillSetModel> list) {
         skillSetRepo.saveAll(list);

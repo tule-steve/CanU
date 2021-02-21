@@ -11,5 +11,21 @@
 
     <artifactId>common</artifactId>
 
+    <dependencies>
+        <!-- send email -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-mail</artifactId>
+            <scope>provided</scope>
+        </dependency>
+
+        <!-- https://mvnrepository.com/artifact/com.google.guava/guava -->
+<!--        <dependency>-->
+<!--            <groupId>com.google.guava</groupId>-->
+<!--            <artifactId>guava</artifactId>-->
+<!--            <version>30.0-jre</version>-->
+<!--        </dependency>-->
+    </dependencies>
+
 
 </project>

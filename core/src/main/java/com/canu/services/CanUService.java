@@ -9,6 +9,7 @@ import com.canu.repositories.CanURepository;
 import com.canu.security.config.ExtOAuth2ClientAuthenticationProcessingFilter;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
+import com.common.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,12 +23,14 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.mail.MessagingException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.UUID;
 
 @Service
 @Transactional
@@ -39,6 +42,8 @@ public class CanUService {
     final private CanURepository canURepo;
 
     final private TokenProvider tokenProvider;
+
+    final private MailService mailSvc;
 
     private static final Logger logger = LoggerFactory.getLogger(CanUService.class);
 
@@ -99,6 +104,29 @@ public class CanUService {
             throw new IOException("Could not save image file: " + fileName, ioe);
         }
 
-        return ResponseEntity.ok(CommonResponse.buildOkData("updated","/image/" + uUser.getId().toString() + "/" + fileName));
+        return ResponseEntity.ok(CommonResponse.buildOkData("updated",
+                                                            "/image/" + uUser.getId().toString() + "/" + fileName));
+    }
+
+    public void sendVerificationEmail(String email) {
+        CanUModel currUser = canURepo.findByEmail(email);
+        if (currUser == null) {
+            throw new GlobalValidationException("User is not exist or delted");
+        }
+        String token = currUser.getToken();
+        if (token == null) {
+            token = UUID.randomUUID().toString();
+            currUser.setToken(token);
+        }
+        canURepo.save(currUser);
+        mailSvc.sendEmailVerification(email, token);
+    }
+
+    public void confirmEmail(String token) {
+        CanUModel currUser = canURepo.findByToken(token)
+                                     .orElseThrow(() -> new GlobalValidationException("User is not existed"));
+        currUser.setToken(null);
+        currUser.setActivated(true);
+        canURepo.save(currUser);
     }
 }

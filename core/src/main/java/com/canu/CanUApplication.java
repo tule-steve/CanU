@@ -7,6 +7,7 @@ import org.springframework.boot.builder.SpringApplicationBuilder;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.ComponentScan;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
@@ -14,6 +15,7 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 @SpringBootApplication
 @EnableOAuth2Client
 @EnableConfigurationProperties(AppProperties.class)
+@ComponentScan(basePackages = {"com.canu", "com.common"})
 public class CanUApplication extends SpringBootServletInitializer {
     @Override
     protected SpringApplicationBuilder configure(SpringApplicationBuilder application) {

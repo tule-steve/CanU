@@ -50,6 +50,15 @@ public class CanUModel {
     @Column(name = "email")
     String email;
 
+    @Column(name = "activated")
+    Boolean activated;
+
+    @Column(name = "delete_flag")
+    Boolean deleteFlag;
+
+    @Column(name = "token")
+    String token;
+
     @Column(name = "password")
     String password;
 
