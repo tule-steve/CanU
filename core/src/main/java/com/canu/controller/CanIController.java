@@ -29,8 +29,8 @@ public class CanIController {
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanIModel request) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        canIService.signUp(request, user.getUsername());
-        return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user"));
+        CanIModel crrCanI = canIService.signUp(request, user.getUsername());
+        return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user", crrCanI));
     }
 
     @GetMapping(value = "/detail")

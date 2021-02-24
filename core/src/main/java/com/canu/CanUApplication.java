@@ -8,9 +8,13 @@ import org.springframework.boot.context.properties.EnableConfigurationProperties
 import org.springframework.boot.web.servlet.support.SpringBootServletInitializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
+import org.springframework.http.CacheControl;
 import org.springframework.security.oauth2.config.annotation.web.configuration.EnableOAuth2Client;
 import org.springframework.web.servlet.config.annotation.CorsRegistry;
+import org.springframework.web.servlet.config.annotation.ResourceHandlerRegistry;
 import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
+
+import java.util.concurrent.TimeUnit;
 
 @SpringBootApplication
 @EnableOAuth2Client
@@ -37,6 +41,15 @@ public class CanUApplication extends SpringBootServletInitializer {
                         .allowedHeaders("*")
                         .allowCredentials(true)
                         .maxAge(3600);
+            }
+
+            @Override
+            public void addResourceHandlers(ResourceHandlerRegistry registry) {
+
+                // Register resource handler for images
+                registry.addResourceHandler("/api/images/**")
+                        .addResourceLocations("file:image/");
+//                        .setCacheControl(CacheControl.maxAge(2, TimeUnit.HOURS).cachePublic());
             }
         };
     }

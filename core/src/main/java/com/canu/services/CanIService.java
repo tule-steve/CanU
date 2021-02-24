@@ -7,11 +7,7 @@ import com.canu.model.SkillSetModel;
 import com.canu.repositories.CanIRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.SkillSetRepository;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import java.util.List;
@@ -29,7 +25,7 @@ public class CanIService {
 
     final private CanURepository canURepo;
 
-    public void signUp(CanIModel request, String email) {
+    public CanIModel signUp(CanIModel request, String email) {
 
         List<SkillSetModel> skillSets = skillSetRepo.findAllById(request.getService());
         if(!Objects.equals(skillSets.size(), request.getService().size())){
@@ -37,13 +33,21 @@ public class CanIService {
         }
 
         CanUModel currentCanU = canURepo.findByEmail(email);
-        if(currentCanU.getCanIModel() != null){
+        if(currentCanU.getCanIModel() != null && request.getId() == null){
             throw new GlobalValidationException("CanI is created for this user.");
+        }
+
+        if(request.getId() != null && !currentCanU.getCanIModel().getId().equals(request.getId()) ){
+            throw new GlobalValidationException("CanI not belong to current user");
         }
 
         request.setSkillSets(skillSets);
         request.setCanUModel(currentCanU);
-        caIRepo.save(request);
+        request.setEmail(email);
+
+        CanIModel response = caIRepo.save(request);
+        updateCanIResponse(response, email);
+        return response;
     }
 
     public CanIModel getDetail(String email) {
@@ -52,9 +56,13 @@ public class CanIService {
         if(cani == null){
             throw new GlobalValidationException("CanI is not created for this user.");
         }
+        updateCanIResponse(cani, email);
 
+        return currentCanU.getCanIModel();
+    }
+
+    public void updateCanIResponse(CanIModel cani, String email){
         cani.setEmail(email);
         cani.setService(cani.getSkillSets().stream().map(r -> r.getId()).collect(Collectors.toSet()));
-        return currentCanU.getCanIModel();
     }
 }

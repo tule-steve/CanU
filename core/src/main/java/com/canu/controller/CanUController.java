@@ -4,6 +4,7 @@ import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.requests.SocialSignUpRequest;
 import com.canu.model.CanUModel;
+import com.canu.model.FileModel;
 import com.canu.security.config.TokenProvider;
 import com.canu.services.CanUService;
 import com.common.dtos.CommonResponse;
@@ -23,6 +24,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
+import java.util.List;
 import java.util.UUID;
 
 @RestController
@@ -31,21 +33,21 @@ import java.util.UUID;
 public class CanUController {
 
     final private CanUService canUService;
+
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
         return canUService.signUp(request);
     }
-
 
     @PostMapping(value = "/change-password")
     public ResponseEntity changePassword(@Validated @RequestBody ChangePassWordRequest request) {
         return canUService.changePassword(request);
     }
 
-
     @PostMapping(value = "/uploadFile")
-    public ResponseEntity uploadFile(@RequestParam("image") MultipartFile multipartFile) throws IOException {
-        return canUService.uploadImage(multipartFile);
+    public ResponseEntity uploadFile(@RequestParam("gpdkkd") MultipartFile[] gpdkkdFile,
+                                     @RequestParam("certificate") MultipartFile[] cerFiles) throws IOException {
+        return canUService.uploadCanIFile(gpdkkdFile, cerFiles);
     }
 
     @GetMapping(value = "/verify-email")
@@ -56,10 +58,9 @@ public class CanUController {
     }
 
     @GetMapping(value = "/email-confirmation")
-    public ResponseEntity requestJob(@RequestParam("token")  String token) {
+    public ResponseEntity requestJob(@RequestParam("token") String token) {
         canUService.confirmEmail(token);
         return ResponseEntity.ok(CommonResponse.buildOkData("activate the account"));
     }
-
 
 }

@@ -5,7 +5,9 @@ import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.responses.Token;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanUModel;
+import com.canu.model.FileModel;
 import com.canu.repositories.CanURepository;
+import com.canu.repositories.FileRepository;
 import com.canu.security.config.ExtOAuth2ClientAuthenticationProcessingFilter;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
@@ -24,13 +26,14 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.mail.MessagingException;
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
-import java.util.UUID;
+import java.util.*;
 
 @Service
 @Transactional
@@ -45,7 +48,11 @@ public class CanUService {
 
     final private MailService mailSvc;
 
+    final private FileRepository fileRepo;
+
     private static final Logger logger = LoggerFactory.getLogger(CanUService.class);
+
+    final private EntityManager em;
 
     public ResponseEntity signUp(CanUSignUpRequest request) {
 
@@ -86,26 +93,52 @@ public class CanUService {
 
     }
 
-    public ResponseEntity uploadImage(MultipartFile multipartFile) throws IOException {
+    public ResponseEntity uploadCanIFile(MultipartFile[] gpdkkdFile, MultipartFile[] cerFile) throws IOException{
+        Map<String, Object> response = new HashMap<>();
+        if(gpdkkdFile.length > 0){
+            List<FileModel> gpdkkdModel = uploadImage(gpdkkdFile, "/gpdkkd");
+            response.put("gpdkkd", gpdkkdModel);
+        }
+
+        if(cerFile.length > 0){
+            List<FileModel> cerModel = uploadImage(cerFile, "/certificate");
+            response.put("certificate", cerModel);
+        }
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("Upload file", response));
+    }
+
+    public List<FileModel> uploadImage(MultipartFile[] multipartFiles, String parentFolder) throws IOException {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        String uploadDir = System.getProperty("user.dir") + "/image/" + uUser.getId().toString();
+        String url = "/image/static/" + uUser.getId().toString() + parentFolder;
+        String uploadDir = System.getProperty("user.dir") + url;
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
             Files.createDirectories(uploadPath);
         }
 
-        String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+        List<FileModel> fileList = new ArrayList<>();
 
-        try (InputStream inputStream = multipartFile.getInputStream()) {
-            Path filePath = uploadPath.resolve(fileName);
-            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-        } catch (IOException ioe) {
-            throw new IOException("Could not save image file: " + fileName, ioe);
+        for (MultipartFile multipartFile : multipartFiles) {
+            String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+
+            FileModel file = new FileModel();
+            file.setDescription("test");
+            file.setFileName(fileName);
+            file.setOwner(uUser);
+            file.setUrl(url + "/" + file.getFileName());
+            fileList.add(fileRepo.save(file));
+
+            try (InputStream inputStream = multipartFile.getInputStream()) {
+                Path filePath = uploadPath.resolve(fileName);
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ioe) {
+                throw new IOException("Could not save image file: " + fileName, ioe);
+            }
         }
 
-        return ResponseEntity.ok(CommonResponse.buildOkData("updated",
-                                                            "/image/" + uUser.getId().toString() + "/" + fileName));
+        return fileList;
     }
 
     public void sendVerificationEmail(String email) {

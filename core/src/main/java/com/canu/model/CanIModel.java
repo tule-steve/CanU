@@ -21,7 +21,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CanIModel {
 
-    @JsonIgnore
+//    @JsonIgnore
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
@@ -59,6 +59,9 @@ public class CanIModel {
 
     @Column(name = "bank_name")
     String bankName;
+
+    @Column(name = "bank_branch")
+    String bankBranch;
 
     @Column(name = "bank_number")
     String accountNumber;

@@ -8,6 +8,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import javax.persistence.*;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -89,4 +91,6 @@ public class CanUModel {
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private AuthProviderModel socialData;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    List<FileModel> files = new ArrayList<>();
 }
