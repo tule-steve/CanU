@@ -2,30 +2,18 @@ package com.canu.controller;
 
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
-import com.canu.dto.requests.SocialSignUpRequest;
-import com.canu.model.CanUModel;
-import com.canu.model.FileModel;
-import com.canu.security.config.TokenProvider;
 import com.canu.services.CanUService;
 import com.common.dtos.CommonResponse;
-import com.common.mail.MailService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.util.StringUtils;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardCopyOption;
-import java.util.List;
-import java.util.UUID;
 
 @RestController
 @RequestMapping(value = "/api/v1/canu")
@@ -39,15 +27,27 @@ public class CanUController {
         return canUService.signUp(request);
     }
 
+    @GetMapping(value = "/profile")
+    public ResponseEntity getProfile() {
+        return canUService.getProfile();
+    }
+
     @PostMapping(value = "/change-password")
     public ResponseEntity changePassword(@Validated @RequestBody ChangePassWordRequest request) {
         return canUService.changePassword(request);
     }
 
+//    @PostMapping(value = "/uploadFile")
+//    public ResponseEntity uploadFile(@RequestParam("gpdkkd") MultipartFile[] gpdkkdFile,
+//                                     @RequestParam("certificate") MultipartFile[] cerFiles) throws IOException {
+//        return canUService.uploadFile(gpdkkdFile, cerFiles);
+//    }
+
     @PostMapping(value = "/uploadFile")
-    public ResponseEntity uploadFile(@RequestParam("gpdkkd") MultipartFile[] gpdkkdFile,
-                                     @RequestParam("certificate") MultipartFile[] cerFiles) throws IOException {
-        return canUService.uploadCanIFile(gpdkkdFile, cerFiles);
+    public ResponseEntity uploadFile(StandardMultipartHttpServletRequest request) throws IOException {
+//        request
+
+        return canUService.updateFileData(request);
     }
 
     @GetMapping(value = "/verify-email")

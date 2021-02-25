@@ -31,7 +31,7 @@ import static javax.persistence.GenerationType.IDENTITY;
         }
 )
 @NamedNativeQuery(name = "CanUModel.getMembership", query =
-        "select u.id as userId, u.name, u.email as email, u.created_at as createdAt, " +
+        "select u.id as userId, u.first_name as name, u.email as email, u.created_at as createdAt, " +
         "   0 as createdJob, 0 as finishedJob, 0 as processingJob " +
         " from user u ",
         resultSetMapping = "MemberMapping")
@@ -39,18 +39,22 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Data
 @Table(name = "user")
 public class CanUModel {
-
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
     Long id;
 
-    @Column(name = "name")
-    String name;
+    @Column(name = "first_name")
+    String firstName;
+
+    @Column(name = "last_name")
+    String lastName;
 
     @Column(name = "email")
     String email;
+
+    @Column(name = "avatar")
+    String avatar;
 
     @Column(name = "activated")
     Boolean activated;
@@ -58,9 +62,11 @@ public class CanUModel {
     @Column(name = "delete_flag")
     Boolean deleteFlag;
 
+    @JsonIgnore
     @Column(name = "token")
     String token;
 
+    @JsonIgnore
     @Column(name = "password")
     String password;
 
@@ -76,6 +82,7 @@ public class CanUModel {
     @Column(name = "address")
     String address;
 
+    @JsonIgnore
     @Column(name = "provider_type")
     String providerType;
 
@@ -88,9 +95,11 @@ public class CanUModel {
     @JoinColumn(name = "cani_id")
     private CanIModel canIModel;
 
+    @JsonIgnore
     @OneToOne(mappedBy = "user", fetch = FetchType.LAZY)
     private AuthProviderModel socialData;
 
+    @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
     List<FileModel> files = new ArrayList<>();
 }

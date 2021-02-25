@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: jdbc:mysql://localhost:3306/evoucher?useUnicode=true&characterEncoding=UTF-8&useSSL=false&rewriteBatchedStatements=true&useLegacyDatetimeCode=false
-    username: kk_dev_db
-    password: AwUW&3TFDJ7T^zcn
+    url: jdbc:mysql://localhost:3306/CanUI_DB?useUnicode=true&characterEncoding=UTF-8&useSSL=false&rewriteBatchedStatements=true&useLegacyDatetimeCode=false
+    username: root
+    password: CanUI@2021
 
   #db configuration
   #spring.
@@ -98,7 +98,7 @@ security:
       preEstablishedRedirectUri: https://localhost:9129/
 
 app:
-  baseUrl: https://canui.tech
+  baseUrl: https://canui.tech/api
   auth:
     tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
     tokenExpirationMsec: 864000000

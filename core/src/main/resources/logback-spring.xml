@@ -39,7 +39,6 @@
     <root level="info">
         <springProfile name="dev">
             <appender-ref ref="STDOUT" />
-            <appender-ref ref="FILE"/>
         </springProfile>
 
         <springProfile name="qc">

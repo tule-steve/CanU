@@ -89,13 +89,13 @@ public class HomeController {
         return new ResponseEntity(CommonResponse.buildBadRequestData(message), HttpStatus.BAD_REQUEST);
     }
 
-    @GetMapping(value = "/api/image/{userId}/{fileName}")
-    public void getImage(@PathVariable("userId") String userId, @PathVariable("fileName") String fileName, HttpServletResponse response) throws
-                                                                                                                                         IOException {
-        String fileUrl = System.getProperty("user.dir") + "/image/" + userId + "/" + fileName;
-        File initialFile = new File(fileUrl);
-        InputStream targetStream = new FileInputStream(initialFile);
-        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
-        IOUtils.copy(targetStream, response.getOutputStream());
-    }
+//    @GetMapping(value = "/api/image/{userId}/{fileName}")
+//    public void getImage(@PathVariable("userId") String userId, @PathVariable("fileName") String fileName, HttpServletResponse response) throws
+//                                                                                                                                         IOException {
+//        String fileUrl = System.getProperty("user.dir") + "/image/" + userId + "/" + fileName;
+//        File initialFile = new File(fileUrl);
+//        InputStream targetStream = new FileInputStream(initialFile);
+//        response.setContentType(MediaType.IMAGE_JPEG_VALUE);
+//        IOUtils.copy(targetStream, response.getOutputStream());
+//    }
 }

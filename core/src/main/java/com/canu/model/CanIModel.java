@@ -7,10 +7,12 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import javax.persistence.*;
+import java.io.File;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import static javax.persistence.GenerationType.IDENTITY;
@@ -115,4 +117,7 @@ public class CanIModel {
         this.canUModel = canu;
         canu.setCanIModel(this);
     }
+
+    @Transient
+    private Map<String, List<FileModel>> files;
 }

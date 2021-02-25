@@ -3,14 +3,22 @@ package com.canu.services;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanIModel;
 import com.canu.model.CanUModel;
+import com.canu.model.FileModel;
 import com.canu.model.SkillSetModel;
 import com.canu.repositories.CanIRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.SkillSetRepository;
+import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
+import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.io.File;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
@@ -25,7 +33,7 @@ public class CanIService {
 
     final private CanURepository canURepo;
 
-    public CanIModel signUp(CanIModel request, String email) {
+    public ResponseEntity signUp(CanIModel request, String email) {
 
         List<SkillSetModel> skillSets = skillSetRepo.findAllById(request.getService());
         if(!Objects.equals(skillSets.size(), request.getService().size())){
@@ -46,23 +54,27 @@ public class CanIService {
         request.setEmail(email);
 
         CanIModel response = caIRepo.save(request);
-        updateCanIResponse(response, email);
-        return response;
+        updateCanIResponse(response, email, currentCanU);
+        return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user", response));
     }
 
-    public CanIModel getDetail(String email) {
+    public ResponseEntity getDetail(String email) {
         CanUModel currentCanU = canURepo.findByEmail(email);
+
         CanIModel cani = currentCanU.getCanIModel();
         if(cani == null){
             throw new GlobalValidationException("CanI is not created for this user.");
         }
-        updateCanIResponse(cani, email);
+        Hibernate.initialize(currentCanU.getFiles());
+        updateCanIResponse(cani, email, currentCanU);
 
-        return currentCanU.getCanIModel();
+        return ResponseEntity.ok(CommonResponse.buildOkData("CanI detail", cani));
     }
 
-    public void updateCanIResponse(CanIModel cani, String email){
+    public void updateCanIResponse(CanIModel cani, String email, CanUModel canu){
+        Map<String, List<FileModel>> data = canu.getFiles().stream().collect(Collectors.groupingBy(FileModel::getDescription));
         cani.setEmail(email);
         cani.setService(cani.getSkillSets().stream().map(r -> r.getId()).collect(Collectors.toSet()));
+        cani.setFiles(data);
     }
 }

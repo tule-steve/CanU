@@ -29,17 +29,14 @@ public class CanIController {
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanIModel request) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CanIModel crrCanI = canIService.signUp(request, user.getUsername());
-        return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user", crrCanI));
+        return canIService.signUp(request, user.getUsername());
     }
 
     @GetMapping(value = "/detail")
     public ResponseEntity getDetail() {
 
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-
-        CanIModel cani = canIService.getDetail(user.getUsername());
-        return ResponseEntity.ok(CommonResponse.buildOkData("CanI detail", cani));
+        return canIService.getDetail(user.getUsername());
     }
 
 }

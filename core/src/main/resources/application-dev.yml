@@ -98,8 +98,9 @@ security:
       preEstablishedRedirectUri: https://localhost:9129/
 
 app:
-  baseUrl: https://canui.tech
+  baseUrl: https://127.0.0.1:9129/api
   auth:
     tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
     tokenExpirationMsec: 864000000
+    #tokenExpirationMsec: 864
 

@@ -8,24 +8,27 @@ import com.canu.model.CanUModel;
 import com.canu.model.FileModel;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.FileRepository;
-import com.canu.security.config.ExtOAuth2ClientAuthenticationProcessingFilter;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
 import com.common.mail.MailService;
+import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.MultiValueMap;
 import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
+import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
-import javax.mail.MessagingException;
 import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.io.InputStream;
@@ -34,6 +37,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
+import java.util.function.Function;
 
 @Service
 @Transactional
@@ -54,6 +58,9 @@ public class CanUService {
 
     final private EntityManager em;
 
+    @Value("${app.baseUrl}")
+    private String domainLink;
+
     public ResponseEntity signUp(CanUSignUpRequest request) {
 
         if (canURepo.findByEmail(request.getEmail()) != null) {
@@ -67,6 +74,12 @@ public class CanUService {
         canURepo.save(data);
 
         return ResponseEntity.ok(new Token(tokenProvider.createToken(request.getEmail()), 86400L));
+    }
+
+    public ResponseEntity getProfile() {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", uUser));
     }
 
     public ResponseEntity changePassword(ChangePassWordRequest request) {
@@ -93,25 +106,56 @@ public class CanUService {
 
     }
 
-    public ResponseEntity uploadCanIFile(MultipartFile[] gpdkkdFile, MultipartFile[] cerFile) throws IOException{
-        Map<String, Object> response = new HashMap<>();
-        if(gpdkkdFile.length > 0){
-            List<FileModel> gpdkkdModel = uploadImage(gpdkkdFile, "/gpdkkd");
-            response.put("gpdkkd", gpdkkdModel);
+    //    public ResponseEntity uploadCanIFile(MultipartFile[] gpdkkdFile, MultipartFile[] cerFile) throws IOException{
+    //        Map<String, Object> response = new HashMap<>();
+    //        if(gpdkkdFile.length > 0){
+    //            List<FileModel> gpdkkdModel = uploadImage(gpdkkdFile, "/gpdkkd");
+    //            response.put("gpdkkd", gpdkkdModel);
+    //        }
+    //
+    //        if(cerFile.length > 0){
+    //            List<FileModel> cerModel = uploadImage(cerFile, "/certificate");
+    //            response.put("certificate", cerModel);
+    //        }
+    //
+    //        return ResponseEntity.ok(CommonResponse.buildOkData("Upload file", response));
+    //    }
+
+    public ResponseEntity updateFileData(StandardMultipartHttpServletRequest request) throws IOException {
+        if (request.getParameterMap().get("deleted") != null) {
+            UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            CanUModel uUser = canURepo.findByEmail(user.getUsername());
+            String[] deletedData = request.getParameterMap().get("deleted")[0].split(",");
+            List<Long> ids = new ArrayList<>();
+            for (String id : deletedData) {
+                ids.add(Long.parseLong(id.trim()));
+            }
+            fileRepo.deleteFilesWithIdsAndUser(ids, uUser.getId());
         }
 
-        if(cerFile.length > 0){
-            List<FileModel> cerModel = uploadImage(cerFile, "/certificate");
-            response.put("certificate", cerModel);
+        return uploadFile(request.getMultiFileMap());
+    }
+
+    public ResponseEntity uploadFile(MultiValueMap<String, MultipartFile> fileMap) throws IOException {
+        Map<String, Object> response = new HashMap<>();
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        for (Map.Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
+            String a = entry.getKey();
+            List<MultipartFile> b = entry.getValue();
+            List<FileModel> cerModel = uploadImage(b, a, uUser);
+            response.put(a, cerModel);
+            if("avatar".equalsIgnoreCase(a)){
+                uUser.setAvatar(cerModel.get(0).getUrl());
+            }
         }
 
         return ResponseEntity.ok(CommonResponse.buildOkData("Upload file", response));
     }
 
-    public List<FileModel> uploadImage(MultipartFile[] multipartFiles, String parentFolder) throws IOException {
-        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        String url = "/image/static/" + uUser.getId().toString() + parentFolder;
+    public List<FileModel> uploadImage(List<MultipartFile> multipartFiles, String parentFolder, CanUModel uUser) throws
+                                                                                                                 IOException {
+        String url = "/images/static/" + uUser.getId().toString() + "/" + parentFolder;
         String uploadDir = System.getProperty("user.dir") + url;
         Path uploadPath = Paths.get(uploadDir);
         if (!Files.exists(uploadPath)) {
@@ -124,14 +168,14 @@ public class CanUService {
             String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
 
             FileModel file = new FileModel();
-            file.setDescription("test");
+            file.setDescription(parentFolder);
             file.setFileName(fileName);
             file.setOwner(uUser);
-            file.setUrl(url + "/" + file.getFileName());
+            file.setUrl(domainLink + url + "/" + file.getFileName());
             fileList.add(fileRepo.save(file));
 
             try (InputStream inputStream = multipartFile.getInputStream()) {
-                Path filePath = uploadPath.resolve(fileName);
+                Path filePath = uploadPath.resolve(fileName).normalize();
                 Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
             } catch (IOException ioe) {
                 throw new IOException("Could not save image file: " + fileName, ioe);
@@ -140,6 +184,39 @@ public class CanUService {
 
         return fileList;
     }
+
+    //    public List<FileModel> uploadImage(MultipartFile[] multipartFiles, String parentFolder) throws IOException {
+    //        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+    //        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+    //        String url = "/image/static/" + uUser.getId().toString() + parentFolder;
+    //        String uploadDir = System.getProperty("user.dir") + url;
+    //        Path uploadPath = Paths.get(uploadDir);
+    //        if (!Files.exists(uploadPath)) {
+    //            Files.createDirectories(uploadPath);
+    //        }
+    //
+    //        List<FileModel> fileList = new ArrayList<>();
+    //
+    //        for (MultipartFile multipartFile : multipartFiles) {
+    //            String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+    //
+    //            FileModel file = new FileModel();
+    //            file.setDescription("test");
+    //            file.setFileName(fileName);
+    //            file.setOwner(uUser);
+    //            file.setUrl(url + "/" + file.getFileName());
+    //            fileList.add(fileRepo.save(file));
+    //
+    //            try (InputStream inputStream = multipartFile.getInputStream()) {
+    //                Path filePath = uploadPath.resolve(fileName);
+    //                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+    //            } catch (IOException ioe) {
+    //                throw new IOException("Could not save image file: " + fileName, ioe);
+    //            }
+    //        }
+    //
+    //        return fileList;
+    //    }
 
     public void sendVerificationEmail(String email) {
         CanUModel currUser = canURepo.findByEmail(email);
