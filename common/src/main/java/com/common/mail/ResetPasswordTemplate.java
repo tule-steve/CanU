@@ -7,11 +7,11 @@ import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
 import java.util.Map;
 
-public class EmailVerificationTemplate {
+public class ResetPasswordTemplate {
     private String template;
 
-    public EmailVerificationTemplate() throws Exception {
-        this.template = loadTemplate("EmailVerificationTemplate.html");
+    public ResetPasswordTemplate() throws Exception {
+        this.template = loadTemplate("ResetPasswordTemplate.html");
     }
 
     private String loadTemplate(String customtemplate) throws Exception {

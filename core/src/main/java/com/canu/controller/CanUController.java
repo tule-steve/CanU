@@ -2,6 +2,7 @@ package com.canu.controller;
 
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
+import com.canu.dto.requests.ResetPassWordRequest;
 import com.canu.services.CanUService;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -51,16 +52,28 @@ public class CanUController {
     }
 
     @GetMapping(value = "/verify-email")
-    public ResponseEntity requestJob() {
+    public ResponseEntity verifyEmail() {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         canUService.sendVerificationEmail(user.getUsername());
         return ResponseEntity.ok(CommonResponse.buildOkData("Sent verification email"));
     }
 
     @GetMapping(value = "/email-confirmation")
-    public ResponseEntity requestJob(@RequestParam("token") String token) {
+    public ResponseEntity activeEmail(@RequestParam("token") String token) {
         canUService.confirmEmail(token);
         return ResponseEntity.ok(CommonResponse.buildOkData("activate the account"));
+    }
+
+    @GetMapping(value = "/forgot-password")
+    public ResponseEntity forgotPassword(@RequestParam("email") String email ) {
+        canUService.sendForgetPassword(email);
+        return ResponseEntity.ok(CommonResponse.buildOkData("sent password reset mail for user"));
+    }
+
+    @PostMapping(value = "/reset-password")
+    public ResponseEntity forgotPassword(@Validated @RequestBody ResetPassWordRequest request) {
+        canUService.resetPassword(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("Change password"));
     }
 
 }

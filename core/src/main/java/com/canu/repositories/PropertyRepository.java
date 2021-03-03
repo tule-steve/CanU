@@ -9,7 +9,7 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PropertyRepository extends JpaRepository<MetadataPropertyModel, Long>{
+public interface PropertyRepository extends JpaRepository<MetadataPropertyModel, String>{
 
     List<MetadataPropertyModel> findDistinctByKeyIn(List<String> keyList);
 }

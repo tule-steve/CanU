@@ -18,7 +18,9 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class Member {
 
     Long userId;
-    String name;
+//    String name;
+    String firstName;
+    String lastName;
     String email;
     LocalDateTime createdAt;
 

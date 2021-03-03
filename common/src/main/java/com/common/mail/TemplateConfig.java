@@ -10,4 +10,9 @@ public class TemplateConfig {
     public EmailVerificationTemplate getVerificationTemplate() throws Exception {
         return new EmailVerificationTemplate();
     }
+
+    @Bean
+    public ResetPasswordTemplate getForgotPasswordTemplate () throws Exception {
+        return new ResetPasswordTemplate();
+    }
 }

@@ -53,7 +53,7 @@ spring:
   servlet:
     multipart:
       max-file-size: 2MB
-      max-request-size: 2MB
+      max-request-size: 20MB
 
 # tomcat server config
 server:
@@ -99,8 +99,9 @@ security:
 
 app:
   baseUrl: https://127.0.0.1:9129/api
+  forgotPassUrl: https://canui.tech/reset-password/
   auth:
     tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
-    tokenExpirationMsec: 864000000
+    tokenExpirationMsec: 8640000000000
     #tokenExpirationMsec: 864
 

@@ -39,7 +39,6 @@ public class TokenProvider {
                             .setSigningKey(appProperties.getAuth().getTokenSecret())
                             .parseClaimsJws(token)
                             .getBody();
-
         return claims.getSubject();
     }
 

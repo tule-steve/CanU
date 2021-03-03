@@ -2,6 +2,7 @@ package com.canu.services;
 
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
+import com.canu.dto.requests.ResetPassWordRequest;
 import com.canu.dto.responses.Token;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanUModel;
@@ -141,13 +142,16 @@ public class CanUService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         for (Map.Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
-            String a = entry.getKey();
-            List<MultipartFile> b = entry.getValue();
-            List<FileModel> cerModel = uploadImage(b, a, uUser);
-            response.put(a, cerModel);
-            if("avatar".equalsIgnoreCase(a)){
+            String parentFolder = entry.getKey();
+            List<MultipartFile> multipartFiles = entry.getValue();
+            List<FileModel> cerModel = uploadImage(multipartFiles, parentFolder, uUser);
+            response.put(parentFolder, cerModel);
+            if ("canu_avatar".equalsIgnoreCase(parentFolder)) {
                 uUser.setAvatar(cerModel.get(0).getUrl());
+            } else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.getCanIModel() != null){
+                uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
             }
+
         }
 
         return ResponseEntity.ok(CommonResponse.buildOkData("Upload file", response));
@@ -221,7 +225,7 @@ public class CanUService {
     public void sendVerificationEmail(String email) {
         CanUModel currUser = canURepo.findByEmail(email);
         if (currUser == null) {
-            throw new GlobalValidationException("User is not exist or delted");
+            throw new GlobalValidationException("User is not exist or deleted");
         }
         String token = currUser.getToken();
         if (token == null) {
@@ -238,5 +242,31 @@ public class CanUService {
         currUser.setToken(null);
         currUser.setActivated(true);
         canURepo.save(currUser);
+    }
+
+    public void sendForgetPassword(String email) {
+        CanUModel currUser = canURepo.findByEmail(email);
+        if (currUser == null) {
+            throw new GlobalValidationException("User is not exist or deleted");
+        }
+        String token = currUser.getToken();
+        if (token == null) {
+            token = UUID.randomUUID().toString();
+            currUser.setToken(token);
+        }
+
+        canURepo.save(currUser);
+        mailSvc.sendResetPasswordMail(email,
+                                      token,
+                                      Optional.ofNullable(currUser.getFirstName()).orElse("") +
+                                      Optional.ofNullable(currUser.getLastName()).orElse(""));
+    }
+    public void resetPassword(ResetPassWordRequest request){
+        CanUModel currUser = canURepo.findByToken(request.getToken())
+                                     .orElseThrow(() -> new GlobalValidationException("Token invalid"));
+
+        String cryptNewPass = encoder.encode(request.getNewPassword());
+        currUser.setPassword(cryptNewPass);
+        currUser.setToken(null);
     }
 }

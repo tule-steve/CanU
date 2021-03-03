@@ -49,7 +49,7 @@ public class AdminService {
 //        p.getSort()
 //        p.getPageNumber()
         StringBuilder sb = new StringBuilder();
-        sb.append("select u.id as userId, u.name, u.email as email, u.created_at as createdAt, ");
+        sb.append("select u.id as userId, u.first_name as firstName, u.last_name as lastName, u.email as email, u.created_at as createdAt, ");
         sb.append("   0 as createdJob, 0 as finishedJob, 0 as processingJob ");
         sb.append(" from user u ");
         if(p.getSort() != Sort.unsorted()){

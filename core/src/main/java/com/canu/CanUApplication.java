@@ -48,7 +48,7 @@ public class CanUApplication extends SpringBootServletInitializer {
 
                 // Register resource handler for images
                 registry.addResourceHandler("/api/images/**")
-                        .addResourceLocations("file:image/");
+                        .addResourceLocations("file:images/");
 //                        .setCacheControl(CacheControl.maxAge(2, TimeUnit.HOURS).cachePublic());
             }
         };

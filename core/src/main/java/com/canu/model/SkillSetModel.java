@@ -29,8 +29,8 @@ public class SkillSetModel {
     @Column(name = "title")
     String title;
 
-    @Column(name = "short_intro")
-    String shortIntro;
+//    @Column(name = "short_intro")
+//    String shortIntro;
 
     @Column(name = "slug")
     String slug;
@@ -41,11 +41,39 @@ public class SkillSetModel {
     @Column(name = "icon_url")
     String iconUrl;
 
-    @Column(name = "icon_awesome_class")
-    String icon_awesome_class;
+    @Column(name = "description_kr")
+    String descriptionKr;
 
-    @Column(name = "image_background")
-    String image_background;
+    @Column(name = "title_kr")
+    String titleKr;
+
+    @Column(name = "description_jp")
+    String descriptionJp;
+
+    @Column(name = "title_jp")
+    String titleJp;
+
+    @Column(name = "description_vn")
+    String descriptionVn;
+
+    @Column(name = "title_vn")
+    String titleVn;
+
+    @Column(name = "description_cn")
+    String descriptionCn;
+
+    @Column(name = "title_cn")
+    String titleCn;
+
+    @Column(name = "is_delete")
+    Boolean isDelete = false;
+
+
+//    @Column(name = "icon_awesome_class")
+//    String icon_awesome_class;
+//
+//    @Column(name = "image_background")
+//    String image_background;
 
     @JsonIgnore
     @ManyToMany(mappedBy = "skillSets", cascade = CascadeType.PERSIST)

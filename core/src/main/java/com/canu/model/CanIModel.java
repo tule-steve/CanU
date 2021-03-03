@@ -41,11 +41,14 @@ public class CanIModel {
     @Column(name = "salary")
     String price;
 
+    @Column(name = "currency")
+    String currency;
+
     @Column(name = "company")
     String companyName;
 
     @Column(name = "phone")
-    Integer phone;
+    String phone;
 
     @Column(name = "nation")
     String national;
@@ -85,6 +88,9 @@ public class CanIModel {
 
     @Column(name = "policy")
     String policy;
+
+    @Column(name = "avatar")
+    String avatar;
 
     @Column(name = "created_at")
     @CreationTimestamp

@@ -20,7 +20,8 @@ import static javax.persistence.GenerationType.IDENTITY;
                         targetClass = Member.class,
                         columns = {
                                 @ColumnResult(name = "userId", type = Long.class),
-                                @ColumnResult(name = "name"),
+                                @ColumnResult(name = "firstName"),
+                                @ColumnResult(name = "lastName"),
                                 @ColumnResult(name = "email"),
                                 @ColumnResult(name = "createdAt", type = LocalDateTime.class),
                                 @ColumnResult(name = "createdJob", type = Integer.class),

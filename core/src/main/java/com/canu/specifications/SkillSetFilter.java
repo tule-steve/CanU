@@ -25,6 +25,7 @@ public class SkillSetFilter implements Specification<SkillSetModel> {
         if (slug != null) {
             predicates.add(builder.equal(root.get("slug"), slug));
         }
+        predicates.add(builder.equal(root.get("isDelete"), false));
         return builder.and(predicates.toArray(new Predicate[0]));
     }
 }
