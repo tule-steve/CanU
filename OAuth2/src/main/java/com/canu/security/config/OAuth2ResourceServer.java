@@ -93,7 +93,7 @@ public class OAuth2ResourceServer extends WebSecurityConfigurerAdapter {
             .invalidateHttpSession(true)
             .permitAll();
         // Add our custom Token based authentication filter
-        http.addFilterBefore(tokenAuthenticationFilter(), BasicAuthenticationFilter.class);
+//        http.addFilterBefore(tokenAuthenticationFilter(), BasicAuthenticationFilter.class);
     }
 
     @Bean
@@ -120,8 +120,8 @@ public class OAuth2ResourceServer extends WebSecurityConfigurerAdapter {
         CompositeFilter filter = new CompositeFilter();
         List<Filter> filters = new ArrayList<>();
 
-        filters.add(createSsoFilter("/facebook/login", facebook(), facebookResUri));
-        filters.add(createSsoFilter("/google/login", google(), googleResUri));
+        filters.add(createSsoFilter("/api/facebook/login", facebook(), facebookResUri));
+        filters.add(createSsoFilter("/api/google/login", google(), googleResUri));
 
         filter.setFilters(filters);
 

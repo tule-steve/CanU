@@ -72,7 +72,7 @@ public class CanUModel {
     String password;
 
     @Column(name = "phone")
-    Integer phone;
+    String phone;
 
     @Column(name = "nation")
     String nation;
