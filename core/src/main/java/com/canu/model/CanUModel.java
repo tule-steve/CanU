@@ -54,12 +54,15 @@ public class CanUModel {
     @Column(name = "email")
     String email;
 
+    @JsonIgnore
     @Column(name = "avatar")
     String avatar;
 
+    @JsonIgnore
     @Column(name = "activated")
     Boolean activated;
 
+    @JsonIgnore
     @Column(name = "delete_flag")
     Boolean deleteFlag;
 

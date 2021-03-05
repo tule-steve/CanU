@@ -3,6 +3,7 @@ package com.canu.controller;
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.requests.ResetPassWordRequest;
+import com.canu.model.CanUModel;
 import com.canu.services.CanUService;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -11,7 +12,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import java.io.IOException;
@@ -32,6 +32,13 @@ public class CanUController {
     public ResponseEntity getProfile() {
         return canUService.getProfile();
     }
+
+
+    @PostMapping(value = "/update-profile")
+    public ResponseEntity getProfile(@Validated @RequestBody  CanUModel request) {
+        return canUService.updateProfile(request);
+    }
+
 
     @PostMapping(value = "/change-password")
     public ResponseEntity changePassword(@Validated @RequestBody ChangePassWordRequest request) {

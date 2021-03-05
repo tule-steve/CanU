@@ -78,6 +78,7 @@ facebook:
     authenticationScheme: query
     clientAuthenticationScheme: form
     scope: email public_profile
+#    redirect-uri: /api/home
   resource:
     userInfoUri: https://graph.facebook.com/me?fields=id,first_name,middle_name,last_name,name,email
 
@@ -89,6 +90,7 @@ google:
     userAuthorizationUri: https://accounts.google.com/o/oauth2/v2/auth
     clientAuthenticationScheme: form
     scope: profile email
+#    redirect-uri: /api/home
   resource:
     userInfoUri:  https://www.googleapis.com/oauth2/v3/userinfo
 

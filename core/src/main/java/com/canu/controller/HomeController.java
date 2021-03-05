@@ -1,15 +1,13 @@
 package com.canu.controller;
 
+import com.canu.dto.User;
 import com.canu.dto.requests.LoginRequest;
 import com.canu.dto.responses.Token;
-import com.canu.dto.User;
 import com.canu.security.config.TokenProvider;
 import com.canu.services.SocialAuthService;
 import com.common.dtos.CommonResponse;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -20,13 +18,8 @@ import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.security.Principal;
 
 @RestController
@@ -57,8 +50,8 @@ public class HomeController {
             principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         }
         User user = authService.extractUserFromAuthInfo(principal);
-        Token tokenResponse = new Token(tokenProvider.createToken(user.getEmail()), 86400L);
-        return ResponseEntity.ok(tokenResponse);
+        String token = tokenProvider.createToken(user.getEmail());
+        return ResponseEntity.ok(new Token(token, 86400L));
     }
 
     @PostMapping("/api/login")
@@ -74,7 +67,7 @@ public class HomeController {
         SecurityContextHolder.getContext().setAuthentication(authentication);
 
         String token = tokenProvider.createToken(loginRequest.getEmail());
-        return ResponseEntity.ok(new Token(tokenProvider.createToken(loginRequest.getEmail()), 86400L));
+        return ResponseEntity.ok(new Token(token, 86400L));
     }
 
     @RequestMapping(value = "/api/logout")

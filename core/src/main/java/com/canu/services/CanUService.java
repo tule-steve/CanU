@@ -12,10 +12,7 @@ import com.canu.repositories.FileRepository;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
 import com.common.mail.MailService;
-import com.google.common.collect.Lists;
-import com.google.common.primitives.Longs;
 import lombok.RequiredArgsConstructor;
-import org.hibernate.Hibernate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -38,7 +35,6 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.nio.file.StandardCopyOption;
 import java.util.*;
-import java.util.function.Function;
 
 @Service
 @Transactional
@@ -81,6 +77,26 @@ public class CanUService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", uUser));
+    }
+
+    public ResponseEntity updateProfile(CanUModel request) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        if(!uUser.getId().equals(request.getId())){
+            throw new GlobalValidationException("updated data do not map with user in authentication token");
+        }
+        updateCanU(request, uUser);
+        uUser = canURepo.save(uUser);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", uUser));
+    }
+
+    public void updateCanU(CanUModel source, CanUModel dest){
+        dest.setFirstName(source.getFirstName());
+        dest.setLastName(source.getLastName());
+        dest.setCity(source.getCity());
+        dest.setAddress(source.getAddress());
+        dest.setPhone(source.getPhone());
+        dest.setNation(source.getNation());
     }
 
     public ResponseEntity changePassword(ChangePassWordRequest request) {
