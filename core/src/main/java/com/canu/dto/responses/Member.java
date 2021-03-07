@@ -1,31 +1,30 @@
 package com.canu.dto.responses;
 
-import com.canu.model.AuthProviderModel;
 import com.canu.model.CanIModel;
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.AllArgsConstructor;
 import lombok.Data;
-
-import javax.persistence.*;
+import lombok.RequiredArgsConstructor;
 
 import java.time.LocalDateTime;
 
-import static javax.persistence.GenerationType.IDENTITY;
-
 
 @Data
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class Member {
 
-    Long userId;
+    final Long userId;
 //    String name;
-    String firstName;
-    String lastName;
-    String email;
-    LocalDateTime createdAt;
+    final String firstName;
+    final String lastName;
+    final String email;
+    final LocalDateTime createdAt;
 
-    Integer createdJob;
-    Integer finishedJob;
-    Integer processingJob;
+    final Integer createdJob;
+    final Integer finishedJob;
+    final Integer processingJob;
+    @JsonIgnore
+    final Long caniId;
+
+    CanIModel cani;
 
 }

@@ -6,7 +6,6 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
-
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -26,14 +25,15 @@ import static javax.persistence.GenerationType.IDENTITY;
                                 @ColumnResult(name = "createdAt", type = LocalDateTime.class),
                                 @ColumnResult(name = "createdJob", type = Integer.class),
                                 @ColumnResult(name = "finishedJob", type = Integer.class),
-                                @ColumnResult(name = "processingJob", type = Integer.class)
+                                @ColumnResult(name = "processingJob", type = Integer.class),
+                                @ColumnResult(name = "caniId", type = Long.class)
                         }
                 )
         }
 )
 @NamedNativeQuery(name = "CanUModel.getMembership", query =
         "select u.id as userId, u.first_name as name, u.email as email, u.created_at as createdAt, " +
-        "   0 as createdJob, 0 as finishedJob, 0 as processingJob " +
+        "   0 as createdJob, 0 as finishedJob, 0 as processingJob, u.cani_id as caniId" +
         " from user u ",
         resultSetMapping = "MemberMapping")
 @Entity
@@ -54,7 +54,6 @@ public class CanUModel {
     @Column(name = "email")
     String email;
 
-    @JsonIgnore
     @Column(name = "avatar")
     String avatar;
 
