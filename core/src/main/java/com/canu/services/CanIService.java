@@ -15,8 +15,6 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.io.File;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -54,7 +52,7 @@ public class CanIService {
         request.setEmail(email);
 
         CanIModel response = caIRepo.save(request);
-        updateCanIResponse(response, email, currentCanU);
+        updateCanIResponse(response, currentCanU);
         return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user", response));
     }
 
@@ -66,14 +64,14 @@ public class CanIService {
             throw new GlobalValidationException("CanI is not created for this user.");
         }
         Hibernate.initialize(currentCanU.getFiles());
-        updateCanIResponse(cani, email, currentCanU);
+        updateCanIResponse(cani, currentCanU);
 
         return ResponseEntity.ok(CommonResponse.buildOkData("CanI detail", cani));
     }
 
-    public void updateCanIResponse(CanIModel cani, String email, CanUModel canu){
+    public void updateCanIResponse(CanIModel cani, CanUModel canu){
         Map<String, List<FileModel>> data = canu.getFiles().stream().collect(Collectors.groupingBy(FileModel::getDescription));
-        cani.setEmail(email);
+        cani.setEmail(canu.getEmail());
         cani.setService(cani.getSkillSets().stream().map(r -> r.getId()).collect(Collectors.toSet()));
         cani.setFiles(data);
     }

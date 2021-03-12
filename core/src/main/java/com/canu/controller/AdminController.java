@@ -1,16 +1,13 @@
 package com.canu.controller;
 
-import com.canu.dto.responses.Member;
-import com.canu.model.CanIModel;
 import com.canu.services.AdminService;
-import com.canu.services.CanIService;
+import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Slice;
-import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 @RestController
 @RequestMapping(value = "/api/v1/admin")
@@ -21,6 +18,6 @@ public class AdminController {
 
     @GetMapping(value = "/member")
     public Object getDetail(Pageable p) {
-        return adminSvc.getMembers(p);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getMembers(p)));
     }
 }

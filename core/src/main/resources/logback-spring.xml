@@ -36,7 +36,7 @@
     <logger name="org.hibernate.validator.messageinterpolation.ParameterMessageInterpolator" level="ERROR"/>
     <logger name="org.hibernate.validator" level="ERROR"/>
 
-    <root level="info">
+    <root level="debug">
         <springProfile name="dev">
             <appender-ref ref="STDOUT" />
         </springProfile>
