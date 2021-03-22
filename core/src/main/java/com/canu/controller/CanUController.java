@@ -3,10 +3,15 @@ package com.canu.controller;
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.requests.ResetPassWordRequest;
+import com.canu.dto.responses.JobDto;
 import com.canu.model.CanUModel;
+import com.canu.model.JobModel;
 import com.canu.services.CanUService;
+import com.canu.services.ChatService;
+import com.canu.services.JobService;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -22,6 +27,10 @@ import java.io.IOException;
 public class CanUController {
 
     final private CanUService canUService;
+
+    final private JobService jobSvc;
+
+    final ChatService chatSvc;
 
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
@@ -83,4 +92,27 @@ public class CanUController {
         return ResponseEntity.ok(CommonResponse.buildOkData("Change password"));
     }
 
+    @PostMapping(value = "/post-job")
+    public ResponseEntity postJob(@Validated @RequestBody JobModel request) {
+        JobModel jobEntity = jobSvc.postJob(request);
+        JobDto job = jobSvc.getJobDetail(jobEntity.getId());
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", job));
+    }
+
+    @GetMapping(value = "/job-detail/{jobId}")
+    public ResponseEntity postJob(@PathVariable Long jobId) {
+        JobDto job = jobSvc.getJobDetail(jobId);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", job));
+    }
+
+    @GetMapping(value = "/show-chat/{partnerId}")
+    public ResponseEntity showChatHistory(@PathVariable Long partnerId, Pageable p) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", chatSvc.getChatHistory(partnerId, p)));
+    }
+
+//    @GetMapping(value = "/participant-list")
+//    public ResponseEntity getChatParticipant() {
+//        chatSvc.
+//    }
 }

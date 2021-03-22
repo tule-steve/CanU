@@ -78,4 +78,11 @@ public class SkillSetModel {
     @JsonIgnore
     @ManyToMany(mappedBy = "skillSets", cascade = CascadeType.PERSIST)
     private Set<CanIModel> canIs = new HashSet<>();
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "skillSets", cascade = CascadeType.PERSIST)
+    private Set<JobModel> jobs = new HashSet<>();
+
+    @Transient
+    private Set<Long> service;
 }

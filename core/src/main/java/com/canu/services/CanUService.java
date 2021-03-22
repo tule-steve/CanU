@@ -7,8 +7,7 @@ import com.canu.dto.responses.Token;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanUModel;
 import com.canu.model.FileModel;
-import com.canu.repositories.CanURepository;
-import com.canu.repositories.FileRepository;
+import com.canu.repositories.*;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
 import com.common.mail.MailService;
@@ -82,7 +81,7 @@ public class CanUService {
     public ResponseEntity updateProfile(CanUModel request) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        if(!uUser.getId().equals(request.getId())){
+        if (!uUser.getId().equals(request.getId())) {
             throw new GlobalValidationException("updated data do not map with user in authentication token");
         }
         updateCanU(request, uUser);
@@ -90,7 +89,7 @@ public class CanUService {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", uUser));
     }
 
-    public void updateCanU(CanUModel source, CanUModel dest){
+    public void updateCanU(CanUModel source, CanUModel dest) {
         dest.setFirstName(source.getFirstName());
         dest.setLastName(source.getLastName());
         dest.setCity(source.getCity());
@@ -140,8 +139,14 @@ public class CanUService {
 
     public ResponseEntity updateFileData(StandardMultipartHttpServletRequest request) throws IOException {
         if (request.getParameterMap().get("deleted") != null) {
-            UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-            CanUModel uUser = canURepo.findByEmail(user.getUsername());
+            CanUModel uUser;
+            if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof  UserDetails){
+                UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+                uUser = canURepo.findByEmail(user.getUsername());
+            } else {
+                uUser = canURepo.findByEmail("admin@gmail.com");
+            }
+
             String[] deletedData = request.getParameterMap().get("deleted")[0].split(",");
             List<Long> ids = new ArrayList<>();
             for (String id : deletedData) {
@@ -155,8 +160,13 @@ public class CanUService {
 
     public ResponseEntity uploadFile(MultiValueMap<String, MultipartFile> fileMap) throws IOException {
         Map<String, Object> response = new HashMap<>();
-        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        CanUModel uUser;
+        if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof  UserDetails){
+            UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            uUser = canURepo.findByEmail(user.getUsername());
+        } else {
+            uUser = canURepo.findByEmail("admin@gmail.com");
+        }
         for (Map.Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
             String parentFolder = entry.getKey();
             List<MultipartFile> multipartFiles = entry.getValue();
@@ -164,7 +174,7 @@ public class CanUService {
             response.put(parentFolder, cerModel);
             if ("canu_avatar".equalsIgnoreCase(parentFolder)) {
                 uUser.setAvatar(cerModel.get(0).getUrl());
-            } else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.getCanIModel() != null){
+            } else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.getCanIModel() != null) {
                 uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
             }
 
@@ -277,7 +287,8 @@ public class CanUService {
                                       Optional.ofNullable(currUser.getFirstName()).orElse("") +
                                       Optional.ofNullable(currUser.getLastName()).orElse(""));
     }
-    public void resetPassword(ResetPassWordRequest request){
+
+    public void resetPassword(ResetPassWordRequest request) {
         CanUModel currUser = canURepo.findByToken(request.getToken())
                                      .orElseThrow(() -> new GlobalValidationException("Token invalid"));
 

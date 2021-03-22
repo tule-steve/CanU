@@ -15,7 +15,7 @@ public interface CanURepository extends JpaRepository<CanUModel, Long> {
 
     CanUModel findByEmail(String email);
 
-    @Query(name = "CanUModel.getMembership", countQuery = "select count(a.id) from `user` a",/*, countProjection = "u.id"*/nativeQuery = true)
+    @Query(name = "CanUModel.getMembership", nativeQuery = true)
     Page<Member> getMembership(Pageable pageable);
 
     Optional<CanUModel> findByToken(String token);

@@ -2,9 +2,7 @@ package com.canu;
 
 import com.canu.dto.MessageBean;
 import com.sun.tools.javac.util.List;
-import org.junit.Test;
 import org.junit.jupiter.api.BeforeEach;
-import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.web.server.LocalServerPort;
 import org.springframework.messaging.converter.MappingJackson2MessageConverter;
 import org.springframework.messaging.simp.stomp.StompFrameHandler;
@@ -62,10 +60,9 @@ public class GreetingControllerTest {
             }
         });
         MessageBean message = new MessageBean();
-        message.setName("test");
         message.setMessage("Hello, Mike!");
-        message.setFromUser(12L);
-        message.setToUser(13L);
+        message.setFromUser(36L);
+        message.setToUser(12L);
         session.send("/api/send-message", message);
 
         String test = blockingQueue.poll(1, TimeUnit.SECONDS).getMessage();
@@ -73,6 +70,6 @@ public class GreetingControllerTest {
     }
 
     private String getWsPath() {
-        return String.format("wss://localhost:9129/api/ws", port);
+        return String.format("wss://canui.tech/api/ws", port);
     }
 }
