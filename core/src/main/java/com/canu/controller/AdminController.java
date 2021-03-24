@@ -18,6 +18,6 @@ public class AdminController {
 
     @GetMapping(value = "/member")
     public Object getDetail(Pageable p) {
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getMembers(p)));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getMembers(p, null)));
     }
 }

@@ -28,7 +28,4 @@ public class TagModel {
     @JsonIgnore
     @ManyToMany(mappedBy = "tags", cascade = CascadeType.PERSIST)
     private Set<JobModel> jobs = new HashSet<>();
-
-    @Transient
-    private Set<Long> service;
 }

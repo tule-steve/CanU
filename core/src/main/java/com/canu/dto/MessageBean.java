@@ -14,6 +14,16 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Table(name = "chat_message")
 public class MessageBean {
 
+    public void updateConversationId(){
+        if (conservationId == null) {
+            if (toUser > fromUser) {
+                conservationId = fromUser + "-" + toUser;
+            } else{
+                conservationId = toUser + "-" + fromUser;
+            }
+        }
+    }
+
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
@@ -33,5 +43,8 @@ public class MessageBean {
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;
+
+    @Column(name = "conservation_id")
+    private String conservationId;
 
 }

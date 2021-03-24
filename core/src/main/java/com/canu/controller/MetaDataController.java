@@ -2,25 +2,13 @@ package com.canu.controller;
 
 import com.canu.model.MetadataPropertyModel;
 import com.canu.model.SkillSetModel;
-import com.canu.repositories.CityRepository;
-import com.canu.repositories.CountryRepository;
-import com.canu.repositories.PropertyRepository;
-import com.canu.repositories.SkillSetRepository;
+import com.canu.repositories.*;
 import com.canu.specifications.SkillSetFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
-import org.apache.tomcat.util.http.fileupload.FileUtils;
-import org.apache.tomcat.util.http.fileupload.IOUtils;
-import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.servlet.function.EntityResponse;
 
-import javax.servlet.http.HttpServletResponse;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 
 @RestController
@@ -35,6 +23,8 @@ public class MetaDataController {
     private final CityRepository cityRepo;
 
     private final CountryRepository countryRepo;
+
+    final private TagRepository tagRepo;
 
     @GetMapping(value = "/services")
     public Object getServices(SkillSetFilter filter) {
@@ -76,4 +66,10 @@ public class MetaDataController {
     public Object getCity(@RequestParam("country") String country){
         return ResponseEntity.ok(CommonResponse.buildOkData("OK",cityRepo.findByCountryId(country)));
     }
+
+    @GetMapping(value = "/get-keyword")
+    public Object getKeyword(){
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK",tagRepo.findAll()));
+    }
+
 }

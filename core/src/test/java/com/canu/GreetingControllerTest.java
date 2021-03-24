@@ -46,7 +46,7 @@ public class GreetingControllerTest {
                 .connect(getWsPath(), new StompSessionHandlerAdapter() {})
                 .get(1, TimeUnit.SECONDS);
 
-        session.subscribe("/api/topic/user/12", new StompFrameHandler() {
+        session.subscribe("/api/topic/user/15", new StompFrameHandler() {
 
             @Override
             public Type getPayloadType(StompHeaders headers) {
@@ -60,9 +60,9 @@ public class GreetingControllerTest {
             }
         });
         MessageBean message = new MessageBean();
-        message.setMessage("Hello, Mike!");
+        message.setMessage("Hello, Mike!123");
         message.setFromUser(36L);
-        message.setToUser(12L);
+        message.setToUser(15L);
         session.send("/api/send-message", message);
 
         String test = blockingQueue.poll(1, TimeUnit.SECONDS).getMessage();
@@ -70,6 +70,6 @@ public class GreetingControllerTest {
     }
 
     private String getWsPath() {
-        return String.format("wss://canui.tech/api/ws", port);
+        return String.format("wss://localhost:9129/api/ws", port);
     }
 }

@@ -12,6 +12,7 @@ import java.util.List;
 @Data
 public class JobFilter implements Specification<JobModel> {
     private List<Long> services = Collections.emptyList();
+    private List<String> keywords = Collections.emptyList();
     String nation;
     String city;
     Long owner;
@@ -22,12 +23,20 @@ public class JobFilter implements Specification<JobModel> {
 
     @Override
     public Predicate toPredicate(Root<JobModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (services.size() > 0) {
             Join skillSetJoin = root.join("skillSets");
             Expression<String> skillSetsExp = skillSetJoin.get("id");
             Predicate skillSetsPredicate = skillSetsExp.in(services);
             predicates.add(skillSetsPredicate);
+        }
+
+        if (keywords.size() > 0) {
+            Join tagJoin = root.join("tags");
+            Expression<String> tagExp = tagJoin.get("tag");
+            Predicate tagPredicate = tagExp.in(keywords);
+            predicates.add(tagPredicate);
         }
 
         if(nation != null){

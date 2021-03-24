@@ -25,13 +25,18 @@ public class AdminService {
 
     final private EntityManager em;
 
-    public Page<Member> getMembers(Pageable p){
+    public Page<Member> getMembers(Pageable p, Long userId){
 //        p.getSort()
 //        p.getPageNumber()
         StringBuilder sb = new StringBuilder();
         sb.append("select u.id as userId, u.first_name as firstName, u.last_name as lastName, u.email as email, u.created_at as createdAt, ");
         sb.append("   0 as createdJob, 0 as finishedJob, 0 as processingJob, u.cani_id as caniId ");
         sb.append(" from user u ");
+
+        if(userId != null){
+            sb.append(" where u.id = " + userId);
+        }
+
         if(p.getSort() != Sort.unsorted()){
             sb.append(" order by ");
             StringJoiner joiner = new StringJoiner(", ");

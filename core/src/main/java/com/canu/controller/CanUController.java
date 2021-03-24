@@ -6,6 +6,7 @@ import com.canu.dto.requests.ResetPassWordRequest;
 import com.canu.dto.responses.JobDto;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
+import com.canu.services.AdminService;
 import com.canu.services.CanUService;
 import com.canu.services.ChatService;
 import com.canu.services.JobService;
@@ -31,6 +32,8 @@ public class CanUController {
     final private JobService jobSvc;
 
     final ChatService chatSvc;
+
+    final private AdminService adminSvc;
 
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
@@ -111,8 +114,15 @@ public class CanUController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", chatSvc.getChatHistory(partnerId, p)));
     }
 
-//    @GetMapping(value = "/participant-list")
-//    public ResponseEntity getChatParticipant() {
-//        chatSvc.
-//    }
+    @GetMapping(value = "/view-profile/{userId}")
+    public ResponseEntity viewProfile(@PathVariable Long userId, Pageable p) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getMembers(p, userId)));
+    }
+
+    @GetMapping(value = "/participant-list")
+    public ResponseEntity getChatParticipant(Pageable p) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", chatSvc.getParticipant()));
+    }
 }

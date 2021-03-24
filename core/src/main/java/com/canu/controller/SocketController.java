@@ -24,6 +24,7 @@ public class SocketController {
     @MessageMapping("/send-message")
     public void send(@Validated @Payload MessageBean message) {
         logger.error("receive message", message);
+        message.updateConversationId();
         message = chatSvc.saveMessage(message);
         simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getToUser(), message);
     }
