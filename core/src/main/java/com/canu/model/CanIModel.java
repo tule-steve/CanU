@@ -80,6 +80,9 @@ public class CanIModel {
     @Column(name = "avatar")
     String avatar;
 
+    @Column(name = "title")
+    String title;
+
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;

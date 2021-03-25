@@ -1,5 +1,6 @@
 package com.canu.security.config;
 
+import com.canu.security.out.SocialLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.security.oauth2.resource.UserInfoTokenServices;
@@ -41,6 +42,9 @@ public class OAuth2ResourceServer extends WebSecurityConfigurerAdapter {
 
     @Autowired
     private OAuth2ClientContext oauth2ClientContext;
+
+    @Autowired
+    private SocialLogin socialLogin;
 
 
     @Override
@@ -124,7 +128,7 @@ public class OAuth2ResourceServer extends WebSecurityConfigurerAdapter {
     }
 
     private OAuth2ClientAuthenticationProcessingFilter createSsoFilter(String filterUrl, OAuth2ProtectedResourceDetails oAuthResourceDetails, String resourceServerProperties) {
-        OAuth2ClientAuthenticationProcessingFilter oAuthFilter = new ExtOAuth2ClientAuthenticationProcessingFilter(filterUrl);
+        OAuth2ClientAuthenticationProcessingFilter oAuthFilter = new ExtOAuth2ClientAuthenticationProcessingFilter(filterUrl, socialLogin);
         OAuth2RestTemplate oAuthTemplate = new OAuth2RestTemplate(oAuthResourceDetails, oauth2ClientContext);
         oAuthFilter.setRestTemplate(oAuthTemplate);
         UserInfoTokenServices tokenServices = new UserInfoTokenServices(resourceServerProperties, oAuthResourceDetails.getClientId());

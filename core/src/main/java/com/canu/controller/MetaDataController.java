@@ -3,9 +3,12 @@ package com.canu.controller;
 import com.canu.model.MetadataPropertyModel;
 import com.canu.model.SkillSetModel;
 import com.canu.repositories.*;
+import com.canu.services.CanIService;
+import com.canu.specifications.CanIFilter;
 import com.canu.specifications.SkillSetFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -25,6 +28,8 @@ public class MetaDataController {
     private final CountryRepository countryRepo;
 
     final private TagRepository tagRepo;
+
+    final private CanIService canIService;
 
     @GetMapping(value = "/services")
     public Object getServices(SkillSetFilter filter) {
@@ -70,6 +75,11 @@ public class MetaDataController {
     @GetMapping(value = "/get-keyword")
     public Object getKeyword(){
         return ResponseEntity.ok(CommonResponse.buildOkData("OK",tagRepo.findAll()));
+    }
+
+    @GetMapping(value = "/detail-list")
+    public ResponseEntity getDetail(CanIFilter filter, Pageable p) {
+        return canIService.GetCaniList(filter, p);
     }
 
 }

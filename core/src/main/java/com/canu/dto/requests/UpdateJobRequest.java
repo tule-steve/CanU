@@ -4,6 +4,9 @@ import com.canu.model.JobModel;
 import lombok.Value;
 import org.springframework.util.StringUtils;
 
+import java.util.Collections;
+import java.util.Set;
+
 @Value
 public class UpdateJobRequest {
 
@@ -22,6 +25,8 @@ public class UpdateJobRequest {
     String currency;
 
     String title;
+
+    Set<String> keyword = Collections.emptySet();
 
 //    Long requestedId;
 

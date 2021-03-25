@@ -8,9 +8,12 @@ import com.canu.model.SkillSetModel;
 import com.canu.repositories.CanIRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.SkillSetRepository;
+import com.canu.specifications.CanIFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.Hibernate;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -25,7 +28,7 @@ import java.util.stream.Collectors;
 @RequiredArgsConstructor
 public class CanIService {
 
-    final private CanIRepository caIRepo;
+    final private CanIRepository caniRepo;
 
     final private SkillSetRepository skillSetRepo;
 
@@ -51,7 +54,7 @@ public class CanIService {
         request.setCanUModel(currentCanU);
         request.setEmail(email);
 
-        CanIModel response = caIRepo.save(request);
+        CanIModel response = caniRepo.save(request);
         updateCanIResponse(response, currentCanU);
         return ResponseEntity.ok(CommonResponse.buildOkData("Create CanI user", response));
     }
@@ -74,5 +77,13 @@ public class CanIService {
         cani.setEmail(canu.getEmail());
         cani.setService(cani.getSkillSets().stream().map(r -> r.getId()).collect(Collectors.toSet()));
         cani.setFiles(data);
+    }
+
+    public ResponseEntity GetCaniList(CanIFilter filter, Pageable p){
+        Page<CanIModel> canIModels = caniRepo.findAll(filter, p);
+        for(CanIModel cani : canIModels){
+            updateCanIResponse(cani, cani.getCanUModel());
+        }
+        return ResponseEntity.ok(CommonResponse.buildOkData("CanI Lis", canIModels));
     }
 }

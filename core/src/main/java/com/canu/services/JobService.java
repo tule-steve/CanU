@@ -26,6 +26,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -61,27 +62,31 @@ public class JobService {
             throw new GlobalValidationException("Some chosen services not existed");
         }
         request.setSkillSets(skillSets);
+        addKeywordsIntoJob(request.getKeyword(), request);
 
-        List<TagModel> tagEntities = tagRepo.findAllByTagIn(request.getKeyword());
-        request.getTags().addAll(tagEntities);
-        if (!Objects.equals(tagEntities.size(), request.getKeyword().size())) {
+        return jobRepo.save(request);
+    }
+
+    private void addKeywordsIntoJob(Set<String> keywords, JobModel job){
+        List<TagModel> tagEntities = tagRepo.findAllByTagIn(keywords);
+        job.setTags(tagEntities);
+        if (!Objects.equals(tagEntities.size(), keywords.size())) {
             TagModel newTag;
-            for (String keywork : request.getKeyword()) {
+            for (String keyword : keywords) {
                 boolean isNeedAdd = true;
                 for (TagModel tagEntity : tagEntities) {
-                    if (tagEntity.getTag().equalsIgnoreCase(keywork)) {
+                    if (tagEntity.getTag().trim().equalsIgnoreCase(keyword)) {
                         isNeedAdd = false;
                     }
                 }
 
                 if (isNeedAdd) {
                     newTag = new TagModel();
-                    newTag.setTag(keywork);
-                    request.getTags().add(newTag);
+                    newTag.setTag(keyword.trim());
+                    job.getTags().add(newTag);
                 }
             }
         }
-        return jobRepo.save(request);
     }
 
     public JobDto getJobDetail(Long id) {
@@ -130,6 +135,9 @@ public class JobService {
         uUser.validatePrivilege(job.getCreationUser());
 
         request.updateJobEntity(job);
+        if(request.getKeyword().size() > 0){
+            addKeywordsIntoJob(request.getKeyword(), job);
+        }
         jobRepo.save(job);
     }
 

@@ -1,27 +1,44 @@
 package com.canu.specifications;
 
 import com.canu.model.CanIModel;
-import com.canu.model.SkillSetModel;
 import lombok.Data;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 @Data
 public class CanIFilter implements Specification<CanIModel> {
-    private String slug;
+    private List<Long> services = Collections.emptyList();
 
+    String nation;
+
+    List<String> city = Collections.emptyList();
+
+    List<String> serviceType = Collections.emptyList();
 
     @Override
     public Predicate toPredicate(Root<CanIModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
         List<Predicate> predicates = new ArrayList<>();
-        if (slug != null) {
-            predicates.add(builder.equal(root.get("slug"), slug));
+        if (services.size() > 0) {
+            Join skillSetJoin = root.join("skillSets");
+            Expression<String> skillSetsExp = skillSetJoin.get("id");
+            Predicate skillSetsPredicate = skillSetsExp.in(services);
+            predicates.add(skillSetsPredicate);
+        }
+
+        if(nation != null){
+            predicates.add(builder.equal(root.get("national"), nation));
+        }
+
+        if(city.size() > 0){
+            predicates.add(builder.in(root.get("area")).value(city));
+        }
+
+        if(serviceType.size() > 0){
+            predicates.add(builder.in(root.get("serviceType").in(serviceType)));
         }
         return builder.and(predicates.toArray(new Predicate[0]));
     }

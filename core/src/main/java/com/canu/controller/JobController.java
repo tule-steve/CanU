@@ -39,7 +39,7 @@ public class JobController {
     }
 
     @PostMapping(value = "/update-job")
-    public Object cancelJob(@RequestBody UpdateJobRequest request) {
+    public Object updateJob(@RequestBody UpdateJobRequest request) {
         jobSvc.updateJob(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("updated job"));
     }

@@ -1,13 +1,11 @@
 package com.canu.controller;
 
-import com.canu.dto.User;
 import com.canu.dto.requests.LoginRequest;
 import com.canu.dto.responses.Token;
 import com.canu.security.config.TokenProvider;
 import com.canu.services.SocialAuthService;
 import com.common.dtos.CommonResponse;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,13 +13,9 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.context.request.RequestContextHolder;
-import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpSession;
 import javax.validation.Valid;
-import java.security.Principal;
 
 @RestController
 public class HomeController {
@@ -39,23 +33,23 @@ public class HomeController {
     @Autowired
     private AuthenticationManager authenticationManager;
     
-    @GetMapping(value = "/api/home")
-    public Object home() {
-        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
-        HttpSession session = attr.getRequest().getSession(false);
-        Principal principal;
-        if (session != null) {
-            principal = (Principal)session.getAttribute("Principal");
-            session.removeAttribute("Principal");
-        } else {
-            principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        }
-        User user = authService.extractUserFromAuthInfo(principal);
-        String token = tokenProvider.createToken(user.getEmail());
-        HttpHeaders headers = new HttpHeaders();
-        headers.add("Location", "/member/uploadImage");
-        return ResponseEntity.ok(new Token(token, 86400L));
-    }
+//    @GetMapping(value = "/api/home")
+//    public Object home() {
+//        ServletRequestAttributes attr = (ServletRequestAttributes) RequestContextHolder.currentRequestAttributes();
+//        HttpSession session = attr.getRequest().getSession(false);
+//        Principal principal;
+//        if (session != null) {
+//            principal = (Principal)session.getAttribute("Principal");
+//            session.removeAttribute("Principal");
+//        } else {
+//            principal = (Principal) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        }
+//        UserDto user = authService.extractUserFromAuthInfo(principal);
+//        String token = tokenProvider.createToken(user.getEmail());
+//        HttpHeaders headers = new HttpHeaders();
+//        headers.add("Location", "/member/uploadImage");
+//        return ResponseEntity.ok(new Token(token, 86400L));
+//    }
 
     @PostMapping("/api/login")
     public ResponseEntity<?> authenticateUser(@Valid @RequestBody LoginRequest loginRequest) {
