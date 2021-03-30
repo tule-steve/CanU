@@ -20,6 +20,7 @@ public interface CanURepository extends JpaRepository<CanUModel, Long> {
 
     Optional<CanUModel> findByToken(String token);
 
+
     //    @Query(nativeQuery = true)
     //    List<Member> getMembership(Sort sort);
 }

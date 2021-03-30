@@ -4,6 +4,7 @@ import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.requests.ResetPassWordRequest;
 import com.canu.dto.responses.JobDto;
+import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
 import com.canu.services.AdminService;
@@ -12,6 +13,7 @@ import com.canu.services.ChatService;
 import com.canu.services.JobService;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -116,13 +118,25 @@ public class CanUController {
 
     @GetMapping(value = "/view-profile/{userId}")
     public ResponseEntity viewProfile(@PathVariable Long userId, Pageable p) {
-
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getMembers(p, userId)));
+        Page<Member> result = adminSvc.getMembers(p, userId);
+        canUService.updateFavoriteFlag(result);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", result));
     }
 
     @GetMapping(value = "/participant-list")
     public ResponseEntity getChatParticipant(Pageable p) {
 
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", chatSvc.getParticipant()));
+    }
+
+    @GetMapping(value = "/add-favorite/{canIUserId}")
+    public ResponseEntity viewProfile(@PathVariable Long canIUserId) {
+        return canUService.addFavoriteCani(canIUserId);
+
+    }
+
+    @GetMapping(value = "/get-favorite")
+    public ResponseEntity getFavorite() {
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getFavoriteList()));
     }
 }

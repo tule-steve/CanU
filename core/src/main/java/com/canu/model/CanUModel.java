@@ -27,9 +27,6 @@ import static javax.persistence.GenerationType.IDENTITY;
                                         @ColumnResult(name = "lastName"),
                                         @ColumnResult(name = "email"),
                                         @ColumnResult(name = "createdAt", type = LocalDateTime.class),
-                                        @ColumnResult(name = "createdJob", type = Integer.class),
-                                        @ColumnResult(name = "finishedJob", type = Integer.class),
-                                        @ColumnResult(name = "processingJob", type = Integer.class),
                                         @ColumnResult(name = "caniId", type = Long.class)
                                 }
                         )
@@ -41,7 +38,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @NamedNativeQueries({
         @NamedNativeQuery(name = "CanUModel.getMembership", query =
                 "select u.id as userId, u.first_name as name, u.email as email, u.created_at as createdAt, " +
-                "   0 as createdJob, 0 as finishedJob, 0 as processingJob, u.cani_id as caniId" +
+                "  u.cani_id as caniId" +
                 " from user u ",
                 resultSetMapping = "MemberMapping"),
 
@@ -144,6 +141,15 @@ public class CanUModel {
     }
 
 
+    @JsonIgnore
+    @ManyToMany(cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    @JoinTable(name = "canu_cani_favorite",
+            joinColumns = @JoinColumn(name = "user_id"),
+            inverseJoinColumns = @JoinColumn(name = "cani_user_id")
+    )
+    Set<CanIModel> favoriteCanIs = new HashSet<>();
+
+
     public Long getCaniId(){
         if(canIModel == null){
             return null;
@@ -156,4 +162,31 @@ public class CanUModel {
             throw new GlobalValidationException("do not have privilege to do");
         }
     }
+
+//    public BigDecimal getRating(){
+//        List<JobModel> job = getPickedJob();
+//        Map<String , Integer> jobStatus = new HashMap<>();
+//        Map<JobModel.JobStatus, List<JobModel>> dividedJob = job.stream().collect(Collectors.groupingBy(JobModel::getStatus));
+//        jobStatus.put("Total", job.size());
+//        dividedJob.forEach((k, v) -> jobStatus.put(k.toString(), v.size()));
+//        List<JobModel> completedJob = dividedJob.get(JobModel.JobStatus.COMPLETED);
+//        if(completedJob != null){
+//            int totalPoint = completedJob.stream().mapToInt(JobModel::getRating).sum();
+//            return BigDecimal.valueOf(totalPoint).divide(BigDecimal.valueOf(Long.valueOf(completedJob.size())));
+//        }
+//    }
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CanUModel)) return false;
+        return id != null && id.equals(((CanUModel) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
+
+
 }

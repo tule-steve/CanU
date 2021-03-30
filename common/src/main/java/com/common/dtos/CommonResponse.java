@@ -28,4 +28,8 @@ public class CommonResponse {
     public static CommonResponse buildBadRequestData(String message){
         return builder().status(HttpStatus.BAD_REQUEST.getReasonPhrase()).message(message).build();
     }
+
+    public static CommonResponse buildInternalErrorRequestData(String message){
+        return builder().status(HttpStatus.INTERNAL_SERVER_ERROR.getReasonPhrase()).message(message).build();
+    }
 }

@@ -27,12 +27,11 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     @ExceptionHandler(Exception.class)
     public final ResponseEntity<Object> handleAllExceptions(Exception ex) {
         logger.error("error: ", ex);
-        return new ResponseEntity(errorMessage, HttpStatus.INTERNAL_SERVER_ERROR);
+        return new ResponseEntity(CommonResponse.buildInternalErrorRequestData(ex.getMessage()), HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
     @ExceptionHandler(BadCredentialsException.class)
     public final ResponseEntity<Object> handleBadCredential(BadCredentialsException ex) {
-        GlobalValidationException exception = new GlobalValidationException(ex.getMessage());
         logger.error("error: ", ex);
         return new ResponseEntity(CommonResponse.buildBadRequestData(ex.getMessage()), HttpStatus.BAD_REQUEST);
     }

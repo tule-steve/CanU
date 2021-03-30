@@ -40,6 +40,9 @@ public class MessageBean {
     @Column(name = "to_user")
     private Long toUser;
 
+    @Column(name = "is_uploaded_file")
+    private Boolean isUploadedFile = false;
+
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;

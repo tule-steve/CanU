@@ -19,9 +19,13 @@ public class Member {
     final String email;
     final LocalDateTime createdAt;
 
-    final Integer createdJob;
-    final Integer finishedJob;
-    final Integer processingJob;
+    Integer createdJob;
+    long canceledJob;
+    Integer finishedJob;
+    Integer processingJob;
+
+    Boolean isFavorite = null;
+    int favoriteCount = 0;
     @JsonIgnore
     final Long caniId;
 

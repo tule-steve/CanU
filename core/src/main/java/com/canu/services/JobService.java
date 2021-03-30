@@ -1,5 +1,6 @@
 package com.canu.services;
 
+import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.requests.UpdateJobRequest;
 import com.canu.dto.responses.JobDto;
 import com.canu.exception.GlobalValidationException;
@@ -67,7 +68,7 @@ public class JobService {
         return jobRepo.save(request);
     }
 
-    private void addKeywordsIntoJob(Set<String> keywords, JobModel job){
+    private void addKeywordsIntoJob(Set<String> keywords, JobModel job) {
         List<TagModel> tagEntities = tagRepo.findAllByTagIn(keywords);
         job.setTags(tagEntities);
         if (!Objects.equals(tagEntities.size(), keywords.size())) {
@@ -127,7 +128,7 @@ public class JobService {
         jobRepo.delete(job);
     }
 
-    public void updateJob(UpdateJobRequest request){
+    public void updateJob(UpdateJobRequest request) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(request.getId())
@@ -135,10 +136,28 @@ public class JobService {
         uUser.validatePrivilege(job.getCreationUser());
 
         request.updateJobEntity(job);
-        if(request.getKeyword().size() > 0){
+        if (request.getKeyword().size() > 0) {
             addKeywordsIntoJob(request.getKeyword(), job);
         }
         jobRepo.save(job);
+    }
+
+    public void startJob(UpdateJobStatusRequest request) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        JobModel job = jobRepo.findById(request.getJobId())
+                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+        CanUModel requestedUser = canURepo.findById(request.getRequestedUserId())
+                                          .orElseThrow(() -> new GlobalValidationException(
+                                                  "Cannot file the user for requested user id"));
+        uUser.validatePrivilege(job.getCreationUser());
+        job.setRequestedUser(requestedUser);
+        job.setTotal(request.getPrice());
+        jobRepo.save(job);
+    }
+
+    public void completeJob(UpdateJobStatusRequest request) {
+
     }
 
 }

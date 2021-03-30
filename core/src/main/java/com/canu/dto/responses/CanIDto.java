@@ -3,6 +3,8 @@ package com.canu.dto.responses;
 import lombok.Builder;
 import lombok.Value;
 
+import java.math.BigDecimal;
+
 @Value
 @Builder
 public class CanIDto {
@@ -18,4 +20,6 @@ public class CanIDto {
     String nation;
 
     String address;
+
+    BigDecimal rating;
 }

@@ -67,6 +67,9 @@ public class JobModel {
     @Column(name = "image")
     String image;
 
+    @Column(name = "rating")
+    Integer rating;
+
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
     @JoinTable(name = "job_skillset",

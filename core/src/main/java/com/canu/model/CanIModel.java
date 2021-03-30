@@ -6,6 +6,7 @@ import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -57,7 +58,7 @@ public class CanIModel {
     String bankBranch;
 
     @Column(name = "bank_number")
-    String accountNumber;
+    Long accountNumber;
 
     @Column(name = "bank_owner")
     String accountName;
@@ -82,6 +83,9 @@ public class CanIModel {
 
     @Column(name = "title")
     String title;
+
+    @Column(name = "rating")
+    BigDecimal rating;
 
     @Column(name = "created_at")
     @CreationTimestamp
@@ -117,4 +121,23 @@ public class CanIModel {
 
     @Transient
     private Map<String, List<FileModel>> files;
+
+    @Transient
+    private Map<String, Integer> jobStatus;
+
+    @JsonIgnore
+    @ManyToMany(mappedBy = "favoriteCanIs")
+    private Set<CanUModel> favoriteCanU = new HashSet<>();
+
+    @Override
+    public boolean equals(Object o) {
+        if (this == o) return true;
+        if (!(o instanceof CanIModel)) return false;
+        return id != null && id.equals(((CanIModel) o).getId());
+    }
+
+    @Override
+    public int hashCode() {
+        return getClass().hashCode();
+    }
 }

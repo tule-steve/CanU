@@ -19,6 +19,8 @@ public class CanIFilter implements Specification<CanIModel> {
 
     List<String> serviceType = Collections.emptyList();
 
+    String key;
+
     @Override
     public Predicate toPredicate(Root<CanIModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
         List<Predicate> predicates = new ArrayList<>();
@@ -29,17 +31,23 @@ public class CanIFilter implements Specification<CanIModel> {
             predicates.add(skillSetsPredicate);
         }
 
-        if(nation != null){
+        if (nation != null) {
             predicates.add(builder.equal(root.get("national"), nation));
         }
 
-        if(city.size() > 0){
+        if (city.size() > 0) {
             predicates.add(builder.in(root.get("area")).value(city));
         }
 
-        if(serviceType.size() > 0){
-            predicates.add(builder.in(root.get("serviceType").in(serviceType)));
+        if (serviceType.size() > 0) {
+            predicates.add(builder.in(root.get("serviceType")).value(serviceType));
         }
+
+        if (key != null) {
+            predicates.add(builder.or(builder.like(root.get("title"), "%" + key + "%"),
+                                      builder.like(root.get("description"), "%" + key + "%")));
+        }
+
         return builder.and(predicates.toArray(new Predicate[0]));
     }
 }

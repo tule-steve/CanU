@@ -3,11 +3,13 @@ package com.canu.services;
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.requests.ResetPassWordRequest;
+import com.canu.dto.responses.Member;
 import com.canu.dto.responses.Token;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanUModel;
 import com.canu.model.FileModel;
-import com.canu.repositories.*;
+import com.canu.repositories.CanURepository;
+import com.canu.repositories.FileRepository;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
 import com.common.mail.MailService;
@@ -51,6 +53,8 @@ public class CanUService {
     final private FileRepository fileRepo;
 
     private static final Logger logger = LoggerFactory.getLogger(CanUService.class);
+
+    final private CanIService canIService;
 
     final private EntityManager em;
 
@@ -140,7 +144,7 @@ public class CanUService {
     public ResponseEntity updateFileData(StandardMultipartHttpServletRequest request) throws IOException {
         if (request.getParameterMap().get("deleted") != null) {
             CanUModel uUser;
-            if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof  UserDetails){
+            if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserDetails) {
                 UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
                 uUser = canURepo.findByEmail(user.getUsername());
             } else {
@@ -161,7 +165,7 @@ public class CanUService {
     public ResponseEntity uploadFile(MultiValueMap<String, MultipartFile> fileMap) throws IOException {
         Map<String, Object> response = new HashMap<>();
         CanUModel uUser;
-        if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof  UserDetails){
+        if (SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserDetails) {
             UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
             uUser = canURepo.findByEmail(user.getUsername());
         } else {
@@ -295,5 +299,55 @@ public class CanUService {
         String cryptNewPass = encoder.encode(request.getNewPassword());
         currUser.setPassword(cryptNewPass);
         currUser.setToken(null);
+    }
+
+    public ResponseEntity addFavoriteCani(Long userId) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+
+        if (userId.equals(uUser.getId())) {
+            throw new GlobalValidationException("cannot link to myself");
+        }
+
+        CanUModel canIUser = canURepo.findById(userId)
+                                     .orElseThrow(() -> new GlobalValidationException("Cannot find the user"));
+
+        if (canIUser.getCanIModel() == null) {
+            throw new GlobalValidationException("User is not CanI");
+        }
+
+        Map<String, Boolean> data = new HashMap<>();
+        data.put("isFavorite", true);
+
+        if (uUser.getFavoriteCanIs().contains(canIUser.getCanIModel())) {
+            uUser.getFavoriteCanIs().remove(canIUser.getCanIModel());
+            canURepo.save(uUser);
+            data.put("isFavorite", false);
+            return ResponseEntity.ok(CommonResponse.buildOkData("Removed", data));
+        } else {
+            uUser.getFavoriteCanIs().add(canIUser.getCanIModel());
+            canURepo.save(uUser);
+
+        }
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("Added", data));
+    }
+
+    public Object getFavoriteList() {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        canIService.decorateCanI(uUser.getFavoriteCanIs());
+        em.detach(uUser);
+        return uUser.getFavoriteCanIs();
+    }
+
+    public void updateFavoriteFlag(Iterable<Member> members) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        for (Member member : members) {
+            if (uUser.getFavoriteCanIs().contains(member.getCani())) {
+                member.setIsFavorite(true);
+            }
+        }
     }
 }

@@ -1,5 +1,6 @@
 package com.canu.controller;
 
+import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.requests.UpdateJobRequest;
 import com.canu.repositories.CanURepository;
 import com.canu.services.JobService;
@@ -41,6 +42,12 @@ public class JobController {
     @PostMapping(value = "/update-job")
     public Object updateJob(@RequestBody UpdateJobRequest request) {
         jobSvc.updateJob(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("updated job"));
+    }
+
+    @PostMapping(value = "/start-job")
+    public Object startJob(@RequestBody UpdateJobStatusRequest request) {
+        jobSvc.startJob(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("updated job"));
     }
 
