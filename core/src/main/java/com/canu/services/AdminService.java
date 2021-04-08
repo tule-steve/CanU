@@ -3,9 +3,13 @@ package com.canu.services;
 import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
+import com.canu.model.TemplateModel;
 import com.canu.repositories.CanIRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.JobRepository;
+import com.canu.repositories.TemplateRepository;
+import freemarker.cache.StringTemplateLoader;
+import freemarker.template.Configuration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -35,6 +39,10 @@ public class AdminService {
     final private EntityManager em;
 
     final private JobRepository jobRepo;
+
+    final Configuration config;
+
+    final TemplateRepository templateRepo;
 
     public Page<Member> getMembers(Pageable p, Long userId) {
         //        p.getSort()
@@ -75,7 +83,8 @@ public class AdminService {
     }
 
     private void updateJobInformation(CanUModel canUModel, Member member) {
-        List<JobModel> jobs = jobRepo.findJobForCreationUser(canUModel.getId());
+//        List<JobModel> jobs = jobRepo.findJobForCreationUser(canUModel.getId());
+        List<JobModel> jobs = canUModel.getCreatedJob();
         member.setCreatedJob(jobs.size());
         member.setCanceledJob(jobs
                                       .stream()
@@ -92,6 +101,11 @@ public class AdminService {
 
         member.setProcessingJob(processingJob != null ? processingJob.size() : 0);
         member.setFinishedJob(completedJob != null ? completedJob.size() : 0);
+    }
+
+    public void setupTemplate(TemplateModel template){
+        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toString(), template.getTemplate());
+        templateRepo.save(template);
     }
 
 }

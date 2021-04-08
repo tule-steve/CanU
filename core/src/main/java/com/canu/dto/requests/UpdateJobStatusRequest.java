@@ -7,6 +7,9 @@ import javax.validation.constraints.NotNull;
 @Data
 public class UpdateJobStatusRequest {
 
+    @NotNull(message = "owner user Id is required")
+    Long owner;
+
     @NotNull(message = "Requested User Id is required")
     Long requestedUserId;
 
@@ -15,4 +18,7 @@ public class UpdateJobStatusRequest {
 
     @NotNull(message = "price is required")
     Long price;
+
+    @NotNull(message = "price is required")
+    String currency;
 }

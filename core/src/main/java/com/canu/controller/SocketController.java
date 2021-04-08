@@ -2,6 +2,8 @@ package com.canu.controller;
 
 import com.canu.dto.MessageBean;
 import com.canu.dto.requests.File64Dto;
+import com.canu.model.NotificationModel;
+import com.canu.services.CanUService;
 import com.canu.services.ChatService;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
@@ -29,6 +31,8 @@ public class SocketController {
     final SimpMessagingTemplate simpMessagingTemplate;
 
     final ChatService chatSvc;
+
+    final CanUService canuSvc;
 
     @Value("${app.baseUrl}")
     private String domainLink;
@@ -65,11 +69,20 @@ public class SocketController {
         Files.write(destinationFile, decodeFile, StandardOpenOption.CREATE_NEW);
         messageEntity.setMessage(domainLink + uri.toString());
         messageEntity = chatSvc.saveMessage(messageEntity);
-        logger.error("Starting to send to User");
         simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getToUser(), messageEntity);
-        logger.error("Starting to send from User");
         simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getFromUser(), messageEntity);
-        logger.error("Sending all");
+    }
+
+
+    @MessageMapping("/read-message")
+    public void read(@Validated @Payload MessageBean message) {
+        message.updateConversationId();
+        chatSvc.markReadMessage(message);
+    }
+
+    @MessageMapping("/read-notification")
+    public void readNotification(@Validated @Payload NotificationModel notification) {
+        canuSvc.markNotificationRead(notification);
     }
 
     //    @SubscribeMapping("/api/ws")
@@ -78,4 +91,6 @@ public class SocketController {
     //        welcomeMessage.setMessage("Hello World!");
     //        return welcomeMessage;
     //    }
+
+
 }

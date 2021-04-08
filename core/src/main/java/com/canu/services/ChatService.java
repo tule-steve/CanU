@@ -6,6 +6,8 @@ import com.canu.model.CanUModel;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.MessageRepository;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -21,6 +23,8 @@ import java.util.List;
 @Transactional
 @RequiredArgsConstructor
 public class ChatService {
+
+    private static final Logger logger = LoggerFactory.getLogger(RequiredArgsConstructor.class);
 
     final MessageRepository messRepo;
 
@@ -43,17 +47,21 @@ public class ChatService {
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
         List result = em.createNativeQuery(
-                "select mess.userId," +
-                " u.first_name, u.last_name, u.avatar, mess.message , mess.createdAt" +
-                " from" +
-                "(select case when m.to_user = :userId then m.from_user else m.to_user end as userId, " +
-                "   m.message as message,  m.created_at as createdAt" +
-                " from chat_message m " +
-                " where m.id in " +
-                "(select max(id)  as id from chat_message " +
-                " where from_user = :userId or to_user = :userId" +
-                " group by conservation_id)) as mess" +
-                " inner join user u on u.id = mess.userId")
+                "select case when mess.to_user = :userId then mess.from_user  else mess.to_user end as userId," +
+                "        u.first_name, " +
+                "        u.last_name, " +
+                "        u.avatar, " +
+                "        mess.message, " +
+                "        mess.created_at as createdAt, " +
+                "        aggregate.unreadCount " +
+                "    from chat_message as mess" +
+                "    inner join(" +
+                "                select max(id)  as id,\n" +
+                "                        count(if(is_read, null, 1) ) as unreadCount\n" +
+                "                from chat_message" +
+                "                where from_user = :userId or to_user = :userId" +
+                "                group by conservation_id) as aggregate on mess.id = aggregate.id" +
+                "    inner join user u on u.id = case when mess.to_user = :userId then mess.from_user else mess.to_user end;")
                         .setParameter("userId", uUser.getId()).getResultList();
 
         List<ParticipantDto> responseData = new ArrayList<>();
@@ -62,7 +70,7 @@ public class ChatService {
         String avatar;
         for (Object data : result) {
             Object[] row = (Object[]) data;
-            firstName = row[1] != null ? row[1].toString() + " ": "";
+            firstName = row[1] != null ? row[1].toString() + " " : "";
             lastName = row[2] != null ? row[2].toString() : "";
             avatar = row[3] != null ? row[3].toString() : null;
             responseData.add(ParticipantDto.builder()
@@ -70,12 +78,21 @@ public class ChatService {
                                            .name(firstName + lastName)
                                            .avatar(avatar)
                                            .lastMessage(row[4].toString())
-                                           .createdAt(((Timestamp)row[5]).toLocalDateTime())
+                                           .createdAt(((Timestamp) row[5]).toLocalDateTime())
+                                           .unreadCount(Long.parseLong(row[6].toString()))
                                            .build());
 
         }
 
         return responseData;
+    }
+
+    public void markReadMessage(MessageBean mess) {
+        try {
+            messRepo.markMessAsRead(mess.getFromUser(), mess.getToUser(), mess.getId());
+        } catch (Exception ex) {
+            logger.error("error on update message", ex);
+        }
     }
 
 }

@@ -8,7 +8,9 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 @Repository
 public interface CanURepository extends JpaRepository<CanUModel, Long> {
@@ -19,6 +21,9 @@ public interface CanURepository extends JpaRepository<CanUModel, Long> {
     Page<Member> getMembership(Pageable pageable);
 
     Optional<CanUModel> findByToken(String token);
+
+    @Query(value = "select distinct u from SkillSetModel sk inner join sk.canIs ci inner join ci.canUModel u where sk.id in ?1")
+    List<CanUModel> findCanIByServices(Set<Long> services);
 
 
     //    @Query(nativeQuery = true)

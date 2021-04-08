@@ -4,12 +4,16 @@ import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
 import com.canu.dto.requests.ResetPassWordRequest;
 import com.canu.dto.responses.Member;
+import com.canu.dto.responses.NotificationListResponse;
 import com.canu.dto.responses.Token;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanUModel;
 import com.canu.model.FileModel;
+import com.canu.model.NotificationModel;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.FileRepository;
+import com.canu.repositories.NotificationDetailRepository;
+import com.canu.repositories.NotificationRepository;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
 import com.common.mail.MailService;
@@ -17,6 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -57,6 +62,10 @@ public class CanUService {
     final private CanIService canIService;
 
     final private EntityManager em;
+
+    final private NotificationDetailRepository notiDetailRepo;
+
+    final private NotificationRepository notiRepo;
 
     @Value("${app.baseUrl}")
     private String domainLink;
@@ -349,5 +358,24 @@ public class CanUService {
                 member.setIsFavorite(true);
             }
         }
+    }
+
+    public Object getNotification(Pageable p) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        List<NotificationModel> result = notiRepo.findByOwner(uUser, p);
+        Long unreadCount = notiRepo.countByIsReadFalseAndOwner(uUser);
+        NotificationListResponse response = new NotificationListResponse(result, unreadCount);
+
+        return response;
+    }
+
+    public void markNotificationRead(NotificationModel noti){
+        notiRepo.markReadNotification(noti.getUserId(), noti.getDetailId());
+    }
+
+
+    public Object getNotificationDetail(Long id) {
+        return notiDetailRepo.findById(id).orElseThrow(() -> new GlobalValidationException("Cannot find the notification with id"));
     }
 }

@@ -48,7 +48,7 @@ public class JobController {
     @PostMapping(value = "/start-job")
     public Object startJob(@RequestBody UpdateJobStatusRequest request) {
         jobSvc.startJob(request);
-        return ResponseEntity.ok(CommonResponse.buildOkData("updated job"));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
 
 

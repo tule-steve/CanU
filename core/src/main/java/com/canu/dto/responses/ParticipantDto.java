@@ -18,5 +18,7 @@ public class ParticipantDto {
 
     LocalDateTime createdAt;
 
+    Long unreadCount;
+
 
 }

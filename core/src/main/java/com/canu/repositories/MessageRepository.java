@@ -3,6 +3,7 @@ package com.canu.repositories;
 import com.canu.dto.MessageBean;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -20,4 +21,8 @@ public interface MessageRepository extends JpaRepository<MessageBean, Long> {
 //           "            where from_user = ?1 or to_user = ?1" +
 //           "            group by conservation_id)", nativeQuery = true)
 //    List<Object[]> findParticipant(Long userId);
+
+    @Modifying
+    @Query("update MessageBean u set u.isRead = true where u.toUser in (?1, ?2) and u.fromUser in (?1, ?2) and u.id <= ?3")
+    void markMessAsRead(Long currUsrId, Long withUsrId, Long messId);
 }

@@ -103,6 +103,10 @@ public class CanUModel {
     @Column(name = "is_admin")
     Boolean isAdmin = false;
 
+    @JsonIgnore
+    @Column(name = "last_notification_id")
+    Long lastNotification = 0L;
+
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;
@@ -148,6 +152,10 @@ public class CanUModel {
             inverseJoinColumns = @JoinColumn(name = "cani_user_id")
     )
     Set<CanIModel> favoriteCanIs = new HashSet<>();
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    List<NotificationModel> notifications = new ArrayList<>();
 
 
     public Long getCaniId(){

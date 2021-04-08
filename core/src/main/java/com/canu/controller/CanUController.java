@@ -7,10 +7,7 @@ import com.canu.dto.responses.JobDto;
 import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
-import com.canu.services.AdminService;
-import com.canu.services.CanUService;
-import com.canu.services.ChatService;
-import com.canu.services.JobService;
+import com.canu.services.*;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -36,6 +33,8 @@ public class CanUController {
     final ChatService chatSvc;
 
     final private AdminService adminSvc;
+
+
 
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
@@ -99,8 +98,7 @@ public class CanUController {
 
     @PostMapping(value = "/post-job")
     public ResponseEntity postJob(@Validated @RequestBody JobModel request) {
-        JobModel jobEntity = jobSvc.postJob(request);
-        JobDto job = jobSvc.getJobDetail(jobEntity.getId());
+        JobDto job = jobSvc.postJob(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", job));
     }
 
@@ -138,5 +136,15 @@ public class CanUController {
     @GetMapping(value = "/get-favorite")
     public ResponseEntity getFavorite() {
         return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getFavoriteList()));
+    }
+
+    @GetMapping(value = "/get-notification")
+    public ResponseEntity getNotification(Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getNotification(p)));
+    }
+
+    @GetMapping(value = "/get-notification-detail/{notificationId}")
+    public ResponseEntity getNotification(@PathVariable Long notificationId) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getNotificationDetail(notificationId)));
     }
 }

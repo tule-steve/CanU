@@ -43,9 +43,11 @@ public class JobService {
 
     final private SkillSetRepository skillSetRepo;
 
+    final private SocketService socketSvc;
+
     private static final Logger logger = LoggerFactory.getLogger(JobService.class);
 
-    public JobModel postJob(JobModel request) {
+    public JobDto postJob(JobModel request) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
@@ -64,8 +66,10 @@ public class JobService {
         }
         request.setSkillSets(skillSets);
         addKeywordsIntoJob(request.getKeyword(), request);
-
-        return jobRepo.save(request);
+        request = jobRepo.save(request);
+        JobDto job = getJobDetail(request.getId());
+        socketSvc.pushNoticeForJob(request);
+        return job;
     }
 
     private void addKeywordsIntoJob(Set<String> keywords, JobModel job) {
@@ -150,9 +154,14 @@ public class JobService {
         CanUModel requestedUser = canURepo.findById(request.getRequestedUserId())
                                           .orElseThrow(() -> new GlobalValidationException(
                                                   "Cannot file the user for requested user id"));
-        uUser.validatePrivilege(job.getCreationUser());
+        if (!uUser.getId().equals(request.getOwner()) && !uUser.getId().equals(request.getRequestedUserId()) ||
+            !JobModel.JobStatus.PENDING.equals(job.getStatus())) {
+            throw new GlobalValidationException("permission denied");
+        }
         job.setRequestedUser(requestedUser);
         job.setTotal(request.getPrice());
+        job.setCurrency(request.getCurrency());
+        job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
     }
 

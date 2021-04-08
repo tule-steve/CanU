@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
-import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -18,14 +17,14 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Data
 @Table(name = "job")
 @SQLDelete(sql = "UPDATE job SET status = 'CANCEL' WHERE id = ?")
-@Where(clause = "status <> 'CANCEL'")
+//@Where(clause = "status <> 'CANCEL'")
 public class JobModel {
 
     public enum JobStatus {
         PENDING,
         PROCESSING,
         COMPLETED,
-        CANCEL;
+        CANCEL
     }
 
     @Id

@@ -40,6 +40,9 @@ public class MessageBean {
     @Column(name = "to_user")
     private Long toUser;
 
+    @Column(name = "is_read")
+    private Boolean isRead = false;
+
     @Column(name = "is_uploaded_file")
     private Boolean isUploadedFile = false;
 

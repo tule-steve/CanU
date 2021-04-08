@@ -12,14 +12,20 @@ import java.util.List;
 @Data
 public class JobFilter implements Specification<JobModel> {
     private List<Long> services = Collections.emptyList();
-    private List<String> keywords = Collections.emptyList();
-    String nation;
-    String city;
-    Long owner;
-    JobModel.JobStatus status;
-    Long pickupUserId;
-    Long requestedUserId;
 
+    private List<String> keywords = Collections.emptyList();
+
+    List<String> nation = Collections.emptyList();
+
+    List<String> city = Collections.emptyList();
+
+    Long owner;
+
+    JobModel.JobStatus status;
+
+    Long pickupUserId;
+
+    Long requestedUserId;
 
     @Override
     public Predicate toPredicate(Root<JobModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
@@ -39,28 +45,27 @@ public class JobFilter implements Specification<JobModel> {
             predicates.add(tagPredicate);
         }
 
-        if(nation != null){
-            predicates.add(builder.equal(root.get("nation"), nation));
+        if (nation.size() > 0) {
+            predicates.add(builder.in(root.get("nation")).value(nation));
         }
 
-        if(city != null){
-            predicates.add(builder.equal(root.get("city"), city));
+        if (city.size() > 0) {
+            predicates.add(builder.in(root.get("city")).value(city));
         }
 
-        if(owner != null){
+        if (owner != null) {
             predicates.add(builder.equal(root.get("creationUser"), owner));
         }
 
-        if(status != null){
+        if (status != null) {
             predicates.add(builder.equal(root.get("status"), status));
         }
 
-        if(requestedUserId != null){
+        if (requestedUserId != null) {
             predicates.add(builder.equal(root.get("requestedUser"), requestedUserId));
-        } else if(pickupUserId != null) {
+        } else if (pickupUserId != null) {
             predicates.add(builder.equal(root.join("canus").get("id"), pickupUserId));
         }
-
 
         return builder.and(predicates.toArray(new Predicate[0]));
     }
