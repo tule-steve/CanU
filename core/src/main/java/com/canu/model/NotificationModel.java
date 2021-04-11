@@ -23,6 +23,9 @@ public class NotificationModel {
     @Column(name = "title")
     String title;
 
+    @Column(name = "description")
+    String description;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     NotificationDetailModel.Type typeNoti;

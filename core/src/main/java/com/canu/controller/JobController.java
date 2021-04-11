@@ -51,5 +51,19 @@ public class JobController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
 
+    @PostMapping(value = "/cani-complete")
+    public Object completeJobByCanI(@RequestBody Map<String, Object> request) {
+        Long jobId = Long.parseLong(request.get("jobId").toString());
+        jobSvc.completeJobByCanI(jobId);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+    @PostMapping(value = "/canu-complete")
+    public Object completeJobByCanU(@RequestBody Map<String, Object> request) {
+        Long jobId = Long.parseLong(request.get("jobId").toString());
+        jobSvc.completeJobByCanU(jobId);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
 
 }

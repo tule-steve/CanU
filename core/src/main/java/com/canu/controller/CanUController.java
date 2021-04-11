@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import java.io.IOException;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/canu")
@@ -34,7 +35,7 @@ public class CanUController {
 
     final private AdminService adminSvc;
 
-
+    final private SmsService smsSvc;
 
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
@@ -114,6 +115,14 @@ public class CanUController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", chatSvc.getChatHistory(partnerId, p)));
     }
 
+    @GetMapping(value = "/delete-chat")
+    public ResponseEntity deleteConservation(@RequestBody Map<String, Object> request, Pageable p) {
+        Long participantId = Long.parseLong(request.get("participantId").toString());
+        Long lastedMessageId = Long.parseLong(request.get("messageId").toString());
+        chatSvc.deleteConservation(participantId, lastedMessageId);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
     @GetMapping(value = "/view-profile/{userId}")
     public ResponseEntity viewProfile(@PathVariable Long userId, Pageable p) {
         Page<Member> result = adminSvc.getMembers(p, userId);
@@ -146,5 +155,19 @@ public class CanUController {
     @GetMapping(value = "/get-notification-detail/{notificationId}")
     public ResponseEntity getNotification(@PathVariable Long notificationId) {
         return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getNotificationDetail(notificationId)));
+    }
+
+
+    @PostMapping(value = "/phone-verification")
+    public ResponseEntity verifyPhone() {
+        smsSvc.sendSms();
+        return ResponseEntity.ok(CommonResponse.buildOkData("sending SMS"));
+    }
+
+
+    @PostMapping(value = "/check-mobile-code")
+    public ResponseEntity verifyCode(@RequestBody Map<String, Object> request) {
+        smsSvc.verifyCode(request.get("code").toString());
+        return ResponseEntity.ok(CommonResponse.buildOkData("activate the account"));
     }
 }

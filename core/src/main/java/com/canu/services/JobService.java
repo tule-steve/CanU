@@ -1,7 +1,7 @@
 package com.canu.services;
 
-import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.requests.UpdateJobRequest;
+import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.responses.JobDto;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.CanUModel;
@@ -68,7 +68,7 @@ public class JobService {
         addKeywordsIntoJob(request.getKeyword(), request);
         request = jobRepo.save(request);
         JobDto job = getJobDetail(request.getId());
-        socketSvc.pushNoticeForJob(request);
+        socketSvc.pushNoticeForPostJob(request);
         return job;
     }
 
@@ -163,10 +163,35 @@ public class JobService {
         job.setCurrency(request.getCurrency());
         job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
+        socketSvc.pushNoticeForStartJob(job, uUser, requestedUser);
     }
 
-    public void completeJob(UpdateJobStatusRequest request) {
+    public void completeJobByCanI(Long jobId) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel cani = canURepo.findByEmail(user.getUsername());
+        JobModel job = jobRepo.findById(jobId)
+                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
 
+        if (!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
+            !cani.getId().equals(job.getRequestedUser().getId())) {
+            throw new GlobalValidationException("do not have privilege to complete this job");
+        }
+
+        socketSvc.noticeCanUJobComplete(job);
+    }
+
+    public void completeJobByCanU(Long jobId) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel canu = canURepo.findByEmail(user.getUsername());
+        JobModel job = jobRepo.findById(jobId)
+                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+
+        if (!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
+            !canu.getId().equals(job.getCreationUser().getId())) {
+            throw new GlobalValidationException("do not have privilege to complete this job");
+        }
+        job.setStatus(JobModel.JobStatus.COMPLETED);
+        socketSvc.noticeCanUJobComplete(job);
     }
 
 }

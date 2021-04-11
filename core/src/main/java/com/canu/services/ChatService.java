@@ -2,7 +2,9 @@ package com.canu.services;
 
 import com.canu.dto.MessageBean;
 import com.canu.dto.responses.ParticipantDto;
+import com.canu.model.CanUDeletedMessage;
 import com.canu.model.CanUModel;
+import com.canu.repositories.CanUDeletedMessageRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.MessageRepository;
 import lombok.RequiredArgsConstructor;
@@ -32,8 +34,24 @@ public class ChatService {
 
     final private EntityManager em;
 
+    final private CanUDeletedMessageRepository deletedMessRepo;
+
     public MessageBean saveMessage(MessageBean message) {
         return messRepo.save(message);
+    }
+
+    public void deleteConservation(Long withUsrId, Long lastedMessageId) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+
+        CanUDeletedMessage deletedMessage = deletedMessRepo.findFirstByUserIdAndParticipantId(uUser.getId(), withUsrId)
+                                                           .orElse(CanUDeletedMessage.builder()
+                                                                                     .lastedMessage(lastedMessageId)
+                                                                                     .userId(uUser.getId())
+                                                                                     .participantId(withUsrId).build());
+        deletedMessage.setLastedMessage(lastedMessageId);
+        deletedMessRepo.save(deletedMessage);
+
     }
 
     public List<MessageBean> getChatHistory(Long withUsrId, Pageable p) {
@@ -56,10 +74,11 @@ public class ChatService {
                 "        aggregate.unreadCount " +
                 "    from chat_message as mess" +
                 "    inner join(" +
-                "                select max(id)  as id,\n" +
-                "                        count(if(is_read, null, 1) ) as unreadCount\n" +
-                "                from chat_message" +
-                "                where from_user = :userId or to_user = :userId" +
+                "                select max(u.id)  as id,\n" +
+                "                        count(if(u.is_read, null, 1) ) as unreadCount\n" +
+                "                from chat_message u" +
+                "                left outer join user_deleted_message m on m.user_id = :userId and m.participant_id = case when u.to_user = :userId then u.from_user else u.to_user end " +
+                "                where (from_user = :userId or to_user = :userId) and u.id >  coalesce(m.deleted_mess_id, 0)" +
                 "                group by conservation_id) as aggregate on mess.id = aggregate.id" +
                 "    inner join user u on u.id = case when mess.to_user = :userId then mess.from_user else mess.to_user end;")
                         .setParameter("userId", uUser.getId()).getResultList();

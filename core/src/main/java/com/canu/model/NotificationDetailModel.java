@@ -54,6 +54,9 @@ public class NotificationDetailModel {
     @Column(name = "data")
     private String data;
 
+    @Column(name = "description")
+    String description;
+
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "detail")
     List<NotificationModel> notifications = new ArrayList<>();

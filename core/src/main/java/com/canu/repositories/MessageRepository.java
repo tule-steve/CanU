@@ -12,15 +12,15 @@ import java.util.List;
 @Repository
 public interface MessageRepository extends JpaRepository<MessageBean, Long> {
 
-    @Query("select u from MessageBean u where u.toUser in (?1, ?2) and u.fromUser in (?1, ?2)")
+    @Query("select u from MessageBean u left outer join CanUDeletedMessage d on d.userId = ?1 and d.participantId = ?2 where u.toUser in (?1, ?2) and u.fromUser in (?1, ?2) and u.id >  coalesce(d.lastedMessage, 0)")
     List<MessageBean> getMessageHistory(Long currUsrId, Long withUsrId, Pageable p);
 
-//    @Query(name = "select case when m.to_user = ?1 then m.from_user else m.to_user end as user, m.message as message from chat_message m" +
-//           "            where m.id in" +
-//           "            (select max(id)  as id from chat_message" +
-//           "            where from_user = ?1 or to_user = ?1" +
-//           "            group by conservation_id)", nativeQuery = true)
-//    List<Object[]> findParticipant(Long userId);
+    //    @Query(name = "select case when m.to_user = ?1 then m.from_user else m.to_user end as user, m.message as message from chat_message m" +
+    //           "            where m.id in" +
+    //           "            (select max(id)  as id from chat_message" +
+    //           "            where from_user = ?1 or to_user = ?1" +
+    //           "            group by conservation_id)", nativeQuery = true)
+    //    List<Object[]> findParticipant(Long userId);
 
     @Modifying
     @Query("update MessageBean u set u.isRead = true where u.toUser in (?1, ?2) and u.fromUser in (?1, ?2) and u.id <= ?3")

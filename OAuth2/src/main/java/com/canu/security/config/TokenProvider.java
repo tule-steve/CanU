@@ -1,13 +1,12 @@
 package com.canu.security.config;
 
 import com.canu.security.dtos.AppProperties;
-import com.canu.security.dtos.UserPrincipal;
 import io.jsonwebtoken.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.security.core.Authentication;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.util.Date;
 
 @Service
@@ -30,13 +29,15 @@ public class TokenProvider {
                    .setSubject(email)
                    .setIssuedAt(new Date())
                    .setExpiration(expiryDate)
-                   .signWith(SignatureAlgorithm.HS512, appProperties.getAuth().getTokenSecret())
+                   .signWith(SignatureAlgorithm.HS256, appProperties.getAuth().getTokenSecret().getBytes(
+                           StandardCharsets.UTF_8))
                    .compact();
     }
 
     public String getUserIdFromToken(String token) {
         Claims claims = Jwts.parser()
-                            .setSigningKey(appProperties.getAuth().getTokenSecret())
+                            .setSigningKey(appProperties.getAuth().getTokenSecret().getBytes(
+                                    StandardCharsets.UTF_8))
                             .parseClaimsJws(token)
                             .getBody();
         return claims.getSubject();
@@ -44,7 +45,8 @@ public class TokenProvider {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(appProperties.getAuth().getTokenSecret()).parseClaimsJws(authToken);
+            Jwts.parser().setSigningKey(appProperties.getAuth().getTokenSecret().getBytes(
+                    StandardCharsets.UTF_8)).parseClaimsJws(authToken);
             return true;
         } catch (SignatureException ex) {
             logger.error("Invalid JWT signature");

@@ -27,7 +27,7 @@ public class FreemarkerConfig {
         ite.forEach((template) -> {
             // Put them in loader
             sTempLoader.putTemplate(template.getType().toString(), template.getTemplate());
-            sTempLoader.putTemplate(template.getType().toTitleString() , template.getTemplate());
+            sTempLoader.putTemplate(template.getType().toTitleString() , template.getDescription());
         });
         // Set loader
         bean.setPreTemplateLoaders(sTempLoader);

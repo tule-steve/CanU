@@ -19,6 +19,6 @@ public class UpdateJobStatusRequest {
     @NotNull(message = "price is required")
     Long price;
 
-    @NotNull(message = "price is required")
+    @NotNull(message = "currency is required")
     String currency;
 }
