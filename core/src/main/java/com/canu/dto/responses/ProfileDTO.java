@@ -22,6 +22,7 @@ public class ProfileDTO {
         createdAt = canu.getCreatedAt();
         if (canu.getCanIModel() != null) {
             CanIModel caniData = canu.getCanIModel();
+            phone = caniData.getPhone();
             cani = CanIDto.builder()
                           .id(caniData.getId())
                           .name(caniData.getName())

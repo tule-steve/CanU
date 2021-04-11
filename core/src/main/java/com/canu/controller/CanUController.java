@@ -159,8 +159,8 @@ public class CanUController {
 
 
     @PostMapping(value = "/phone-verification")
-    public ResponseEntity verifyPhone() {
-        smsSvc.sendSms();
+    public ResponseEntity verifyPhone(@RequestBody Map<String, Object> request) {
+        smsSvc.sendSms(request.get("phoneNumber").toString());
         return ResponseEntity.ok(CommonResponse.buildOkData("sending SMS"));
     }
 

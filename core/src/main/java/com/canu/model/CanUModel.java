@@ -103,10 +103,6 @@ public class CanUModel {
     @Column(name = "is_admin")
     Boolean isAdmin = false;
 
-    @JsonIgnore
-    @Column(name = "last_notification_id")
-    Long lastNotification = 0L;
-
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;

@@ -87,6 +87,12 @@ public class CanIModel {
     @Column(name = "rating")
     BigDecimal rating;
 
+    @Column(name = "is_phone_verified")
+    Boolean phoneVerified = false;
+
+    @Column(name = "sentSmsCodeAt")
+    LocalDateTime sentSmsCodeAt;
+
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;

@@ -104,7 +104,7 @@ app:
   baseUrl: https://127.0.0.1:9129/api
   forgotPassUrl: https://canui.tech/reset-password/
   auth:
-    tokenSecret: 926D96C90030DD58429D2751AC1BDBBC
+    tokenSecret: rOd/2NOa1Dl7AdOLslCcI8M0f2JFpXuPQStMB2G9X2h5NsYrOLsKcaixyKRLypGtBbX47NGAuZLQHpTlvRp5/Q==
     tokenExpirationMsec: 8640000000000
     #tokenExpirationMsec: 864
 

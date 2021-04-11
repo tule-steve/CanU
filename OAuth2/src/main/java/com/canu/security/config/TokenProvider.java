@@ -2,11 +2,13 @@ package com.canu.security.config;
 
 import com.canu.security.dtos.AppProperties;
 import io.jsonwebtoken.*;
+import io.jsonwebtoken.io.Decoders;
+import io.jsonwebtoken.security.Keys;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 
-import java.nio.charset.StandardCharsets;
+import java.security.Key;
 import java.util.Date;
 
 @Service
@@ -20,6 +22,11 @@ public class TokenProvider {
         this.appProperties = appProperties;
     }
 
+    private Key getSigningKey() {
+        byte[] keyBytes = Decoders.BASE64.decode(appProperties.getAuth().getTokenSecret());
+        return Keys.hmacShaKeyFor(keyBytes);
+    }
+
     public String createToken(String email) {
 
         Date now = new Date();
@@ -29,15 +36,12 @@ public class TokenProvider {
                    .setSubject(email)
                    .setIssuedAt(new Date())
                    .setExpiration(expiryDate)
-                   .signWith(SignatureAlgorithm.HS256, appProperties.getAuth().getTokenSecret().getBytes(
-                           StandardCharsets.UTF_8))
+                   .signWith(getSigningKey())
                    .compact();
     }
 
     public String getUserIdFromToken(String token) {
-        Claims claims = Jwts.parser()
-                            .setSigningKey(appProperties.getAuth().getTokenSecret().getBytes(
-                                    StandardCharsets.UTF_8))
+        Claims claims = Jwts.parserBuilder().setSigningKey(getSigningKey()).build()
                             .parseClaimsJws(token)
                             .getBody();
         return claims.getSubject();
@@ -45,11 +49,8 @@ public class TokenProvider {
 
     public boolean validateToken(String authToken) {
         try {
-            Jwts.parser().setSigningKey(appProperties.getAuth().getTokenSecret().getBytes(
-                    StandardCharsets.UTF_8)).parseClaimsJws(authToken);
+            Jwts.parserBuilder().setSigningKey(getSigningKey()).build().parseClaimsJws(authToken);
             return true;
-        } catch (SignatureException ex) {
-            logger.error("Invalid JWT signature");
         } catch (MalformedJwtException ex) {
             logger.error("Invalid JWT token");
         } catch (ExpiredJwtException ex) {
