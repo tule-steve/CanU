@@ -163,7 +163,7 @@ public class JobService {
         job.setCurrency(request.getCurrency());
         job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
-        socketSvc.pushNoticeForStartJob(job, uUser, requestedUser);
+        socketSvc.pushNoticeForStartJob(job);
     }
 
     public void completeJobByCanI(Long jobId) {

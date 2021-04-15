@@ -1,15 +1,17 @@
 package com.canu.controller;
 
-import com.canu.model.MetadataPropertyModel;
-import com.canu.model.SkillSetModel;
+import com.canu.model.*;
 import com.canu.repositories.*;
+import com.canu.services.AnnouncementService;
 import com.canu.services.CanIService;
-import com.canu.specifications.CanIFilter;
-import com.canu.specifications.SkillSetFilter;
+import com.canu.services.FAQService;
+import com.canu.services.GuidelineService;
+import com.canu.specifications.*;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -30,6 +32,12 @@ public class MetaDataController {
     final private TagRepository tagRepo;
 
     final private CanIService canIService;
+
+    final private FAQService faqSvc;
+
+    final private AnnouncementService announceSvc;
+
+    final private GuidelineService guideSvc;
 
     @GetMapping(value = "/services")
     public Object getServices(SkillSetFilter filter) {
@@ -61,20 +69,19 @@ public class MetaDataController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", propertyRepo.findDistinctByKeyIn(list)));
     }
 
-
     @GetMapping(value = "/get-country")
-    public Object getNational(){
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK",countryRepo.findAll()));
+    public Object getNational() {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", countryRepo.findAll()));
     }
 
     @GetMapping(value = "/get-city")
-    public Object getCity(@RequestParam("country") String country){
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK",cityRepo.findByCountryId(country)));
+    public Object getCity(@RequestParam("country") String country) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", cityRepo.findByCountryId(country)));
     }
 
     @GetMapping(value = "/get-keyword")
-    public Object getKeyword(){
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK",tagRepo.findAll()));
+    public Object getKeyword() {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", tagRepo.findAll()));
     }
 
     @GetMapping(value = "/detail-list")
@@ -82,4 +89,33 @@ public class MetaDataController {
         return canIService.GetCaniList(filter, p);
     }
 
+    @GetMapping(value = "/FAQ/list")
+    public ResponseEntity getFAQ(FAQFilter filter) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", faqSvc.getListFAQs(filter)));
+    }
+
+    @PostMapping(value = "/FAQ/initial")
+    public ResponseEntity update(@RequestBody @Validated FAQModel request) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", faqSvc.initialFAQ(request)));
+    }
+
+    @GetMapping(value = "/announce/list")
+    public ResponseEntity getAnnounce(AnnouncementFilter filter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", announceSvc.getListAnnounces(filter, p)));
+    }
+
+    @PostMapping(value = "/announce/initial")
+    public ResponseEntity update(@RequestBody @Validated AnnouncementModel request) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", announceSvc.initialAnnounce(request)));
+    }
+
+    @GetMapping(value = "/guide/list")
+    public ResponseEntity getAnnounce(GuidelineFilter filter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", guideSvc.getListGuideline(filter, p)));
+    }
+
+    @PostMapping(value = "/guide/initial")
+    public ResponseEntity update(@RequestBody @Validated GuidelineModel request) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", guideSvc.initialGuideline(request)));
+    }
 }

@@ -115,8 +115,8 @@ public class CanUController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", chatSvc.getChatHistory(partnerId, p)));
     }
 
-    @GetMapping(value = "/delete-chat")
-    public ResponseEntity deleteConservation(@RequestBody Map<String, Object> request, Pageable p) {
+    @PostMapping(value = "/delete-chat")
+    public ResponseEntity deleteConservation(@RequestBody Map<String, Object> request) {
         Long participantId = Long.parseLong(request.get("participantId").toString());
         Long lastedMessageId = Long.parseLong(request.get("messageId").toString());
         chatSvc.deleteConservation(participantId, lastedMessageId);

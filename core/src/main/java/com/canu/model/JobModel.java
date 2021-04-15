@@ -42,7 +42,7 @@ public class JobModel {
     CanUModel creationUser;
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "requested_user", updatable = false, nullable = false)
+    @JoinColumn(name = "requested_user")
     CanUModel requestedUser;
 
     @Column(name = "title")

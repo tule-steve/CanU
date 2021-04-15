@@ -49,6 +49,8 @@ spring:
   jackson:
     serialization:
       FAIL_ON_EMPTY_BEANS: false
+    mapper:
+      ACCEPT_CASE_INSENSITIVE_ENUMS: true
 
   servlet:
     multipart:

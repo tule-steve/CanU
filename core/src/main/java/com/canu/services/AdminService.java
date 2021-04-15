@@ -1,5 +1,6 @@
 package com.canu.services;
 
+import com.canu.dto.requests.TemplateRequest;
 import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
@@ -8,11 +9,13 @@ import com.canu.repositories.CanIRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.JobRepository;
 import com.canu.repositories.TemplateRepository;
+import com.canu.specifications.TemplateFilter;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Slice;
 import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -103,9 +106,17 @@ public class AdminService {
         member.setFinishedJob(completedJob != null ? completedJob.size() : 0);
     }
 
-    public void setupTemplate(TemplateModel template){
+    public void setupTemplate(TemplateRequest template){
         ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toString(), template.getTemplate());
-        templateRepo.save(template);
+//        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toTitleString(), template.getDescription());
+        TemplateModel updatedTemplate = templateRepo.findFirstByType(template.getType());
+        updatedTemplate.setTemplate(template.getTemplate());
+        updatedTemplate.setTitle(template.getTitle());
+        templateRepo.save(updatedTemplate);
+    }
+
+    public Slice<TemplateModel> getTemplate(TemplateFilter filter, Pageable p){
+        return templateRepo.findAll(filter, p);
     }
 
 }

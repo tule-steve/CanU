@@ -1,7 +1,8 @@
 package com.canu.controller;
 
-import com.canu.model.TemplateModel;
+import com.canu.dto.requests.TemplateRequest;
 import com.canu.services.AdminService;
+import com.canu.specifications.TemplateFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -21,8 +22,13 @@ public class AdminController {
     }
 
     @PostMapping(value = "/setup-template")
-    public Object setupTemplate(@RequestBody TemplateModel template) {
+    public Object setupTemplate(@RequestBody TemplateRequest template) {
         adminSvc.setupTemplate(template);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+    @GetMapping(value = "/get-template")
+    public Object getTemplate(TemplateFilter filter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getTemplate(filter, p)));
     }
 }

@@ -21,6 +21,7 @@ public class NotificationDetailModel {
     private static final ObjectMapper mapper = new ObjectMapper();
 
     public enum Type {
+        CREATE_JOB,
         POST_JOB,
         JOB_COMPLETED,
         CONFIRM_PAYMENT,

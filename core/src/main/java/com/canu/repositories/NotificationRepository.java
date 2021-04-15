@@ -16,7 +16,7 @@ public interface NotificationRepository extends JpaRepository<NotificationModel,
     List<NotificationModel> findByOwner(CanUModel canu, Pageable p);
 
     @Modifying
-    @Query(value = "update NotificationModel set isRead = true where owner.id = ?1 and detail.id < ?2")
+    @Query(value = "update NotificationModel set isRead = true where owner.id = ?1 and detail.id <= ?2")
     void markReadNotification(Long userId, Long detailId);
 
     Long countByIsReadFalseAndOwner(CanUModel canu);

@@ -12,6 +12,8 @@ import com.canu.repositories.TemplateRepository;
 import freemarker.template.Configuration;
 import freemarker.template.Template;
 import lombok.RequiredArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -37,13 +39,16 @@ public class SocketService {
 
     final NotificationRepository notificationRepo;
 
+    private static final Logger logger = LoggerFactory.getLogger(SocketService.class);
+
     public void pushNoticeForPostJob(JobModel job) {
-        List<CanUModel> canus = canuRepo.findCanIByServices(job.getService());
+        List<CanUModel> canus = canuRepo.findCanIForJobNotification(job.getService(), job.getCreationUser().getId());
         pushNotificationForJob(job, NotificationDetailModel.Type.POST_JOB, canus);
+        pushNotificationForJob(job, NotificationDetailModel.Type.CREATE_JOB, Arrays.asList(job.getCreationUser()));
     }
 
-    public void pushNoticeForStartJob(JobModel job, CanUModel canu, CanUModel cani) {
-        List<CanUModel> canus = Arrays.asList(canu, cani);
+    public void pushNoticeForStartJob(JobModel job) {
+        List<CanUModel> canus = Arrays.asList(job.getCreationUser(), job.getRequestedUser());
         pushNotificationForJob(job, NotificationDetailModel.Type.REQUESTED_CANI, canus);
     }
 
@@ -56,14 +61,18 @@ public class SocketService {
     }
 
     private void pushNotificationForJob(JobModel job, NotificationDetailModel.Type notiType, List<CanUModel> canus) {
-        String title = templateRepo.findFirstByType(notiType).getTitle();
-        NotificationDetailModel noti = new NotificationDetailModel();
-        noti.setType(notiType);
-        noti.setData(getNotificationData(noti.getType().toString(), job));
-        noti.setTitle(title);
-        noti.setDescription(getNotificationData(noti.getType().toTitleString(), job));
-        noti = notiRepo.save(noti);
-        pushNoticeToUser(canus, noti);
+        try {
+            String title = templateRepo.findFirstByType(notiType).getTitle();
+            NotificationDetailModel noti = new NotificationDetailModel();
+            noti.setType(notiType);
+            noti.setData(getNotificationData(noti.getType().toString(), job));
+            noti.setTitle(title);
+            noti.setDescription(getNotificationData(noti.getType().toTitleString(), job));
+            noti = notiRepo.save(noti);
+            pushNoticeToUser(canus, noti);
+        } catch (Exception ex) {
+            logger.error("error on creating notification", ex);
+        }
     }
 
     private String getNotificationData(String type, Object source) {

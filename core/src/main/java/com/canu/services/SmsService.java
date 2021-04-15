@@ -64,7 +64,7 @@ public class SmsService {
         Verification verification = Verification.creator(
                 "VAf8f53bf724a25ce8ba2926c936dd5ccc",
                 phoneNumber,
-                "sms").create();
+                Verification.Channel.SMS.toString()).create();
         caniRepo.save(cani);
         logger.info("Send sms for verify phone with sid {}", verification.getSid());
     }
@@ -76,7 +76,7 @@ public class SmsService {
 
             VerificationCheck verificationCheck = VerificationCheck.creator(
                     "VAf8f53bf724a25ce8ba2926c936dd5ccc",
-                    code).setTo(uUser.getPhone()).create();
+                    code).setTo(uUser.getCanIModel().getPhone()).create();
 
             if ("pending".equalsIgnoreCase(verificationCheck.getStatus())) {
                 throw new GlobalValidationException("Code is not matching");
