@@ -2,11 +2,13 @@ package com.canu.controller;
 
 import com.canu.dto.requests.CanUSignUpRequest;
 import com.canu.dto.requests.ChangePassWordRequest;
+import com.canu.dto.requests.RatingUserRequest;
 import com.canu.dto.requests.ResetPassWordRequest;
 import com.canu.dto.responses.JobDto;
 import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
+import com.canu.model.PropertyModel;
 import com.canu.services.*;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +22,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
@@ -47,27 +50,25 @@ public class CanUController {
         return canUService.getProfile();
     }
 
-
     @PostMapping(value = "/update-profile")
-    public ResponseEntity getProfile(@Validated @RequestBody  CanUModel request) {
+    public ResponseEntity getProfile(@Validated @RequestBody CanUModel request) {
         return canUService.updateProfile(request);
     }
-
 
     @PostMapping(value = "/change-password")
     public ResponseEntity changePassword(@Validated @RequestBody ChangePassWordRequest request) {
         return canUService.changePassword(request);
     }
 
-//    @PostMapping(value = "/uploadFile")
-//    public ResponseEntity uploadFile(@RequestParam("gpdkkd") MultipartFile[] gpdkkdFile,
-//                                     @RequestParam("certificate") MultipartFile[] cerFiles) throws IOException {
-//        return canUService.uploadFile(gpdkkdFile, cerFiles);
-//    }
+    //    @PostMapping(value = "/uploadFile")
+    //    public ResponseEntity uploadFile(@RequestParam("gpdkkd") MultipartFile[] gpdkkdFile,
+    //                                     @RequestParam("certificate") MultipartFile[] cerFiles) throws IOException {
+    //        return canUService.uploadFile(gpdkkdFile, cerFiles);
+    //    }
 
     @PostMapping(value = "/uploadFile")
     public ResponseEntity uploadFile(StandardMultipartHttpServletRequest request) throws IOException {
-//        request
+        //        request
 
         return canUService.updateFileData(request);
     }
@@ -86,7 +87,7 @@ public class CanUController {
     }
 
     @GetMapping(value = "/forgot-password")
-    public ResponseEntity forgotPassword(@RequestParam("email") String email ) {
+    public ResponseEntity forgotPassword(@RequestParam("email") String email) {
         canUService.sendForgetPassword(email);
         return ResponseEntity.ok(CommonResponse.buildOkData("sent password reset mail for user"));
     }
@@ -157,17 +158,34 @@ public class CanUController {
         return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getNotificationDetail(notificationId)));
     }
 
-
     @PostMapping(value = "/phone-verification")
     public ResponseEntity verifyPhone(@RequestBody Map<String, Object> request) {
         smsSvc.sendSms(request.get("phoneNumber").toString());
         return ResponseEntity.ok(CommonResponse.buildOkData("sending SMS"));
     }
 
-
     @PostMapping(value = "/check-mobile-code")
     public ResponseEntity verifyCode(@RequestBody Map<String, Object> request) {
         smsSvc.verifyCode(request.get("code").toString());
         return ResponseEntity.ok(CommonResponse.buildOkData("activate the account"));
     }
+
+    @GetMapping(value = "/get-user-rating")
+    public ResponseEntity getPlatformRating(@RequestParam(defaultValue = "en") String locale) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", canUService.getUserRating(locale)));
+    }
+
+    @PostMapping(value = "/update-user-rating")
+    public ResponseEntity updatePlateFormRating(@RequestBody List<PropertyModel> request) {
+        canUService.updateUserRating(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+    @PostMapping(value = "/rating-user")
+    public ResponseEntity ratPlatform(@RequestBody RatingUserRequest request) {
+        jobSvc.ratingUser(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("add review"));
+    }
+
 }

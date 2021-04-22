@@ -32,11 +32,11 @@ public class CanIFilter implements Specification<CanIModel> {
         }
 
         if (nation != null) {
-            predicates.add(builder.equal(root.get("national"), nation));
+            predicates.add(builder.equal(root.get("nationalService"), nation));
         }
 
         if (city.size() > 0) {
-            predicates.add(builder.in(root.get("area")).value(city));
+            predicates.add(builder.in(root.get("areaService")).value(city));
         }
 
         if (serviceType.size() > 0) {

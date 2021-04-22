@@ -24,7 +24,13 @@ public class JobModel {
         PENDING,
         PROCESSING,
         COMPLETED,
-        CANCEL
+        CANCEL,
+        REQUEST_CANCEL
+    }
+
+    public enum CancelStatus {
+        REQUESTED,
+        REJECTED
     }
 
     @Id
@@ -66,8 +72,18 @@ public class JobModel {
     @Column(name = "image")
     String image;
 
+    @Column(name = "cancel_reason")
+    String reason;
+
+    @Column(name = "admin_reason")
+    String adminReason;
+
+    @Enumerated(EnumType.STRING)
+    @Column(name = "cancel_status")
+    CancelStatus cancelStatus;
+
     @Column(name = "rating")
-    Integer rating;
+    Integer rating = 0;
 
     @JsonIgnore
     @ManyToMany(fetch = FetchType.LAZY, cascade = {CascadeType.PERSIST, CascadeType.MERGE})
@@ -92,6 +108,10 @@ public class JobModel {
             joinColumns = @JoinColumn(name = "job_id"),
             inverseJoinColumns = @JoinColumn(name = "canu_id"))
     private List<CanUModel> canus = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "job")
+    List<JobReviewerModel> reviewers = new ArrayList<>();
 
     @Transient
     private Set<String> keyword;

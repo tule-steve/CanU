@@ -25,6 +25,8 @@ public interface CanURepository extends JpaRepository<CanUModel, Long> {
     @Query(value = "select distinct u from SkillSetModel sk inner join sk.canIs ci inner join ci.canUModel u where sk.id in ?1 and u.id != ?2")
     List<CanUModel> findCanIForJobNotification(Set<Long> services, Long creatingUserId);
 
+    List<CanUModel> findByIsAdminIsTrue();
+
 
     //    @Query(nativeQuery = true)
     //    List<Member> getMembership(Sort sort);

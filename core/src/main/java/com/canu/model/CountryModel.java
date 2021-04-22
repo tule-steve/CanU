@@ -16,7 +16,8 @@ public class CountryModel {
         en,
         vn,
         kr,
-        ja,
+        jp,
+        cn,
         all
     }
 

@@ -1,10 +1,7 @@
 package com.canu.services;
 
 import com.canu.exception.GlobalValidationException;
-import com.canu.model.CanUModel;
-import com.canu.model.JobModel;
-import com.canu.model.NotificationDetailModel;
-import com.canu.model.NotificationModel;
+import com.canu.model.*;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.NotificationDetailRepository;
 import com.canu.repositories.NotificationRepository;
@@ -18,6 +15,7 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
+import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -53,10 +51,6 @@ public class SocketService {
     }
 
     public void noticeCanUJobComplete(JobModel job) {
-        pushNotificationForJob(job, NotificationDetailModel.Type.JOB_COMPLETED, Arrays.asList(job.getCreationUser()));
-    }
-
-    public void noticeAdminJobComplete(JobModel job) {
         pushNotificationForJob(job, NotificationDetailModel.Type.JOB_COMPLETED, Arrays.asList(job.getCreationUser()));
     }
 
@@ -96,6 +90,60 @@ public class SocketService {
             notificationRepo.save(notice);
             simpMessagingTemplate.convertAndSend("/api/topic/notification/" + user.getId(), notice);
         }
+    }
+
+    public void noticeAdminJobComplete(JobModel job) {
+        pushNotificationForAdmin(job, NotificationDetailModel.Type.ADMIN_JOB_COMPLETED);
+    }
+
+    public void noticeAdminSupportRequest(SupportRequestModel data) {
+        pushNotificationForAdmin(data, NotificationDetailModel.Type.ADMIN_SUPPORT_REQUEST);
+    }
+
+    public void noticeAdminCancelJob(JobModel data) {
+        pushNotificationForAdmin(data, NotificationDetailModel.Type.CANCEL_JOB_BY_CANU);
+    }
+
+    public void noticeAdmin(SupportRequestModel data) {
+        pushNotificationForAdmin(data, NotificationDetailModel.Type.ADMIN_SUPPORT_REQUEST);
+    }
+
+    private void pushNotificationForAdmin(Object job, NotificationDetailModel.Type notiType) {
+        try {
+            String title = templateRepo.findFirstByType(notiType).getTitle();
+            NotificationDetailModel noti = new NotificationDetailModel();
+            noti.setType(notiType);
+            noti.setData(getNotificationData(noti.getType().toString(), job));
+            noti.setTitle(title);
+            noti.setDescription(getNotificationData(noti.getType().toTitleString(), job));
+            noti = notiRepo.save(noti);
+            pushNoticeToAdmin(noti);
+        } catch (Exception ex) {
+            logger.error("error on creating notification", ex);
+        }
+    }
+
+    private void pushNoticeToAdmin(NotificationDetailModel detail) {
+        NotificationModel notice = null;
+        List<CanUModel> adminList = canuRepo.findByIsAdminIsTrue();
+        if(adminList.size() > 0) {
+            for (CanUModel user : adminList) {
+                notice = new NotificationModel();
+                notice.setDetail(detail);
+                notice.setOwner(user);
+                notice.setTitle(detail.getTitle());
+                notice.setTypeNoti(detail.getType());
+                notice.setDescription(detail.getDescription());
+                notificationRepo.save(notice);
+            }
+            simpMessagingTemplate.convertAndSend("/api/topic/admin/", notice);
+        }
+    }
+
+    @ExceptionHandler(Exception.class)
+    public void handleException(Exception ex) {
+        // not throw exception for push notification
+        logger.error("error on push notification", ex);
     }
 
 }

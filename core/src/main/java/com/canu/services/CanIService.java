@@ -110,11 +110,16 @@ public class CanIService {
             dividedJob.forEach((k, v) -> jobStatus.put(k.toString(), v.size()));
             List<JobModel> completedJob = dividedJob.get(JobModel.JobStatus.COMPLETED);
             if (completedJob != null) {
-                int totalPoint = completedJob.stream().mapToInt(JobModel::getRating).sum();
-                BigDecimal rating = BigDecimal.valueOf(totalPoint)
-                                              .divide(BigDecimal.valueOf(Long.valueOf(completedJob.size())));
-                //                if (!rating.equals(cani.getRating())) {
-                cani.setRating(rating);
+                List<JobModel> ratingJob = completedJob.stream()
+                                                       .filter(r -> r.getRating() > 0)
+                                                       .collect(Collectors.toList());
+                int totalPoint = ratingJob.stream().mapToInt(JobModel::getRating).sum();
+                if (ratingJob.size() > 0) {
+                    BigDecimal rating = BigDecimal.valueOf(totalPoint)
+                                                  .divide(BigDecimal.valueOf(Long.valueOf(ratingJob.size())));
+                    //                if (!rating.equals(cani.getRating())) {
+                    cani.setRating(rating);
+                }
                 //                    caniRepo.save(cani);
                 //                }
             }

@@ -2,12 +2,16 @@ package com.canu.dto.responses;
 
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
+import com.canu.model.JobReviewerModel;
+import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import lombok.Data;
 
 import javax.persistence.EnumType;
 import javax.persistence.Enumerated;
 import java.time.LocalDateTime;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -52,9 +56,9 @@ public class JobDto {
                             .map(r -> {
                                 if (r.getCanIModel() == null) {
                                     return CanIDto.builder()
-                                            .id(r.getId())
-                                            .name(r.getName())
-                                            .build();
+                                                  .id(r.getId())
+                                                  .name(r.getName())
+                                                  .build();
                                 }
                                 return CanIDto.builder()
                                               .id(r.getId())
@@ -66,6 +70,15 @@ public class JobDto {
                                               .build();
                             })
                             .collect(Collectors.toList());
+        }
+        if (JobModel.JobStatus.COMPLETED.equals(job.getStatus()) && job.getReviewers() != null) {
+            job.getReviewers().forEach(r -> {
+                if (r.getReviewer().getId().equals(job.getCreationUser().getId())) {
+                    review.put("canu_review", r);
+                } else {
+                    review.put("cani_review", r);
+                }
+            });
         }
 
     }
@@ -100,5 +113,12 @@ public class JobDto {
     String image;
 
     String city;
+
+    Map<String, JobReviewerModel> review = new HashMap<>();
+
+    @JsonAnyGetter
+    public Map<String, JobReviewerModel> getReview() {
+        return review;
+    }
 
 }

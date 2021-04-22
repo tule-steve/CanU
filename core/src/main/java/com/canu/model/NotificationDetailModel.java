@@ -28,7 +28,9 @@ public class NotificationDetailModel {
         REQUESTED_CANI,
         CANCEL_JOB_BY_CANU,
         CANCEL_JOB_FEEDBACK_YES,
-        CANCEL_JOB_FEEDBACK_NO;
+        CANCEL_JOB_FEEDBACK_NO,
+        ADMIN_JOB_COMPLETED,
+        ADMIN_SUPPORT_REQUEST;
 
         @Override
         public String toString() {

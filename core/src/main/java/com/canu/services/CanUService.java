@@ -7,13 +7,8 @@ import com.canu.dto.responses.Member;
 import com.canu.dto.responses.NotificationListResponse;
 import com.canu.dto.responses.Token;
 import com.canu.exception.GlobalValidationException;
-import com.canu.model.CanUModel;
-import com.canu.model.FileModel;
-import com.canu.model.NotificationModel;
-import com.canu.repositories.CanURepository;
-import com.canu.repositories.FileRepository;
-import com.canu.repositories.NotificationDetailRepository;
-import com.canu.repositories.NotificationRepository;
+import com.canu.model.*;
+import com.canu.repositories.*;
 import com.canu.security.config.TokenProvider;
 import com.common.dtos.CommonResponse;
 import com.common.mail.MailService;
@@ -66,6 +61,10 @@ public class CanUService {
     final private NotificationDetailRepository notiDetailRepo;
 
     final private NotificationRepository notiRepo;
+
+    final private PropertyRepository propertyRepo;
+
+    final private UserPropertyRepository userproRepo;
 
     @Value("${app.baseUrl}")
     private String domainLink;
@@ -378,4 +377,36 @@ public class CanUService {
     public Object getNotificationDetail(Long id) {
         return notiDetailRepo.findById(id).orElseThrow(() -> new GlobalValidationException("Cannot find the notification with id"));
     }
+
+    @Transactional(readOnly = true)
+    public Object getUserRating(String locale) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+
+        Set<PropertyModel> criteriaRatings = propertyRepo.getRatingCriteria(uUser.getId(), locale);
+        criteriaRatings.addAll(propertyRepo.findAllByTypeAndLocale(locale));
+        criteriaRatings.forEach(r -> r.updateValue(uUser.getId(), locale));
+
+        return criteriaRatings;
+    }
+
+    public void updateUserRating(List<PropertyModel> request) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        request.forEach(r -> {
+            String[] ids = r.getKey().split(":");
+            UserPropertyModel model = new UserPropertyModel();
+            PropertyModel propertyModel = new PropertyModel();
+            propertyModel.setId(Long.parseLong(ids[0]));
+            model.setProperty(propertyModel);
+            model.setUser(uUser);
+            model.setRating(r.getValue());
+            if(ids.length > 1){
+                model.setId(Long.parseLong(ids[1]));
+            }
+            userproRepo.save(model);
+        });
+    }
+
+
 }

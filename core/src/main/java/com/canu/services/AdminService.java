@@ -2,13 +2,10 @@ package com.canu.services;
 
 import com.canu.dto.requests.TemplateRequest;
 import com.canu.dto.responses.Member;
-import com.canu.model.CanUModel;
-import com.canu.model.JobModel;
-import com.canu.model.TemplateModel;
-import com.canu.repositories.CanIRepository;
-import com.canu.repositories.CanURepository;
-import com.canu.repositories.JobRepository;
-import com.canu.repositories.TemplateRepository;
+import com.canu.exception.GlobalValidationException;
+import com.canu.model.*;
+import com.canu.repositories.*;
+import com.canu.specifications.PropertyFilter;
 import com.canu.specifications.TemplateFilter;
 import freemarker.cache.StringTemplateLoader;
 import freemarker.template.Configuration;
@@ -43,9 +40,13 @@ public class AdminService {
 
     final private JobRepository jobRepo;
 
+    private final PropertyRepository propertyRepo;
+
     final Configuration config;
 
     final TemplateRepository templateRepo;
+
+    private final MetadataRepository metadataRepo;
 
     public Page<Member> getMembers(Pageable p, Long userId) {
         //        p.getSort()
@@ -86,7 +87,7 @@ public class AdminService {
     }
 
     private void updateJobInformation(CanUModel canUModel, Member member) {
-//        List<JobModel> jobs = jobRepo.findJobForCreationUser(canUModel.getId());
+        //        List<JobModel> jobs = jobRepo.findJobForCreationUser(canUModel.getId());
         List<JobModel> jobs = canUModel.getCreatedJob();
         member.setCreatedJob(jobs.size());
         member.setCanceledJob(jobs
@@ -106,17 +107,49 @@ public class AdminService {
         member.setFinishedJob(completedJob != null ? completedJob.size() : 0);
     }
 
-    public void setupTemplate(TemplateRequest template){
-        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toString(), template.getTemplate());
-//        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toTitleString(), template.getDescription());
+    public void setupTemplate(TemplateRequest template) {
+        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toString(),
+                                                                        template.getTemplate());
+        //        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toTitleString(), template.getDescription());
         TemplateModel updatedTemplate = templateRepo.findFirstByType(template.getType());
         updatedTemplate.setTemplate(template.getTemplate());
         updatedTemplate.setTitle(template.getTitle());
         templateRepo.save(updatedTemplate);
     }
 
-    public Slice<TemplateModel> getTemplate(TemplateFilter filter, Pageable p){
+    public Slice<TemplateModel> getTemplate(TemplateFilter filter, Pageable p) {
         return templateRepo.findAll(filter, p);
+    }
+
+    public void saveProperties(List<MetadataModel> models) {
+        metadataRepo.saveAll(models);
+    }
+
+    public Object getRatingCriteria(PropertyFilter filter, Pageable p) {
+        filter.setType(PropertyModel.Type.RATING_CRITERIA);
+        return propertyRepo.findAll(filter, p);
+    }
+
+    public Object initialRatingCriteria(PropertyModel entity) {
+        PropertyModel model = entity;
+        entity.setType(PropertyModel.Type.RATING_CRITERIA);
+        PropertyModel existingProperty = null;
+        if (entity.getId() != null) {
+            existingProperty = propertyRepo.findById(entity.getId())
+                                           .orElseThrow(() -> new GlobalValidationException(
+                                                   "cannot find property with id: " + entity.getId()));
+        }
+
+        if(existingProperty == null){
+            existingProperty = propertyRepo.findFirstByKey(entity.getKey());
+        }
+        if(existingProperty != null){
+            model = existingProperty;
+            model.setKey(entity.getKey());
+            model.setLocale(entity.getLocale());
+        }
+        model.getPositions().put(entity.getLocale().toString(), entity.getProperty());
+        return propertyRepo.save(model);
     }
 
 }

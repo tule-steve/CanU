@@ -2,10 +2,7 @@ package com.canu.controller;
 
 import com.canu.model.*;
 import com.canu.repositories.*;
-import com.canu.services.AnnouncementService;
-import com.canu.services.CanIService;
-import com.canu.services.FAQService;
-import com.canu.services.GuidelineService;
+import com.canu.services.*;
 import com.canu.specifications.*;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
@@ -15,6 +12,7 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/data")
@@ -23,7 +21,7 @@ public class MetaDataController {
 
     private final SkillSetRepository skillSetRepo;
 
-    private final PropertyRepository propertyRepo;
+    private final MetadataRepository propertyRepo;
 
     private final CityRepository cityRepo;
 
@@ -38,6 +36,10 @@ public class MetaDataController {
     final private AnnouncementService announceSvc;
 
     final private GuidelineService guideSvc;
+
+    final private AdminService adminSvc;
+
+    final private SupportRequestService supportSvc;
 
     @GetMapping(value = "/services")
     public Object getServices(SkillSetFilter filter) {
@@ -58,8 +60,8 @@ public class MetaDataController {
     }
 
     @PostMapping(value = "/add-properties")
-    public Object addOptions(@RequestBody List<MetadataPropertyModel> list) {
-        propertyRepo.saveAll(list);
+    public Object addOptions(@RequestBody List<MetadataModel> list) {
+        adminSvc.saveProperties(list);
         return ResponseEntity.ok(CommonResponse.buildOkData("added " + list.size() + " option"));
     }
 
@@ -104,9 +106,20 @@ public class MetaDataController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", announceSvc.getListAnnounces(filter, p)));
     }
 
+    @GetMapping(value = "/announce/{id}")
+    public ResponseEntity getAnnounce(@PathVariable Long id) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", announceSvc.getById(id)));
+    }
+
     @PostMapping(value = "/announce/initial")
     public ResponseEntity update(@RequestBody @Validated AnnouncementModel request) {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", announceSvc.initialAnnounce(request)));
+    }
+
+    @PostMapping(value = "/announce/delete")
+    public ResponseEntity deleteAnnounce(@RequestBody Map<String, Long> request) {
+        announceSvc.delete(request.get("id"));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
 
     @GetMapping(value = "/guide/list")
@@ -114,8 +127,48 @@ public class MetaDataController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", guideSvc.getListGuideline(filter, p)));
     }
 
+    @GetMapping(value = "/guide/{id}")
+    public ResponseEntity getGuilde(@PathVariable Long id) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", guideSvc.getById(id)));
+    }
+
     @PostMapping(value = "/guide/initial")
     public ResponseEntity update(@RequestBody @Validated GuidelineModel request) {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", guideSvc.initialGuideline(request)));
     }
+
+    @PostMapping(value = "/guide/delete")
+    public ResponseEntity deleteGuilde(@RequestBody Map<String, Long> request) {
+        guideSvc.delete(request.get("id"));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+    @GetMapping(value = "/rating-criteria/list")
+    public Object getRatingCriteria(PropertyFilter fiter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getRatingCriteria(fiter, p)));
+    }
+
+    @GetMapping(value = "/support/list")
+    public Object sendSupportRequest(SupportRequestFilter filter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", supportSvc.getListSupportRequest(filter, p)));
+    }
+
+    @GetMapping(value = "/support/{id}")
+    public Object getSupportRequest(@PathVariable Long id) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", supportSvc.getById(id)));
+    }
+
+    @PostMapping(value = "/support/initial")
+    public Object sendSupportRequest(@RequestBody @Validated SupportRequestModel request) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", supportSvc.initialGuideline(request)));
+    }
+
+    @PostMapping(value = "/support/delete")
+    public ResponseEntity deleteSupport(@RequestBody Map<String, Long> request) {
+        supportSvc.delete(request.get("id"));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+
+
 }

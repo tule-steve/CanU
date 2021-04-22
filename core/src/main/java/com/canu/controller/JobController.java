@@ -5,6 +5,7 @@ import com.canu.dto.requests.UpdateJobRequest;
 import com.canu.repositories.CanURepository;
 import com.canu.services.JobService;
 import com.canu.specifications.JobFilter;
+import com.canu.specifications.JobRatingFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
@@ -35,7 +36,7 @@ public class JobController {
 
     @PostMapping(value = "/cancel-job")
     public Object cancelJob(@RequestBody Map<String, Object> request) {
-        jobSvc.cancelJob(Long.parseLong(request.get("id").toString()));
+        jobSvc.cancelJob(Long.parseLong(request.get("id").toString()), String.valueOf(request.get("reason")));
         return ResponseEntity.ok(CommonResponse.buildOkData("cancel the job"));
     }
 
@@ -63,6 +64,17 @@ public class JobController {
         Long jobId = Long.parseLong(request.get("jobId").toString());
         jobSvc.completeJobByCanU(jobId);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+    @GetMapping(value = "/get-rating/list")
+    public Object getRatingList(JobRatingFilter filter, Pageable p) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getRatingList(filter, p)));
+    }
+
+    @GetMapping(value = "/get-review/list")
+    public Object getReviewList(JobRatingFilter filter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getReviewList(filter, p)));
     }
 
 
