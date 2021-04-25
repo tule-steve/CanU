@@ -113,6 +113,10 @@ public class JobModel {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "job")
     List<JobReviewerModel> reviewers = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "job")
+    List<PaymentModel> payments = new ArrayList<>();
+
     @Transient
     private Set<String> keyword;
 

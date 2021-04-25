@@ -1,15 +1,13 @@
 package com.canu.controller;
 
-import com.canu.dto.requests.CanUSignUpRequest;
-import com.canu.dto.requests.ChangePassWordRequest;
-import com.canu.dto.requests.RatingUserRequest;
-import com.canu.dto.requests.ResetPassWordRequest;
+import com.canu.dto.requests.*;
 import com.canu.dto.responses.JobDto;
 import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
 import com.canu.model.PropertyModel;
 import com.canu.services.*;
+import com.canu.specifications.CouponFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -39,6 +37,10 @@ public class CanUController {
     final private AdminService adminSvc;
 
     final private SmsService smsSvc;
+
+    final private PaymentService paymentSvc;
+
+    final private CouponService couponSvc;
 
     @PostMapping(value = "/signup")
     public ResponseEntity signUp(@Validated @RequestBody CanUSignUpRequest request) {
@@ -183,9 +185,27 @@ public class CanUController {
     }
 
     @PostMapping(value = "/rating-user")
-    public ResponseEntity ratPlatform(@RequestBody RatingUserRequest request) {
+    public ResponseEntity ratPlatform(@RequestBody @Validated RatingUserRequest request) {
         jobSvc.ratingUser(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("add review"));
+    }
+
+    @PostMapping(value = "/complete-payment")
+    public ResponseEntity completePayment(@RequestBody @Validated CompletePaymentRequest request) {
+        paymentSvc.complete(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("add review"));
+    }
+
+    @PostMapping(value = "/collect-voucher")
+    public ResponseEntity addCoupon(@RequestBody @Validated CollectCouponRequest request){
+        couponSvc.addCoupon(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("added coupon to your coupon list"));
+    }
+
+    @GetMapping(value = "/get-voucher")
+    public ResponseEntity addCoupon(CouponFilter filter, Pageable p){
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", couponSvc.getCoupons(filter, p)));
     }
 
 }

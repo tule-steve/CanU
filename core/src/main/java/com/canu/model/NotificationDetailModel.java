@@ -18,7 +18,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class NotificationDetailModel {
     private static final Logger logger = LoggerFactory.getLogger(NotificationDetailModel.class);
 
-    private static final ObjectMapper mapper = new ObjectMapper();
+    public static final ObjectMapper mapper = new ObjectMapper();
 
     public enum Type {
         CREATE_JOB,

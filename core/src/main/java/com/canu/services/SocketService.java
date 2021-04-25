@@ -15,7 +15,6 @@ import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
-import org.springframework.web.bind.annotation.ExceptionHandler;
 
 import java.util.Arrays;
 import java.util.List;
@@ -140,10 +139,10 @@ public class SocketService {
         }
     }
 
-    @ExceptionHandler(Exception.class)
-    public void handleException(Exception ex) {
-        // not throw exception for push notification
-        logger.error("error on push notification", ex);
-    }
+//    @ExceptionHandler(Exception.class)
+//    public void handleException(Exception ex) {
+//        // not throw exception for push notification
+//        logger.error("error on push notification", ex);
+//    }
 
 }

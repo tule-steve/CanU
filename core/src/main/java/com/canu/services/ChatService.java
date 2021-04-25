@@ -4,6 +4,7 @@ import com.canu.dto.MessageBean;
 import com.canu.dto.responses.ParticipantDto;
 import com.canu.model.CanUDeletedMessage;
 import com.canu.model.CanUModel;
+import com.canu.model.JobModel;
 import com.canu.repositories.CanUDeletedMessageRepository;
 import com.canu.repositories.CanURepository;
 import com.canu.repositories.MessageRepository;
@@ -11,6 +12,7 @@ import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Pageable;
+import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -35,6 +37,26 @@ public class ChatService {
     final private EntityManager em;
 
     final private CanUDeletedMessageRepository deletedMessRepo;
+
+    final SimpMessagingTemplate simpMessagingTemplate;
+
+    public void sendPaymentCompleteMessage(JobModel job){
+        try {
+            MessageBean message = new MessageBean();
+            message.setFromUser(job.getCreationUser().getId());
+            message.setToUser(job.getRequestedUser().getId());
+            message.setMessage("####PAYMENTED####_" + job.getId());
+            message.updateConversationId();
+            message = saveMessage(message);
+            logger.error("Starting to send to User");
+            simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getToUser(), message);
+            logger.error("Starting to send from User");
+            simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getFromUser(), message);
+            logger.error("Sending all");
+        } catch (Exception ex){
+            logger.error("Cannot notice payment complete fro job {}", job.getId());
+        }
+    }
 
     public MessageBean saveMessage(MessageBean message) {
         return messRepo.save(message);

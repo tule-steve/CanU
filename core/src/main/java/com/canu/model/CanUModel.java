@@ -165,6 +165,14 @@ public class CanUModel {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "target")
     List<JobReviewerModel> targetUser = new ArrayList<>();
 
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    List<PaymentModel> payments = new ArrayList<>();
+
+    @JsonIgnore
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "owner")
+    List<UserCouponModel> coupon = new ArrayList<>();
+
 
     public Long getCaniId(){
         if(canIModel == null){
