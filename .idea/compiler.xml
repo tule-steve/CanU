@@ -10,13 +10,21 @@
         <module name="core" />
         <module name="common" />
         <module name="OAuth2" />
+        <module name="chat" />
       </profile>
     </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="CanU" target="1.8" />
+      <module name="chat" target="1.8" />
+      <module name="common" target="1.8" />
+      <module name="core" target="1.8" />
+      <module name="OAuth2" target="1.8" />
+    </bytecodeTargetLevel>
   </component>
   <component name="JavacSettings">
     <option name="ADDITIONAL_OPTIONS_OVERRIDE">
-      <module name="CodeGame" options="-parameters" />
       <module name="OAuth2" options="-parameters" />
+      <module name="chat" options="-parameters" />
       <module name="common" options="-parameters" />
       <module name="core" options="-parameters" />
     </option>
