@@ -54,7 +54,7 @@ public class JobDto {
             pickupCanI = job.getCanus()
                             .stream()
                             .map(r -> {
-                                if (r.getCanIModel() == null) {
+                                if (!r.isRegisterCanI()) {
                                     return CanIDto.builder()
                                                   .id(r.getId())
                                                   .name(r.getName())

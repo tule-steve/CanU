@@ -20,6 +20,7 @@ public class FAQFilter implements Specification<FAQModel> {
 
     @Override
     public Predicate toPredicate(Root<FAQModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (!(locale.size() == 1 && CountryModel.Locale.all.equals(locale.get(0)))) {
             predicates.add(builder.in(root.get("locale")).value(locale));

@@ -23,6 +23,7 @@ public class PropertyFilter implements Specification<PropertyModel> {
     public Predicate toPredicate(Root<PropertyModel> root,
                                  CriteriaQuery<?> criteriaQuery,
                                  CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(builder.equal(root.get("locale"), locale));
 

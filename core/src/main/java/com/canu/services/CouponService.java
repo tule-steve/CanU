@@ -31,7 +31,7 @@ public class CouponService {
     public void addCoupon(CollectCouponRequest request) {
         CouponModel coupon = couponRepo.findFirstByCode(request.getCouponCode())
                   .orElseThrow(() -> new GlobalValidationException(
-                          "Cannot find the voucher with code: " + request.getCouponCode()));
+                          "Cannot find the voucher with code " + request.getCouponCode()));
 
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
@@ -41,7 +41,7 @@ public class CouponService {
             userCoupon.setOwner(uUser);
             userCouponRepo.save(userCoupon);
         } else {
-            throw new GlobalValidationException("Collected this coupon");
+            throw new GlobalValidationException("");
         }
     }
 }

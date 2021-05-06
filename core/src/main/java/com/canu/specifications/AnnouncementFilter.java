@@ -21,6 +21,7 @@ public class AnnouncementFilter implements Specification<AnnouncementModel> {
     public Predicate toPredicate(Root<AnnouncementModel> root,
                                  CriteriaQuery<?> criteriaQuery,
                                  CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(builder.equal(root.get("locale"), locale));
         return builder.and(predicates.toArray(new Predicate[0]));

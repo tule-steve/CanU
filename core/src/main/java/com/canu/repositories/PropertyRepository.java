@@ -20,4 +20,6 @@ public interface PropertyRepository
     Set<PropertyModel> findAllByTypeAndLocale(String locale);
 
     PropertyModel findFirstByKey(String key);
+
+    PropertyModel findFirstByTypeAndKey(PropertyModel.Type type, String currency);
 }

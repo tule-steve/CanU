@@ -20,6 +20,7 @@ public class CouponFilter implements Specification<CouponModel> {
 
     @Override
     public Predicate toPredicate(Root<CouponModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (code != null) {
             predicates.add(builder.equal(root.get("code"), code));

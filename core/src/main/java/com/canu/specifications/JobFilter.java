@@ -30,6 +30,7 @@ public class JobFilter implements Specification<JobModel> {
     @Override
     public Predicate toPredicate(Root<JobModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
         criteriaQuery.distinct(true);
+        criteriaQuery.orderBy(builder.desc(root.get("id")));
         List<Predicate> predicates = new ArrayList<>();
         if (services.size() > 0) {
             Join skillSetJoin = root.join("skillSets");

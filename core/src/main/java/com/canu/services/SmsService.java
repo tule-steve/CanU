@@ -31,7 +31,7 @@ public class SmsService {
 
     public static final String ACCOUNT_SID = "ACa4c66b9d60b0308fd97d6e8cf8412994";
 
-    public static final String AUTH_TOKEN = "1a2814de823de2fb969f5b0d2884e4b3";
+    public static final String AUTH_TOKEN = "4f6cc5472e34e02e2c0f5eaf795a46f4";
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);
 

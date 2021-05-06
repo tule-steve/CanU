@@ -20,7 +20,8 @@ import static javax.persistence.GenerationType.IDENTITY;
 public class PropertyModel {
 
     public enum Type {
-        RATING_CRITERIA
+        RATING_CRITERIA,
+        POINT_EXCHANGE
     }
 
     @Id

@@ -28,6 +28,6 @@ public class AnnouncementService {
 
     public AnnouncementModel getById(Long id) {
         return announceRepo.findById(id).orElseThrow(() -> new GlobalValidationException(
-                "cannot find announcement with id: " + id));
+                "cannot find announcement"));
     }
 }

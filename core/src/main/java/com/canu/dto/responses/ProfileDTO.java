@@ -20,7 +20,7 @@ public class ProfileDTO {
         city = canu.getCity();
         address = canu.getAddress();
         createdAt = canu.getCreatedAt();
-        if (canu.getCanIModel() != null) {
+        if (canu.isRegisterCanI()) {
             CanIModel caniData = canu.getCanIModel();
             phone = caniData.getPhone();
             cani = CanIDto.builder()

@@ -5,6 +5,7 @@ import com.canu.exception.GlobalValidationException;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -110,6 +111,7 @@ public class CanUModel {
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "cani_id")
+    @Where(clause = "status <> 'DRAFT'")
     private CanIModel canIModel;
 
     @JsonIgnore
@@ -183,7 +185,7 @@ public class CanUModel {
 
     public void validatePrivilege(CanUModel ownerUser){
         if(!isAdmin && !this.getId().equals(ownerUser.getId())){
-            throw new GlobalValidationException("do not have privilege to do");
+            throw new GlobalValidationException("do not have privilege for this action");
         }
     }
 
@@ -210,6 +212,13 @@ public class CanUModel {
     @Override
     public int hashCode() {
         return getClass().hashCode();
+    }
+
+    public boolean isRegisterCanI(){
+        if(getCanIModel() == null || getCanIModel().getId() == null){
+            return false;
+        }
+        return true;
     }
 
 

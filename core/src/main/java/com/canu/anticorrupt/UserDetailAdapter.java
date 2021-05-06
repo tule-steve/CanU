@@ -47,7 +47,7 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
         GrantedAuthority authority = new SimpleGrantedAuthority("ROLE_CANU");
         grantList.add(authority);
 
-        if (user.getCanIModel() != null) {
+        if (user.isRegisterCanI()) {
             authority = new SimpleGrantedAuthority("ROLE_CANI");
             grantList.add(authority);
         }

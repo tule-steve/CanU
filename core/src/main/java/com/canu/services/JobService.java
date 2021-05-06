@@ -54,7 +54,7 @@ public class JobService {
 
         if (user == null) {
             logger.error("User {} not found", user.getUsername());
-            throw new GlobalValidationException("User " + user.getUsername() + " was not found in the database");
+            throw new GlobalValidationException("User is not exist or deleted");
         }
 
         if (request.getCreationUser() == null) {
@@ -63,7 +63,7 @@ public class JobService {
 
         List<SkillSetModel> skillSets = skillSetRepo.findAllById(request.getService());
         if (!Objects.equals(skillSets.size(), request.getService().size())) {
-            throw new GlobalValidationException("Some chosen services not existed");
+            throw new GlobalValidationException("Some chosen services not existed. Please try again");
         }
         request.setSkillSets(skillSets);
         addKeywordsIntoJob(request.getKeyword(), request);
@@ -97,7 +97,7 @@ public class JobService {
 
     public JobDto getJobDetail(Long id) {
         JobModel job = jobRepo.findById(id)
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find job with id: " + id));
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         return new JobDto(job);
     }
 
@@ -117,7 +117,7 @@ public class JobService {
     public void pickUpJob(Long jobId) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        JobModel job = jobRepo.findById(jobId).orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+        JobModel job = jobRepo.findById(jobId).orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         if (!job.getCanus().stream().anyMatch(r -> r.getId() == uUser.getId())) {
             job.getCanus().add(uUser);
             jobRepo.save(job);
@@ -128,10 +128,10 @@ public class JobService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(jobId)
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         uUser.validatePrivilege(job.getCreationUser());
         job.setReason(reason);
-        if(JobModel.JobStatus.PENDING.equals(job.getStatus())) {
+        if (JobModel.JobStatus.PENDING.equals(job.getStatus())) {
             jobRepo.delete(job);
         } else {
             job.setStatus(JobModel.JobStatus.REQUEST_CANCEL);
@@ -142,8 +142,8 @@ public class JobService {
 
     public void cancelJobByAdmin(AdminJobCancelRequest request) {
         JobModel job = jobRepo.findById(request.getJobId())
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
-        if(request.getIsApproval()){
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
+        if (request.getIsApproval()) {
             job.setCancelStatus(null);
             jobRepo.delete(job);
         } else {
@@ -158,7 +158,7 @@ public class JobService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(request.getId())
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         uUser.validatePrivilege(job.getCreationUser());
 
         request.updateJobEntity(job);
@@ -172,10 +172,10 @@ public class JobService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(request.getJobId())
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         CanUModel requestedUser = canURepo.findById(request.getRequestedUserId())
                                           .orElseThrow(() -> new GlobalValidationException(
-                                                  "Cannot file the user for requested user id"));
+                                                  "Cannot find the user for requested user. Please try again"));
         if (!uUser.getId().equals(request.getOwner()) && !uUser.getId().equals(request.getRequestedUserId()) ||
             !JobModel.JobStatus.PENDING.equals(job.getStatus())) {
             throw new GlobalValidationException("permission denied");
@@ -192,7 +192,7 @@ public class JobService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel cani = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(jobId)
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
 
         if (!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
             !cani.getId().equals(job.getRequestedUser().getId())) {
@@ -206,7 +206,7 @@ public class JobService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel canu = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(jobId)
-                              .orElseThrow(() -> new GlobalValidationException("Cannot find the job"));
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
 
         if (!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
             !canu.getId().equals(job.getCreationUser().getId())) {
@@ -221,7 +221,7 @@ public class JobService {
         CanUModel canu = canURepo.findByEmail(user.getUsername());
         JobModel job = jobRepo.findById(request.getJobId())
                               .orElseThrow(() -> new GlobalValidationException(
-                                      "Cannot find job with id: " + request.getJobId()));
+                                      "job is not existed or deleted"));
         if (!JobModel.JobStatus.COMPLETED.equals(job.getStatus())) {
             throw new GlobalValidationException("Cannot review for uncompleted job");
         }
@@ -231,12 +231,17 @@ public class JobService {
             reviewer = canu;
             targetUser = job.getRequestedUser();
             job.setRating(request.getValue());
+            if(targetUser.isRegisterCanI()){
+                CanIModel cani = targetUser.getCanIModel();
+                cani.setTotalRating(cani.getTotalRating() + request.getValue());
+                cani.setRatingCount(cani.getRatingCount() + 1);
+            }
         } else {
             reviewer = canu;
             targetUser = job.getCreationUser();
         }
 
-        if(jobReviewRepo.existsDistinctByJobAndReviewerAndTarget(job, reviewer, targetUser)){
+        if (jobReviewRepo.existsDistinctByJobAndReviewerAndTarget(job, reviewer, targetUser)) {
             throw new GlobalValidationException("only rating one time");
         }
 
@@ -252,7 +257,6 @@ public class JobService {
         jobRepo.save(job);
     }
 
-
     public Object getRatingList(JobRatingFilter filter, Pageable p) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel canu = canURepo.findByEmail(user.getUsername());
@@ -265,10 +269,10 @@ public class JobService {
         return buildRatingList(filter, p);
     }
 
-    private Page<JobDto> buildRatingList(JobRatingFilter filter, Pageable p){
+    private Page<JobDto> buildRatingList(JobRatingFilter filter, Pageable p) {
         Page<JobReviewerModel> data = jobReviewRepo.findAll(filter, p);
         List ratingList = new ArrayList();
-        for(JobReviewerModel review : data){
+        for (JobReviewerModel review : data) {
             ratingList.add(new RatingDto(review));
         }
         Page<JobDto> result = new PageImpl<>(ratingList, p, data.getTotalElements());
@@ -279,9 +283,11 @@ public class JobService {
         filter.setStatus(JobModel.JobStatus.COMPLETED);
         Page<JobModel> data = jobRepo.findAll(filter, p);
         List ratingList = new ArrayList();
-        for(JobModel job : data){
-            if(job.getReviewers().size() > 0) {
-                if(job.getReviewers().stream().anyMatch(r ->job.getCreationUser().getId().equals(r.getReviewer().getId()))) {
+        for (JobModel job : data) {
+            if (job.getReviewers().size() > 0) {
+                if (job.getReviewers()
+                       .stream()
+                       .anyMatch(r -> job.getCreationUser().getId().equals(r.getReviewer().getId()))) {
                     ratingList.add(new AdminRatingDto(job));
                 } else {
                     ratingList.add(new AdminRatingDto(job.getReviewers().get(0)));
@@ -290,6 +296,19 @@ public class JobService {
         }
         Page<JobDto> result = new PageImpl<>(ratingList, p, data.getTotalElements());
         return result;
+    }
+
+    public List<JobDto> getUnpaidJobList(JobFilter filter) {
+        filter.setStatus(JobModel.JobStatus.PROCESSING);
+        List<JobModel> jobEntities = jobRepo.findAll(filter);
+        List<JobModel> nonePaymentJob = jobEntities.stream()
+                                                   .filter(r -> r.getPayments()
+                                                                  .stream()
+                                                                  .anyMatch(e -> PaymentModel.Status.TOPPED_UP.equals(e.getStatus()))
+                                                   ).collect(Collectors.toList());
+
+        List<JobDto> jobList = nonePaymentJob.stream().map(r -> new JobDto(r)).collect(Collectors.toList());
+        return jobList;
     }
 
 }

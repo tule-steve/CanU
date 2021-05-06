@@ -1,9 +1,11 @@
 package com.canu.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -17,6 +19,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Data
 @Table(name = "job")
 @SQLDelete(sql = "UPDATE job SET status = 'CANCEL' WHERE id = ?")
+@JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 //@Where(clause = "status <> 'CANCEL'")
 public class JobModel {
 
@@ -47,6 +50,7 @@ public class JobModel {
     @JoinColumn(name = "creation_user", updatable = false, nullable = false)
     CanUModel creationUser;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "requested_user")
     CanUModel requestedUser;
@@ -114,6 +118,7 @@ public class JobModel {
     List<JobReviewerModel> reviewers = new ArrayList<>();
 
     @JsonIgnore
+    @Where(clause = "status <> 'CANCEL'")
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "job")
     List<PaymentModel> payments = new ArrayList<>();
 

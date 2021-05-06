@@ -23,6 +23,7 @@ public class SupportRequestFilter implements Specification<SupportRequestModel> 
 
     @Override
     public Predicate toPredicate(Root<SupportRequestModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (email != null) {
             predicates.add(builder.equal(root.get("email"), email));

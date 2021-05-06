@@ -21,6 +21,7 @@ public class GuidelineFilter implements Specification<GuidelineModel> {
     public Predicate toPredicate(Root<GuidelineModel> root,
                                  CriteriaQuery<?> criteriaQuery,
                                  CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         predicates.add(builder.equal(root.get("locale"), locale));
         return builder.and(predicates.toArray(new Predicate[0]));

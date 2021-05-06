@@ -77,5 +77,10 @@ public class JobController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getReviewList(filter, p)));
     }
 
+    @GetMapping(value = "/unpaid-list")
+    public Object getUnpaidList(JobFilter filter) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getUnpaidJobList(filter)));
+    }
+
 
 }

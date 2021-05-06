@@ -2,14 +2,13 @@ package com.canu.controller;
 
 import com.canu.dto.requests.TransactionRequest;
 import com.canu.services.PaymentService;
+import com.canu.specifications.PaymentFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,8 +18,13 @@ public class PaymentController {
     final private PaymentService paymentSvc;
 
     @PostMapping(value = "/get-transaction-info")
-    public ResponseEntity addCoupon(@RequestBody @Validated TransactionRequest request){
+    public ResponseEntity getCart(@RequestBody @Validated TransactionRequest request){
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", paymentSvc.getTransactionDetail(request)));
+    }
+
+    @GetMapping(value = "/history")
+    public ResponseEntity getPaymentHistory(PaymentFilter filter, Pageable p){
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", paymentSvc.getPaymentList(filter, p)));
     }
 
 

@@ -18,6 +18,13 @@ import static javax.persistence.GenerationType.IDENTITY;
 @JsonIgnoreProperties({"hibernateLazyInitializer", "handler"})
 public class CanIModel {
 
+    public enum Status{
+        DRAFT,
+        PENDING,
+        ACTIVE,
+        CANCEL
+    }
+
 //    @JsonIgnore
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -84,8 +91,19 @@ public class CanIModel {
     @Column(name = "title")
     String title;
 
-    @Column(name = "rating")
     BigDecimal rating;
+
+    @Column(name = "status")
+    @Enumerated(EnumType.STRING)
+    Status status;
+
+    @JsonIgnore
+    @Column(name = "total_rating")
+    Integer totalRating = 0;
+
+    @JsonIgnore
+    @Column(name = "rating_count")
+    Integer ratingCount = 0;
 
     @Column(name = "is_phone_verified")
     Boolean phoneVerified = false;
@@ -134,6 +152,13 @@ public class CanIModel {
     @JsonIgnore
     @ManyToMany(mappedBy = "favoriteCanIs")
     private Set<CanUModel> favoriteCanU = new HashSet<>();
+
+    @PostLoad
+    private void updateRating(){
+        if(ratingCount > 0){
+            rating = BigDecimal.valueOf(totalRating).divide(BigDecimal.valueOf(ratingCount), 2, BigDecimal.ROUND_CEILING);
+        }
+    }
 
     @Override
     public boolean equals(Object o) {

@@ -72,7 +72,7 @@ public class CanUService {
     public ResponseEntity signUp(CanUSignUpRequest request) {
 
         if (canURepo.findByEmail(request.getEmail()) != null) {
-            throw new GlobalValidationException("Email is used.");
+            throw new GlobalValidationException("Email is used");
         }
 
         String cryptPass = encoder.encode(request.getPassword());
@@ -94,7 +94,7 @@ public class CanUService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
         if (!uUser.getId().equals(request.getId())) {
-            throw new GlobalValidationException("updated data do not map with user in authentication token");
+            throw new GlobalValidationException("do not have privilege for this action");
         }
         updateCanU(request, uUser);
         uUser = canURepo.save(uUser);
@@ -186,7 +186,7 @@ public class CanUService {
             response.put(parentFolder, cerModel);
             if ("canu_avatar".equalsIgnoreCase(parentFolder)) {
                 uUser.setAvatar(cerModel.get(0).getUrl());
-            } else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.getCanIModel() != null) {
+            } else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.isRegisterCanI()) {
                 uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
             }
 
@@ -276,7 +276,7 @@ public class CanUService {
 
     public void confirmEmail(String token) {
         CanUModel currUser = canURepo.findByToken(token)
-                                     .orElseThrow(() -> new GlobalValidationException("User is not existed"));
+                                     .orElseThrow(() -> new GlobalValidationException("User is not exist or deleted"));
         currUser.setToken(null);
         currUser.setActivated(true);
         canURepo.save(currUser);
@@ -302,7 +302,7 @@ public class CanUService {
 
     public void resetPassword(ResetPassWordRequest request) {
         CanUModel currUser = canURepo.findByToken(request.getToken())
-                                     .orElseThrow(() -> new GlobalValidationException("Token invalid"));
+                                     .orElseThrow(() -> new GlobalValidationException("Token is expired. Please request again"));
 
         String cryptNewPass = encoder.encode(request.getNewPassword());
         currUser.setPassword(cryptNewPass);
@@ -314,14 +314,14 @@ public class CanUService {
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
         if (userId.equals(uUser.getId())) {
-            throw new GlobalValidationException("cannot link to myself");
+            throw new GlobalValidationException("Cannot add yourself to favorite list");
         }
 
         CanUModel canIUser = canURepo.findById(userId)
-                                     .orElseThrow(() -> new GlobalValidationException("Cannot find the user"));
+                                     .orElseThrow(() -> new GlobalValidationException("User is not exist or deleted"));
 
-        if (canIUser.getCanIModel() == null) {
-            throw new GlobalValidationException("User is not CanI");
+        if (!canIUser.isRegisterCanI()) {
+            throw new GlobalValidationException("User is not CanI user");
         }
 
         Map<String, Boolean> data = new HashMap<>();
@@ -375,7 +375,7 @@ public class CanUService {
 
 
     public Object getNotificationDetail(Long id) {
-        return notiDetailRepo.findById(id).orElseThrow(() -> new GlobalValidationException("Cannot find the notification with id"));
+        return notiDetailRepo.findById(id).orElseThrow(() -> new GlobalValidationException("Cannot find the notification"));
     }
 
     @Transactional(readOnly = true)

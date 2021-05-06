@@ -2,9 +2,11 @@ package com.canu.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 
 import javax.persistence.*;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -55,8 +57,12 @@ public class PaymentModel {
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "user_coupon_id", updatable = false)
+    @JoinColumn(name = "user_coupon_id")
     UserCouponModel userCoupon;
+
+    @Column(name = "created_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
 
 
 }

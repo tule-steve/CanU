@@ -22,6 +22,7 @@ public class JobRatingFilter implements Specification<JobReviewerModel> {
     public Predicate toPredicate(Root<JobReviewerModel> root,
                                  CriteriaQuery<?> criteriaQuery,
                                  CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
 
         if(isGetReview) {

@@ -21,6 +21,7 @@ public class TemplateFilter implements Specification<TemplateModel> {
 
     @Override
     public Predicate toPredicate(Root<TemplateModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (type != null) {
             predicates.add(builder.equal(root.get("type"), type));

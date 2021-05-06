@@ -16,8 +16,10 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.math.BigDecimal;
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -36,8 +38,8 @@ public class CanIService {
     public ResponseEntity signUp(CanIModel request, String email) {
 
         CanUModel currentCanU = canURepo.findByEmail(email);
-        if (currentCanU.getCanIModel() != null && request.getId() == null) {
-            throw new GlobalValidationException("CanI is created for this user.");
+        if (currentCanU.isRegisterCanI() && request.getId() == null) {
+            throw new GlobalValidationException("CanI is created for this user");
         }
 
         if (request.getId() != null) {
@@ -56,7 +58,7 @@ public class CanIService {
 
         List<SkillSetModel> skillSets = skillSetRepo.findAllById(request.getService());
         if (!Objects.equals(skillSets.size(), request.getService().size())) {
-            throw new GlobalValidationException("Some chosen services not existed");
+            throw new GlobalValidationException("Some selected services not existed");
         }
 
         if (request.getId() != null && !currentCanU.getCanIModel().getId().equals(request.getId())) {
@@ -75,10 +77,12 @@ public class CanIService {
     public ResponseEntity getDetail(String email) {
         CanUModel currentCanU = canURepo.findByEmail(email);
 
-        CanIModel cani = currentCanU.getCanIModel();
-        if (cani == null) {
-            throw new GlobalValidationException("CanI is not created for this user.");
+        if (currentCanU.getCanIModel() == null) {
+            throw new GlobalValidationException("CanI is not created for current user");
         }
+
+        CanIModel cani = currentCanU.getCanIModel();
+
         Hibernate.initialize(currentCanU.getFiles());
         updateCanIResponse(cani, currentCanU);
 
@@ -114,18 +118,9 @@ public class CanIService {
                                                        .filter(r -> r.getRating() > 0)
                                                        .collect(Collectors.toList());
                 int totalPoint = ratingJob.stream().mapToInt(JobModel::getRating).sum();
-                if (ratingJob.size() > 0) {
-                    BigDecimal rating = BigDecimal.valueOf(totalPoint)
-                                                  .divide(BigDecimal.valueOf(Long.valueOf(ratingJob.size())));
-                    //                if (!rating.equals(cani.getRating())) {
-                    cani.setRating(rating);
-                }
-                //                    caniRepo.save(cani);
-                //                }
             }
 
             updateCanIResponse(cani, cani.getCanUModel());
-
             em.detach(cani);
             cani.setId(cani.getCanUModel().getId());
             cani.setJobStatus(jobStatus);

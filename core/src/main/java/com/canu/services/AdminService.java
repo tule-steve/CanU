@@ -137,13 +137,13 @@ public class AdminService {
         if (entity.getId() != null) {
             existingProperty = propertyRepo.findById(entity.getId())
                                            .orElseThrow(() -> new GlobalValidationException(
-                                                   "cannot find property with id: " + entity.getId()));
+                                                   "The Rating Criteria is not exist"));
         }
 
-        if(existingProperty == null){
+        if (existingProperty == null) {
             existingProperty = propertyRepo.findFirstByKey(entity.getKey());
         }
-        if(existingProperty != null){
+        if (existingProperty != null) {
             model = existingProperty;
             model.setKey(entity.getKey());
             model.setLocale(entity.getLocale());

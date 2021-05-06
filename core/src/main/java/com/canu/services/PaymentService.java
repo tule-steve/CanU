@@ -2,12 +2,11 @@ package com.canu.services;
 
 import com.canu.dto.requests.CompletePaymentRequest;
 import com.canu.dto.requests.TransactionRequest;
+import com.canu.dto.responses.TransactionDetailDto;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.*;
-import com.canu.repositories.CanURepository;
-import com.canu.repositories.JobRepository;
-import com.canu.repositories.PaymentRepository;
-import com.canu.repositories.UserCouponRepository;
+import com.canu.repositories.*;
+import com.canu.specifications.PaymentFilter;
 import com.paypal.core.PayPalEnvironment;
 import com.paypal.core.PayPalHttpClient;
 import com.paypal.http.HttpResponse;
@@ -17,13 +16,19 @@ import com.paypal.orders.OrdersGetRequest;
 import com.paypal.orders.PurchaseUnit;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 @Transactional
@@ -40,6 +45,10 @@ public class PaymentService {
 
     final private ChatService chatSvc;
 
+    final private EntityManager em;
+
+    final private PropertyRepository propertyRepo;
+
     private static final Logger logger = Logger.getLogger(PaymentService.class);
 
     // Creating a sandbox environment
@@ -50,7 +59,7 @@ public class PaymentService {
     // Creating a client for the environment
     static PayPalHttpClient client = new PayPalHttpClient(environment);
 
-    public PaymentModel getTransactionDetail(TransactionRequest request) {
+    public Object getTransactionDetail(TransactionRequest request) {
         JobModel job = jobRepo.findById(request.getJobId())
                               .orElseThrow(() -> new GlobalValidationException(
                                       "Cannot find the job with id: " + request.getJobId()));
@@ -66,20 +75,23 @@ public class PaymentService {
         } else {
             payment = job.getPayments().get(0);
         }
-
+//
         payment.setTotal(BigDecimal.valueOf(job.getTotal()));
         payment.setCurrency(job.getCurrency());
         if (request.getCouponCode() != null) {
             UserCouponModel userCoupon = userCouponRepo.getTransactionVoucher(uUser, request.getCouponCode(),
-                                                                                           CouponModel.Status.AVAILABLE)
+                                                                              CouponModel.Status.AVAILABLE)
                                                        .orElseThrow(() -> new GlobalValidationException(
                                                                "cannot find the coupon"));
 
             payment.setUserCoupon(userCoupon);
-            payment.setTotal(payment.getTotal().subtract(userCoupon.getCoupon().getValue()));
         }
+        PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
+                                                                             job.getCurrency());
+        TransactionDetailDto response = new TransactionDetailDto(payment, job, em, pointExchangeRate);
         paymentRepo.save(payment);
-        return payment;
+
+        return response;
     }
 
     public void complete(CompletePaymentRequest request) {
@@ -99,7 +111,7 @@ public class PaymentService {
                 paymentModel.setStatus(PaymentModel.Status.TOPPED_UP);
                 paymentModel.setTransactionId(paymentOrder.id());
                 paymentModel.setPaymentMethod("paypal");
-                if(paymentModel.getJob() != null) {
+                if (paymentModel.getJob() != null) {
                     chatSvc.sendPaymentCompleteMessage(paymentModel.getJob());
                 }
                 paymentRepo.save(paymentModel);
@@ -137,5 +149,26 @@ public class PaymentService {
             throw new GlobalValidationException("cannot get the payment detail from paypal");
         }
 
+    }
+
+    @Transactional(readOnly = true)
+    public Page<TransactionDetailDto> getPaymentList(PaymentFilter filter, Pageable p) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+
+        filter.setUserId(uUser);
+        Page<PaymentModel> payments = paymentRepo.findAll(filter, p);
+        TransactionDetailDto detail;
+        List<TransactionDetailDto> dtoResult = new ArrayList<>();
+        for(PaymentModel payment : payments){
+            PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
+                                                                                 payment.getJob().getCurrency());
+
+            detail = new TransactionDetailDto(payment, payment.getJob(), em, pointExchangeRate);
+            dtoResult.add(detail);
+        }
+
+        Page<TransactionDetailDto> result = new PageImpl<>(dtoResult, p, payments.getTotalElements());
+        return result;
     }
 }

@@ -28,6 +28,6 @@ public class GuidelineService {
 
     public GuidelineModel getById(Long id) {
         return guideRepo.findById(id).orElseThrow(() -> new GlobalValidationException(
-                "cannot find guideline with id: " + id));
+                "cannot find guideline"));
     }
 }

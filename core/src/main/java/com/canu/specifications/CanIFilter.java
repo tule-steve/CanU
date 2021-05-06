@@ -23,6 +23,7 @@ public class CanIFilter implements Specification<CanIModel> {
 
     @Override
     public Predicate toPredicate(Root<CanIModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
+        criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (services.size() > 0) {
             Join skillSetJoin = root.join("skillSets");
