@@ -97,6 +97,13 @@
             <version>1.0.3</version>
         </dependency>
 
+        <!-- https://mvnrepository.com/artifact/com.paypal.sdk/payouts-sdk -->
+        <dependency>
+            <groupId>com.paypal.sdk</groupId>
+            <artifactId>payouts-sdk</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
 
     </dependencies>
 

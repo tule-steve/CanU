@@ -30,6 +30,10 @@ public class ProfileDTO {
                           .price(caniData.getPrice())
                           .address(caniData.getAddress())
                           .nation(caniData.getNational())
+                          .areaService(caniData.getAreaService())
+                          .currency(caniData.getCurrency())
+                          .jobType(caniData.getServiceType())
+                          .rating(caniData.getRating())
                           .build();
         }
     }

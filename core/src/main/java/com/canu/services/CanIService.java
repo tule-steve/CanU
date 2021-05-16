@@ -36,7 +36,7 @@ public class CanIService {
     final private EntityManager em;
 
     public ResponseEntity signUp(CanIModel request, String email) {
-
+        request.setStatus(CanIModel.Status.ACTIVE);
         CanUModel currentCanU = canURepo.findByEmail(email);
         if (currentCanU.isRegisterCanI() && request.getId() == null) {
             throw new GlobalValidationException("CanI is created for this user");
@@ -46,6 +46,13 @@ public class CanIService {
             CanIModel data = caniRepo.findById(request.getId())
                                      .orElseThrow(() -> new GlobalValidationException("CanI not exist"));
             request.setAvatar(data.getAvatar());
+            if(data.getPhone() != null && data.getPhone().equalsIgnoreCase(request.getPhone()) && data.getPhoneVerified()){
+                request.setPhoneVerified(true);
+            }
+            request.setRatingCount(data.getRatingCount());
+            request.setRating(data.getRating());
+            request.setTotalRating(data.getTotalRating());
+//            request.setSentSmsCodeAt(data.getSentSmsCodeAt());
         } else {
             String avatar = currentCanU.getFiles()
                                        .stream()
@@ -112,13 +119,6 @@ public class CanIService {
                                                                     .collect(Collectors.groupingBy(JobModel::getStatus));
             jobStatus.put("Total", job.size());
             dividedJob.forEach((k, v) -> jobStatus.put(k.toString(), v.size()));
-            List<JobModel> completedJob = dividedJob.get(JobModel.JobStatus.COMPLETED);
-            if (completedJob != null) {
-                List<JobModel> ratingJob = completedJob.stream()
-                                                       .filter(r -> r.getRating() > 0)
-                                                       .collect(Collectors.toList());
-                int totalPoint = ratingJob.stream().mapToInt(JobModel::getRating).sum();
-            }
 
             updateCanIResponse(cani, cani.getCanUModel());
             em.detach(cani);

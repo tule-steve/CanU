@@ -31,7 +31,7 @@ public class SmsService {
 
     public static final String ACCOUNT_SID = "ACa4c66b9d60b0308fd97d6e8cf8412994";
 
-    public static final String AUTH_TOKEN = "4f6cc5472e34e02e2c0f5eaf795a46f4";
+    public static final String AUTH_TOKEN = "d71f0cbb86c8cc8db03eb7e4f855a8ff";
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);
 
@@ -40,15 +40,16 @@ public class SmsService {
         Twilio.init(ACCOUNT_SID, AUTH_TOKEN);
     }
 
-    public void sendSms(String phoneNumber) {
+    public Long sendSms(String phoneNumber) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
-        if (uUser.getCanIModel() == null) {
-            throw new GlobalValidationException("not have privilege");
-        }
-
         CanIModel cani = uUser.getCanIModel();
+        if(cani == null){
+            cani = new CanIModel();
+            uUser.setCanIModel(cani);
+            cani.setStatus(CanIModel.Status.DRAFT);
+        }
 
         if (phoneNumber.equalsIgnoreCase(cani.getPhone()) && cani.getPhoneVerified()) {
             throw new GlobalValidationException("phone is ready verified");
@@ -67,6 +68,7 @@ public class SmsService {
                 Verification.Channel.SMS.toString()).create();
         caniRepo.save(cani);
         logger.info("Send sms for verify phone with sid {}", verification.getSid());
+        return cani.getId();
     }
 
     public void verifyCode(String code) {

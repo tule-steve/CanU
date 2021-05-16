@@ -1,5 +1,6 @@
 package com.canu.model;
 
+import com.common.dtos.validation.ExtendedEmailValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
@@ -70,6 +71,13 @@ public class CanIModel {
     @Column(name = "bank_owner")
     String accountName;
 
+    @ExtendedEmailValidator(message = "email's format is not correct")
+    @Column(name = "paypal_email")
+    String paypalEmail;
+
+    @Column(name = "paypal_phone")
+    String paypalPhone;
+
     @Column(name = "service_name")
     String serviceType;
 
@@ -91,6 +99,7 @@ public class CanIModel {
     @Column(name = "title")
     String title;
 
+    @Column(name = "rating")
     BigDecimal rating;
 
     @Column(name = "status")
@@ -152,13 +161,6 @@ public class CanIModel {
     @JsonIgnore
     @ManyToMany(mappedBy = "favoriteCanIs")
     private Set<CanUModel> favoriteCanU = new HashSet<>();
-
-    @PostLoad
-    private void updateRating(){
-        if(ratingCount > 0){
-            rating = BigDecimal.valueOf(totalRating).divide(BigDecimal.valueOf(ratingCount), 2, BigDecimal.ROUND_CEILING);
-        }
-    }
 
     @Override
     public boolean equals(Object o) {

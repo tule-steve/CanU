@@ -79,6 +79,8 @@ public class CanUService {
         CanUModel data = new CanUModel();
         data.setEmail(request.getEmail());
         data.setPassword(cryptPass);
+        data.setFirstName(request.getFirstName());
+        data.setLastName(request.getLastName());
         canURepo.save(data);
 
         return ResponseEntity.ok(new Token(tokenProvider.createToken(request.getEmail()), 86400L));

@@ -20,6 +20,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
 
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -162,8 +163,10 @@ public class CanUController {
 
     @PostMapping(value = "/phone-verification")
     public ResponseEntity verifyPhone(@RequestBody Map<String, Object> request) {
-        smsSvc.sendSms(request.get("phoneNumber").toString());
-        return ResponseEntity.ok(CommonResponse.buildOkData("sending SMS"));
+        Long id = smsSvc.sendSms(request.get("phoneNumber").toString());
+        Map<String, Long> result = new HashMap<>();
+        result.put("cani_id", id);
+        return ResponseEntity.ok(CommonResponse.buildOkData("sending SMS", result));
     }
 
     @PostMapping(value = "/check-mobile-code")
@@ -203,7 +206,7 @@ public class CanUController {
     }
 
     @GetMapping(value = "/get-voucher")
-    public ResponseEntity addCoupon(CouponFilter filter, Pageable p){
+    public ResponseEntity getVoucher(CouponFilter filter, Pageable p){
 
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", couponSvc.getCoupons(filter, p)));
     }

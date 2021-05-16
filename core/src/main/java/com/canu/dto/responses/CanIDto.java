@@ -22,4 +22,12 @@ public class CanIDto {
     String address;
 
     BigDecimal rating;
+
+    String areaService;
+
+    String currency;
+
+    String jobType;
+
+
 }

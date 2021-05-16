@@ -23,6 +23,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -43,6 +44,8 @@ public class JobService {
     final private SkillSetRepository skillSetRepo;
 
     final private SocketService socketSvc;
+
+    final private PaymentService paymentSvc;
 
     final JobReviewRepository jobReviewRepo;
 
@@ -117,7 +120,8 @@ public class JobService {
     public void pickUpJob(Long jobId) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        JobModel job = jobRepo.findById(jobId).orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
+        JobModel job = jobRepo.findById(jobId)
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         if (!job.getCanus().stream().anyMatch(r -> r.getId() == uUser.getId())) {
             job.getCanus().add(uUser);
             jobRepo.save(job);
@@ -183,7 +187,7 @@ public class JobService {
         job.setRequestedUser(requestedUser);
         job.setTotal(request.getPrice());
         job.setCurrency(request.getCurrency());
-        job.setStatus(JobModel.JobStatus.PROCESSING);
+//        job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
         socketSvc.pushNoticeForStartJob(job);
     }
@@ -213,6 +217,7 @@ public class JobService {
             throw new GlobalValidationException("do not have privilege to complete this job");
         }
         job.setStatus(JobModel.JobStatus.COMPLETED);
+        paymentSvc.payout(job);
         socketSvc.noticeCanUJobComplete(job);
     }
 
@@ -231,10 +236,14 @@ public class JobService {
             reviewer = canu;
             targetUser = job.getRequestedUser();
             job.setRating(request.getValue());
-            if(targetUser.isRegisterCanI()){
+            if (targetUser.isRegisterCanI()) {
                 CanIModel cani = targetUser.getCanIModel();
                 cani.setTotalRating(cani.getTotalRating() + request.getValue());
                 cani.setRatingCount(cani.getRatingCount() + 1);
+                cani.setRating(BigDecimal.valueOf(cani.getTotalRating())
+                                         .divide(BigDecimal.valueOf(cani.getRatingCount()),
+                                                 2,
+                                                 BigDecimal.ROUND_CEILING));
             }
         } else {
             reviewer = canu;
@@ -299,10 +308,13 @@ public class JobService {
     }
 
     public List<JobDto> getUnpaidJobList(JobFilter filter) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel canu = canURepo.findByEmail(user.getUsername());
+        filter.setOwner(canu.getId());
         filter.setStatus(JobModel.JobStatus.PROCESSING);
         List<JobModel> jobEntities = jobRepo.findAll(filter);
         List<JobModel> nonePaymentJob = jobEntities.stream()
-                                                   .filter(r -> r.getPayments()
+                                                   .filter(r -> !r.getPayments()
                                                                   .stream()
                                                                   .anyMatch(e -> PaymentModel.Status.TOPPED_UP.equals(e.getStatus()))
                                                    ).collect(Collectors.toList());

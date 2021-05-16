@@ -1,6 +1,7 @@
 package com.canu.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 
@@ -12,6 +13,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Data
 @Builder
 @Table(name = "user_deleted_message")
+@AllArgsConstructor
 public class CanUDeletedMessage {
     @JsonIgnore
     @Id

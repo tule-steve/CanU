@@ -3,6 +3,7 @@ package com.canu.dto.responses;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
 import com.canu.model.JobReviewerModel;
+import com.canu.model.PaymentModel;
 import com.fasterxml.jackson.annotation.JsonAnyGetter;
 import lombok.Data;
 
@@ -49,6 +50,12 @@ public class JobDto {
                                    .avatar(r.getCanIModel().getAvatar())
                                    .name(r.getCanIModel().getName())
                                    .price(r.getCanIModel().getPrice())
+                                   .nation(r.getCanIModel().getNational())
+                                   .address(r.getCanIModel().getAddress())
+                                   .areaService(r.getCanIModel().getAreaService())
+                                   .currency(r.getCanIModel().getCurrency())
+                                   .jobType(r.getCanIModel().getServiceType())
+                                   .rating(r.getCanIModel().getRating())
                                    .build();
         } else {
             pickupCanI = job.getCanus()
@@ -67,6 +74,10 @@ public class JobDto {
                                               .price(r.getCanIModel().getPrice())
                                               .nation(r.getCanIModel().getNational())
                                               .address(r.getCanIModel().getAddress())
+                                              .areaService(r.getCanIModel().getAreaService())
+                                              .currency(r.getCanIModel().getCurrency())
+                                              .jobType(r.getCanIModel().getServiceType())
+                                              .rating(r.getCanIModel().getRating())
                                               .build();
                             })
                             .collect(Collectors.toList());
@@ -79,6 +90,11 @@ public class JobDto {
                     review.put("cani_review", r);
                 }
             });
+        }
+        if (JobModel.JobStatus.PROCESSING.equals(job.getStatus())) {
+            isTopUp = job.getPayments()
+                         .stream()
+                         .anyMatch(e -> PaymentModel.Status.TOPPED_UP.equals(e.getStatus()));
         }
 
     }
@@ -113,6 +129,8 @@ public class JobDto {
     String image;
 
     String city;
+
+    boolean isTopUp = false;
 
     Map<String, JobReviewerModel> review = new HashMap<>();
 

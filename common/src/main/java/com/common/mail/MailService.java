@@ -4,7 +4,6 @@ import com.canu.exception.GlobalValidationException;
 import lombok.RequiredArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -68,7 +67,7 @@ public class MailService {
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
             helper.setFrom("canu.otp@gmail.com");
             helper.setTo(email);
-            helper.setSubject("[CanU] Forgotten password notification\n");
+            helper.setSubject("[CANU CANI] RESET PASSWORD\n");
             helper.setText(message, true);
 
             javaMailSender.send(msg);

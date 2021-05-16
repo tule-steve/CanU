@@ -8,13 +8,14 @@ import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
 @Data
 public class CouponFilter implements Specification<CouponModel> {
 
-    String userId;
+    Long userId;
 
     String code;
 
@@ -29,6 +30,9 @@ public class CouponFilter implements Specification<CouponModel> {
         if (userId != null) {
             predicates.add(builder.equal(root.join("userCoupons").get("owner").get("id"), userId));
         }
+
+        predicates.add(builder.greaterThan(root.get("toDate"), LocalDateTime.now()));
+        predicates.add(builder.equal(root.join("userCoupons").get("status"), CouponModel.Status.AVAILABLE));
 
         return builder.and(predicates.toArray(new Predicate[0]));
     }

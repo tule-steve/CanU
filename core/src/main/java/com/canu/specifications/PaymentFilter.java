@@ -5,16 +5,21 @@ import com.canu.model.PaymentModel;
 import lombok.Data;
 import org.springframework.data.jpa.domain.Specification;
 
+import javax.persistence.EnumType;
+import javax.persistence.Enumerated;
 import javax.persistence.criteria.CriteriaBuilder;
 import javax.persistence.criteria.CriteriaQuery;
 import javax.persistence.criteria.Predicate;
 import javax.persistence.criteria.Root;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 @Data
 public class PaymentFilter implements Specification<PaymentModel> {
     CanUModel userId;
 
+    @Enumerated(EnumType.STRING)
     List<PaymentModel.Status> status = Arrays.asList(PaymentModel.Status.TOPPED_UP, PaymentModel.Status.PAID);
 
     @Override

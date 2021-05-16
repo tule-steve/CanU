@@ -27,6 +27,12 @@ public class PaymentController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", paymentSvc.getPaymentList(filter, p)));
     }
 
+    @GetMapping(value = "test-payout/{jobId}")
+    public ResponseEntity testPayout(@PathVariable Long jobId){
+        paymentSvc.payout(jobId);
+        return ResponseEntity.ok("ok");
+    }
+
 
 
 }

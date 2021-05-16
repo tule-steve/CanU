@@ -14,6 +14,7 @@ import com.paypal.http.exceptions.HttpException;
 import com.paypal.orders.Order;
 import com.paypal.orders.OrdersGetRequest;
 import com.paypal.orders.PurchaseUnit;
+import com.paypal.payouts.*;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
 import org.springframework.data.domain.Page;
@@ -23,11 +24,14 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.EntityManager;
 import java.io.IOException;
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 @Service
@@ -45,11 +49,17 @@ public class PaymentService {
 
     final private ChatService chatSvc;
 
+    final private SocketService socketSvc;
+
     final private EntityManager em;
 
     final private PropertyRepository propertyRepo;
 
     private static final Logger logger = Logger.getLogger(PaymentService.class);
+
+    private static String EMAIL_PAYMENT_TYPE = "EMAIL";
+
+    private static String PHONE_PAYMENT_TYPE = "PHONE";
 
     // Creating a sandbox environment
     private static PayPalEnvironment environment = new PayPalEnvironment.Sandbox(
@@ -75,16 +85,19 @@ public class PaymentService {
         } else {
             payment = job.getPayments().get(0);
         }
-//
+        //
         payment.setTotal(BigDecimal.valueOf(job.getTotal()));
         payment.setCurrency(job.getCurrency());
         if (request.getCouponCode() != null) {
             UserCouponModel userCoupon = userCouponRepo.getTransactionVoucher(uUser, request.getCouponCode(),
-                                                                              CouponModel.Status.AVAILABLE)
+                                                                              CouponModel.Status.AVAILABLE,
+                                                                              LocalDateTime.now())
                                                        .orElseThrow(() -> new GlobalValidationException(
                                                                "cannot find the coupon"));
 
             payment.setUserCoupon(userCoupon);
+        } else {
+            payment.setUserCoupon(null);
         }
         PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
                                                                              job.getCurrency());
@@ -106,15 +119,24 @@ public class PaymentService {
             PurchaseUnit purchaseUnit = paymentOrder.purchaseUnits().get(0);
             //validate amount
 
+            JobModel job = paymentModel.getJob();
             if (paymentModel.getTotal().compareTo(new BigDecimal(purchaseUnit.amountWithBreakdown().value())) == 0 &&
                 paymentModel.getCurrency().equalsIgnoreCase(purchaseUnit.amountWithBreakdown().currencyCode())) {
                 paymentModel.setStatus(PaymentModel.Status.TOPPED_UP);
                 paymentModel.setTransactionId(paymentOrder.id());
                 paymentModel.setPaymentMethod("paypal");
                 if (paymentModel.getJob() != null) {
-                    chatSvc.sendPaymentCompleteMessage(paymentModel.getJob());
+                    chatSvc.sendPaymentCompleteMessage(job);
                 }
                 paymentRepo.save(paymentModel);
+                job.setStatus(JobModel.JobStatus.PROCESSING);
+                jobRepo.save(job);
+                if (paymentModel.getUserCoupon() != null) {
+                    paymentModel.getUserCoupon().setStatus(CouponModel.Status.REDEEMED);
+                    userCouponRepo.save(paymentModel.getUserCoupon());
+                }
+                socketSvc.noticeToppedUpJob(paymentModel.getJob());
+
             }
         } else {
             logger.error(paymentOrder);
@@ -151,6 +173,85 @@ public class PaymentService {
 
     }
 
+    public void payout(Long jobId) {
+        JobModel job = jobRepo.findById(jobId).orElseThrow(() -> new GlobalValidationException("cannot find the job"));
+        payout(job);
+    }
+
+    public void payout(JobModel job) {
+        long jobId = job.getId();
+        try {
+            CanIModel cani = job.getRequestedUser().getCanIModel();
+            String receiver;
+            String paymentType;
+            Long total = job.getTotal();
+            String transactionId = "job_id_" + jobId + LocalDateTime.now();
+
+            if (!StringUtils.isEmpty(cani.getPaypalEmail())) {
+                receiver = cani.getPaypalEmail();
+                paymentType = EMAIL_PAYMENT_TYPE;
+            } else if (!StringUtils.isEmpty(cani.getPaypalPhone())) {
+                receiver = cani.getPaypalPhone();
+                paymentType = PHONE_PAYMENT_TYPE;
+            } else {
+                logger.error("paypal not set up");
+                socketSvc.noticeCanIInvalidPaypal(job);
+                throw new GlobalValidationException("cannot get the payment detail from paypal");
+            }
+            CreatePayoutRequest request = new CreatePayoutRequest();
+            PayoutItem item = new PayoutItem()
+                    .senderItemId(transactionId)
+                    .note("payout for job " + job.getTitle())
+                    .receiver(receiver)
+                    .amount((new Currency()
+                            .currency(job.getCurrency())
+                            .value(total.toString())));
+
+            request.senderBatchHeader(new SenderBatchHeader()
+                                              .senderBatchId(transactionId)
+                                              .emailMessage("payout for job " + job.getTitle())
+                                              .emailSubject("payout for job " + job.getTitle())
+                                              .note("Enjoy your Payout!!")
+                                              .recipientType(paymentType)).items(Arrays.asList(item));
+
+            PayoutsPostRequest httpRequest = new PayoutsPostRequest().requestBody(request);
+            HttpResponse<CreatePayoutResponse> response = client.execute(httpRequest);
+
+            CreatePayoutResponse payouts = response.result();
+
+            PaymentModel payment = new PaymentModel();
+            payment.setJob(job);
+            payment.setOwner(job.getRequestedUser());
+            payment.setStatus(PaymentModel.Status.PAID);
+            payment.setPaymentMethod("paypal");
+            payment.setTotal(BigDecimal.valueOf(total));
+            payment.setTransactionId(payouts.batchHeader().payoutBatchId());
+            payment.setCurrency(job.getCurrency());
+            paymentRepo.save(payment);
+            socketSvc.noticeCanIPaidJob(job);
+
+            //            PayoutsGetRequest getRequest = new PayoutsGetRequest(payouts.batchHeader().payoutBatchId());
+            //            HttpResponse response1 = client.execute(getRequest);
+            //            logger.error("rrerel");
+            //            int a = 0;
+            //            a++;
+
+            //            System.out.println("Payouts Batch ID: " + payouts.batchHeader().payoutBatchId());
+        } catch (IOException ioe) {
+            if (ioe instanceof HttpException) {
+                // Something went wrong server-side
+                HttpException he = (HttpException) ioe;
+                logger.error("error on the check payment", ioe);
+            } else {
+                // Something went wrong client-side
+                logger.error("error on the check payment, client side", ioe);
+            }
+            socketSvc.noticeCanIInvalidPaypal(job);
+            throw new GlobalValidationException("cannot get the payment detail from paypal");
+        }
+
+    }
+
     @Transactional(readOnly = true)
     public Page<TransactionDetailDto> getPaymentList(PaymentFilter filter, Pageable p) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
@@ -160,7 +261,7 @@ public class PaymentService {
         Page<PaymentModel> payments = paymentRepo.findAll(filter, p);
         TransactionDetailDto detail;
         List<TransactionDetailDto> dtoResult = new ArrayList<>();
-        for(PaymentModel payment : payments){
+        for (PaymentModel payment : payments) {
             PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
                                                                                  payment.getJob().getCurrency());
 

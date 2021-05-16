@@ -23,6 +23,9 @@ public class Member {
     long canceledJob;
     Integer finishedJob;
     Integer processingJob;
+    Integer canuFinishedJob;
+    Integer canuProcessingJob;
+    Integer applyingJob;
 
     Boolean isFavorite = null;
     int favoriteCount = 0;

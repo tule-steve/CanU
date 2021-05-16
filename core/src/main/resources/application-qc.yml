@@ -17,6 +17,7 @@ spring:
         order_inserts: true
         order_updates: true
         batch_versioned_data: true
+        time_zone: GMT+07:00
     #spring.jpa.
     hibernate:
       naming_strategy: org.hibernate.boot.model.naming.PhysicalNamingStrategyStandardImpl
@@ -33,8 +34,11 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: canu.otp@gmail.com
-    password: CanUI@2021
+    # username: canu.otp@gmail.com
+    # username: support@ican-u.com
+    # password: CanUI@2021
+    username: stephenle1412@gmail.com
+    password: clvatoecclwcaifb
     properties:
       mail:
         smtp:

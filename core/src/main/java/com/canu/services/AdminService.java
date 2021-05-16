@@ -88,23 +88,35 @@ public class AdminService {
 
     private void updateJobInformation(CanUModel canUModel, Member member) {
         //        List<JobModel> jobs = jobRepo.findJobForCreationUser(canUModel.getId());
-        List<JobModel> jobs = canUModel.getCreatedJob();
-        member.setCreatedJob(jobs.size());
-        member.setCanceledJob(jobs
+
+        //update for canu
+        List<JobModel> canuJobs = canUModel.getCreatedJob();
+        member.setCreatedJob(canuJobs.size());
+        Map<String, Integer> jobStatus = new HashMap<>();
+        
+        Map<JobModel.JobStatus, List<JobModel>> dividedJob = canuJobs.stream()
+                                                                     .collect(Collectors.groupingBy(JobModel::getStatus));
+        dividedJob.forEach((k, v) -> jobStatus.put(k.toString(), v.size()));
+        List<JobModel> completedJob = dividedJob.get(JobModel.JobStatus.COMPLETED);
+        List<JobModel> processingJob = dividedJob.get(JobModel.JobStatus.PROCESSING);
+        member.setCanuProcessingJob(processingJob != null ? processingJob.size() : 0);
+        member.setCanuFinishedJob(completedJob != null ? completedJob.size() : 0);
+
+        member.setCanceledJob(canuJobs
                                       .stream()
                                       .filter(r -> JobModel.JobStatus.CANCEL.equals(r.getStatus()))
                                       .count());
 
-        List<JobModel> job = canUModel.getPickedJob();
-        Map<String, Integer> jobStatus = new HashMap<>();
-        Map<JobModel.JobStatus, List<JobModel>> dividedJob = job.stream()
-                                                                .collect(Collectors.groupingBy(JobModel::getStatus));
+        List<JobModel> caniJobs = canUModel.getPickedJob();
+        dividedJob = caniJobs.stream()
+                             .collect(Collectors.groupingBy(JobModel::getStatus));
         dividedJob.forEach((k, v) -> jobStatus.put(k.toString(), v.size()));
-        List<JobModel> completedJob = dividedJob.get(JobModel.JobStatus.COMPLETED);
-        List<JobModel> processingJob = dividedJob.get(JobModel.JobStatus.PROCESSING);
+        completedJob = dividedJob.get(JobModel.JobStatus.COMPLETED);
+        processingJob = dividedJob.get(JobModel.JobStatus.PROCESSING);
 
         member.setProcessingJob(processingJob != null ? processingJob.size() : 0);
         member.setFinishedJob(completedJob != null ? completedJob.size() : 0);
+        member.setApplyingJob(canUModel.getJobs().size());
     }
 
     public void setupTemplate(TemplateRequest template) {
@@ -151,5 +163,9 @@ public class AdminService {
         model.getPositions().put(entity.getLocale().toString(), entity.getProperty());
         return propertyRepo.save(model);
     }
+
+    //    public Object getRevenueData(){
+    //
+    //    }
 
 }

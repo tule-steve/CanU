@@ -45,9 +45,12 @@ public class CanIFilter implements Specification<CanIModel> {
         }
 
         if (key != null) {
-            predicates.add(builder.or(builder.like(root.get("title"), "%" + key + "%"),
-                                      builder.like(root.get("description"), "%" + key + "%")));
+            predicates.add(builder.or(builder.like(root.get("name"), "%" + key + "%"),
+                                      builder.or(builder.like(root.get("title"), "%" + key + "%"),
+                                                 builder.like(root.get("description"), "%" + key + "%"))));
         }
+
+        predicates.add(builder.equal(root.get("status"), CanIModel.Status.ACTIVE));
 
         return builder.and(predicates.toArray(new Predicate[0]));
     }

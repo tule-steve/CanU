@@ -45,7 +45,7 @@ public class ChatService {
             MessageBean message = new MessageBean();
             message.setFromUser(job.getCreationUser().getId());
             message.setToUser(job.getRequestedUser().getId());
-            message.setMessage("####PAYMENTED####_" + job.getId());
+            message.setMessage("####PAYMENTED####_" + job.getTitle());
             message.updateConversationId();
             message = saveMessage(message);
             logger.error("Starting to send to User");
@@ -97,12 +97,13 @@ public class ChatService {
                 "    from chat_message as mess" +
                 "    inner join(" +
                 "                select max(u.id)  as id,\n" +
-                "                        count(if(u.is_read, null, 1) ) as unreadCount\n" +
+                "                        count(if(u.is_read or  u.from_user = :userId, null, 1) ) as unreadCount\n" +
                 "                from chat_message u" +
                 "                left outer join user_deleted_message m on m.user_id = :userId and m.participant_id = case when u.to_user = :userId then u.from_user else u.to_user end " +
                 "                where (from_user = :userId or to_user = :userId) and u.id >  coalesce(m.deleted_mess_id, 0)" +
                 "                group by conservation_id) as aggregate on mess.id = aggregate.id" +
-                "    inner join user u on u.id = case when mess.to_user = :userId then mess.from_user else mess.to_user end;")
+                "    inner join user u on u.id = case when mess.to_user = :userId then mess.from_user else mess.to_user end" +
+                " order by mess.created_at desc;")
                         .setParameter("userId", uUser.getId()).getResultList();
 
         List<ParticipantDto> responseData = new ArrayList<>();

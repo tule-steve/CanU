@@ -25,6 +25,9 @@ public class CouponService {
     final private CanURepository canURepo;
 
     public Object getCoupons(CouponFilter filter, Pageable p){
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+        filter.setUserId(uUser.getId());
         return couponRepo.findAll(filter, p);
     }
 

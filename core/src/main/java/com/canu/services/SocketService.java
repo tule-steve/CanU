@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
@@ -65,6 +66,37 @@ public class SocketService {
             pushNoticeToUser(canus, noti);
         } catch (Exception ex) {
             logger.error("error on creating notification", ex);
+        }
+    }
+
+    public void noticeToppedUpJob(JobModel job) {
+        try {
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.TOPPED_UP,
+                                   Arrays.asList(job.getCreationUser(), job.getRequestedUser()));
+        } catch ( Exception ex){
+            logger.error("error on send notification for job with id", job.getId());
+        }
+    }
+
+    public void noticeCanIPaidJob(JobModel job) {
+        try {
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.PAID_FOR_CANI,
+                                   Arrays.asList(job.getCreationUser(), job.getRequestedUser()));
+        } catch ( Exception ex){
+            logger.error("error on send notification for job with id", job.getId());
+        }
+    }
+
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
+    public void noticeCanIInvalidPaypal(JobModel job) {
+        try {
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.INVALID_PAYPAL_ACCOUNT,
+                                   Arrays.asList(job.getCreationUser(), job.getRequestedUser()));
+        } catch ( Exception ex){
+            logger.error("error on send notification for job with id", job.getId());
         }
     }
 
@@ -125,7 +157,7 @@ public class SocketService {
     private void pushNoticeToAdmin(NotificationDetailModel detail) {
         NotificationModel notice = null;
         List<CanUModel> adminList = canuRepo.findByIsAdminIsTrue();
-        if(adminList.size() > 0) {
+        if (adminList.size() > 0) {
             for (CanUModel user : adminList) {
                 notice = new NotificationModel();
                 notice.setDetail(detail);
@@ -139,10 +171,10 @@ public class SocketService {
         }
     }
 
-//    @ExceptionHandler(Exception.class)
-//    public void handleException(Exception ex) {
-//        // not throw exception for push notification
-//        logger.error("error on push notification", ex);
-//    }
+    //    @ExceptionHandler(Exception.class)
+    //    public void handleException(Exception ex) {
+    //        // not throw exception for push notification
+    //        logger.error("error on push notification", ex);
+    //    }
 
 }
