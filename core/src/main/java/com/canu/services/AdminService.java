@@ -74,12 +74,14 @@ public class AdminService {
         this.em.getEntityManagerFactory().addNamedQuery("CanUModel.getMembership", q);
         Page<Member> memberList = canURepo.getMembership(p);
         memberList.forEach(r -> {
+            CanUModel canUModel = canURepo.findById(r.getUserId()).get();
+            updateJobInformation(canUModel, r);
+            r.setCCash(canUModel.getCCash());
+            r.setCPoint(canUModel.getCPoint());
             if (r.getCaniId() != null) {
                 r.setCani(caniRepo.findById(r.getCaniId()).orElse(null));
                 r.setFavoriteCount(r.getCani().getFavoriteCanU().size());
-                CanUModel canUModel = canURepo.findById(r.getUserId()).get();
                 caniSvc.updateCanIResponse(r.getCani(), canUModel);
-                updateJobInformation(canUModel, r);
             }
 
         });
@@ -93,7 +95,7 @@ public class AdminService {
         List<JobModel> canuJobs = canUModel.getCreatedJob();
         member.setCreatedJob(canuJobs.size());
         Map<String, Integer> jobStatus = new HashMap<>();
-        
+
         Map<JobModel.JobStatus, List<JobModel>> dividedJob = canuJobs.stream()
                                                                      .collect(Collectors.groupingBy(JobModel::getStatus));
         dividedJob.forEach((k, v) -> jobStatus.put(k.toString(), v.size()));

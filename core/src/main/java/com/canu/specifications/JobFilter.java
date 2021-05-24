@@ -65,8 +65,10 @@ public class JobFilter implements Specification<JobModel> {
         if (requestedUserId != null) {
             predicates.add(builder.equal(root.get("requestedUser"), requestedUserId));
         } else if (pickupUserId != null) {
-            predicates.add(builder.equal(root.join("canus").get("id"), pickupUserId));
+            predicates.add(builder.equal(root.join("canus",JoinType.LEFT).get("id"), pickupUserId));
         }
+
+        predicates.add(builder.isNotNull(root.join("creationUser")));
 
         return builder.and(predicates.toArray(new Predicate[0]));
     }

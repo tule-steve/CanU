@@ -64,5 +64,19 @@ public class PaymentModel {
     @CreationTimestamp
     LocalDateTime createdAt;
 
+    @Column(name = "c_point_used")
+    Integer cpointUsed = 0;
+
+    @Column(name = "c_point_reward")
+    Integer cpointReward = 0;
+
+    public void setTotal(BigDecimal total){
+        if(total.signum() < 0){
+            this.total = BigDecimal.ZERO;
+        } else {
+            this.total = total;
+        }
+    }
+
 
 }

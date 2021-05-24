@@ -26,6 +26,8 @@ public class Member {
     Integer canuFinishedJob;
     Integer canuProcessingJob;
     Integer applyingJob;
+    Long cCash = 0L;
+    Long cPoint = 0L;
 
     Boolean isFavorite = null;
     int favoriteCount = 0;

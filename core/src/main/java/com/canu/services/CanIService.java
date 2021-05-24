@@ -75,6 +75,7 @@ public class CanIService {
         request.setSkillSets(skillSets);
         request.setCanUModel(currentCanU);
         request.setEmail(email);
+        request.setName(currentCanU.getName());
 
         CanIModel response = caniRepo.save(request);
         updateCanIResponse(response, currentCanU);
@@ -126,5 +127,9 @@ public class CanIService {
             cani.setJobStatus(jobStatus);
         }
 
+    }
+
+    public void save(CanIModel cani){
+        caniRepo.save(cani);
     }
 }

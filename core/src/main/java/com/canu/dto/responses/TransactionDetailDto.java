@@ -15,7 +15,7 @@ public class TransactionDetailDto {
 
     public TransactionDetailDto(PaymentModel payment, JobModel job, EntityManager em, PropertyModel pointExRate) {
         this.payment = payment;
-        if (payment.getUserCoupon() != null) {
+        if (payment.getUserCoupon() != null && pointExRate != null) {
             couponDetail = payment.getUserCoupon().getCoupon();
 
             couponDetail.setValue(couponDetail.getValue()
@@ -25,6 +25,13 @@ public class TransactionDetailDto {
         }
         this.fullTotal = BigDecimal.valueOf(job.getTotal());
         this.job = job;
+
+        this.cpointUsed = payment.getCpointUsed();
+
+        if (cpointUsed != null && pointExRate != null) {
+            cpointInCurrency = BigDecimal.valueOf(cpointUsed).multiply(new BigDecimal(pointExRate.getProperty()));
+            payment.setTotal(payment.getTotal().subtract(cpointInCurrency));
+        }
 
     }
 
@@ -36,6 +43,10 @@ public class TransactionDetailDto {
     BigDecimal fullTotal;
 
     JobModel job;
+
+    Integer cpointUsed;
+
+    BigDecimal cpointInCurrency;
 
     //    @JsonAnyGetter
     //    public PaymentModel getPayment(){

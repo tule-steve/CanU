@@ -99,6 +99,10 @@ public class CanUService {
             throw new GlobalValidationException("do not have privilege for this action");
         }
         updateCanU(request, uUser);
+        if(uUser.getCanIModel() != null){
+            uUser.getCanIModel().setName(uUser.getName());
+            canIService.save(uUser.getCanIModel());
+        }
         uUser = canURepo.save(uUser);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", uUser));
     }
@@ -408,6 +412,50 @@ public class CanUService {
             }
             userproRepo.save(model);
         });
+    }
+
+    public ResponseEntity uploadPublicFileList(MultiValueMap<String, MultipartFile> fileMap) throws IOException {
+        Map<String, Object> response = new HashMap<>();
+
+        for (Map.Entry<String, List<MultipartFile>> entry : fileMap.entrySet()) {
+            String parentFolder = entry.getKey();
+            List<MultipartFile> multipartFiles = entry.getValue();
+            List<FileModel> cerModel = updatePublicFile(multipartFiles, parentFolder);
+            response.put(parentFolder, cerModel);
+        }
+        return ResponseEntity.ok(CommonResponse.buildOkData("Upload file", response));
+    }
+
+
+    public List<FileModel> updatePublicFile(List<MultipartFile> multipartFiles, String parentFolder) throws
+                                                                                                                 IOException {
+        String url = "/images/static/public/" + parentFolder;
+        String uploadDir = System.getProperty("user.dir") + url;
+        Path uploadPath = Paths.get(uploadDir);
+        if (!Files.exists(uploadPath)) {
+            Files.createDirectories(uploadPath);
+        }
+
+        List<FileModel> fileList = new ArrayList<>();
+
+        for (MultipartFile multipartFile : multipartFiles) {
+            String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
+
+            FileModel file = new FileModel();
+            file.setDescription(parentFolder);
+            file.setFileName(fileName);
+            file.setUrl(domainLink + url + "/" + file.getFileName());
+            fileList.add(fileRepo.save(file));
+
+            try (InputStream inputStream = multipartFile.getInputStream()) {
+                Path filePath = uploadPath.resolve(fileName).normalize();
+                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
+            } catch (IOException ioe) {
+                throw new IOException("Could not save image file: " + fileName, ioe);
+            }
+        }
+
+        return fileList;
     }
 
 

@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonNaming;
 import lombok.Data;
 
 import javax.persistence.*;
-
+import java.math.BigDecimal;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -67,6 +67,10 @@ public class SkillSetModel {
 
     @Column(name = "is_delete")
     Boolean isDelete = false;
+
+
+    @Column(name = "c_point_rate", columnDefinition = "decimal(5, 2)", precision = 5, scale = 2)
+    BigDecimal cpointRate;
 
 
 //    @Column(name = "icon_awesome_class")

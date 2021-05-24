@@ -99,6 +99,10 @@ public class PaymentService {
         } else {
             payment.setUserCoupon(null);
         }
+
+        if(request.getCpoint() != null && uUser.getCPoint() > request.getCpoint()){
+            payment.setCpointUsed(request.getCpoint());
+        }
         PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
                                                                              job.getCurrency());
         TransactionDetailDto response = new TransactionDetailDto(payment, job, em, pointExchangeRate);
@@ -134,6 +138,13 @@ public class PaymentService {
                 if (paymentModel.getUserCoupon() != null) {
                     paymentModel.getUserCoupon().setStatus(CouponModel.Status.REDEEMED);
                     userCouponRepo.save(paymentModel.getUserCoupon());
+                }
+                BigDecimal totalPoint = this.convert2Point(paymentModel.getTotal(), paymentModel.getCurrency());
+                if (totalPoint != null) {
+                    CanUModel canu = paymentModel.getOwner();
+                    canu.setCCash(canu.getCCash() + totalPoint.longValue());
+                    canu.setCPoint(canu.getCPoint() - paymentModel.getCpointUsed());
+                    canURepo.save(canu);
                 }
                 socketSvc.noticeToppedUpJob(paymentModel.getJob());
 
@@ -271,5 +282,47 @@ public class PaymentService {
 
         Page<TransactionDetailDto> result = new PageImpl<>(dtoResult, p, payments.getTotalElements());
         return result;
+    }
+
+    public BigDecimal convert2Point(BigDecimal total, String currency) {
+        PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
+                                                                             currency);
+        if (pointExchangeRate == null) {
+            return null;
+        }
+        return total.divide(new BigDecimal(pointExchangeRate.getProperty()),
+                            4,
+                            BigDecimal.ROUND_HALF_UP);
+    }
+
+    public void cancelPayment(Long jobId) {
+        JobModel job = jobRepo.findById(jobId)
+                              .orElseThrow(() -> new GlobalValidationException("do not have privilege for this action"));
+
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+
+        if (!uUser.getId().equals(job.getCreationUser().getId())) {
+            throw new GlobalValidationException("do not have privilege for this action");
+        }
+
+        if (!JobModel.JobStatus.PENDING.equals(job.getStatus())) {
+            throw new GlobalValidationException("do not have privilege for this action");
+        }
+
+        job.getPayments()
+           .stream()
+           .filter(r -> PaymentModel.Status.PENDING.equals(r.getStatus()))
+           .forEach(r -> {
+               r.setStatus(PaymentModel.Status.CANCEL);
+               paymentRepo.save(r);
+           });
+        job.setRequestedUser(null);
+        jobRepo.save(job);
+//        jobRepo.removeRequestedUser(jobId);
+    }
+
+    public void save(PaymentModel payment) {
+        paymentRepo.save(payment);
     }
 }

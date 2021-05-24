@@ -125,6 +125,7 @@ public class JobService {
         if (!job.getCanus().stream().anyMatch(r -> r.getId() == uUser.getId())) {
             job.getCanus().add(uUser);
             jobRepo.save(job);
+            socketSvc.pushNoticeForPickJob(job);
         }
     }
 
@@ -187,7 +188,7 @@ public class JobService {
         job.setRequestedUser(requestedUser);
         job.setTotal(request.getPrice());
         job.setCurrency(request.getCurrency());
-//        job.setStatus(JobModel.JobStatus.PROCESSING);
+        //        job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
         socketSvc.pushNoticeForStartJob(job);
     }
@@ -218,7 +219,55 @@ public class JobService {
         }
         job.setStatus(JobModel.JobStatus.COMPLETED);
         paymentSvc.payout(job);
+        PaymentModel payment = job.getPayments()
+                                  .stream()
+                                  .filter(r -> PaymentModel.Status.TOPPED_UP.equals(r.getStatus()))
+                                  .findFirst()
+                                  .orElse(null);
+        if (payment == null) {
+            throw new GlobalValidationException("do not have privilege to complete this job");
+        }
+
+        BigDecimal totalPoint = paymentSvc.convert2Point(payment.getTotal(), payment.getCurrency());
+        if(totalPoint != null) {
+            BigDecimal rate = job.getSkillSets()
+                                 .stream()
+                                 .map(r -> r.getCpointRate())
+                                 .min(BigDecimal::compareTo)
+                                 .orElse(BigDecimal.ZERO);
+            int cpoint = totalPoint.multiply(rate).divide(BigDecimal.valueOf(100)).intValue();
+            payment.setCpointReward(cpoint);
+            canu.setCPoint(canu.getCPoint() + cpoint);
+            canu.setCCash(canu.getCCash() - totalPoint.longValue());
+            paymentSvc.save(payment);
+            canURepo.save(canu);
+        }
         socketSvc.noticeCanUJobComplete(job);
+    }
+
+    public void updateCpoin() {
+        List<JobModel> jobs = jobRepo.findAll();
+        jobs.stream().filter(r -> JobModel.JobStatus.COMPLETED.equals(r.getStatus())).forEach(job -> {
+            PaymentModel payment = job.getPayments()
+                                      .stream()
+                                      .filter(r -> PaymentModel.Status.TOPPED_UP.equals(r.getStatus()))
+                                      .findFirst()
+                                      .orElse(null);
+            if (payment == null) {
+                return;
+            }
+            BigDecimal totalPoint = paymentSvc.convert2Point(payment.getTotal(), payment.getCurrency());
+            if(totalPoint != null) {
+                BigDecimal rate = job.getSkillSets()
+                                     .stream()
+                                     .map(r -> r.getCpointRate())
+                                     .min(BigDecimal::compareTo)
+                                     .orElse(BigDecimal.ZERO);
+                int cpoint = totalPoint.multiply(rate).divide(BigDecimal.valueOf(100)).intValue();
+                payment.setCpointReward(cpoint);
+                paymentSvc.save(payment);
+            }
+        });
     }
 
     public void ratingUser(RatingUserRequest request) {

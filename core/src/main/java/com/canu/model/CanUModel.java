@@ -131,6 +131,7 @@ public class CanUModel {
 
     @JsonIgnore
     @ManyToMany(mappedBy = "canus", cascade = CascadeType.PERSIST)
+    @Where(clause = "status = 'PENDING'")
     private Set<JobModel> jobs = new HashSet<>();
 
     @JsonIgnore

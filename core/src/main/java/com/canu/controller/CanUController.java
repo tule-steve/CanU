@@ -71,9 +71,13 @@ public class CanUController {
 
     @PostMapping(value = "/uploadFile")
     public ResponseEntity uploadFile(StandardMultipartHttpServletRequest request) throws IOException {
-        //        request
-
         return canUService.updateFileData(request);
+    }
+
+
+    @PostMapping(value = "/upload-public-file")
+    public ResponseEntity updatePublicFile(StandardMultipartHttpServletRequest request) throws IOException {
+        return canUService.uploadPublicFileList(request.getMultiFileMap());
     }
 
     @GetMapping(value = "/verify-email")

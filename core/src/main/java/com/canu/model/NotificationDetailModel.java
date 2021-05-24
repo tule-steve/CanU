@@ -23,6 +23,7 @@ public class NotificationDetailModel {
     public enum Type {
         CREATE_JOB,
         POST_JOB,
+        PICK_JOB,
         TOPPED_UP,
         JOB_COMPLETED,
         PAID_FOR_CANI,

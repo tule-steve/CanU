@@ -14,4 +14,9 @@ public interface JobRepository extends JpaRepository<JobModel, Long>, JpaSpecifi
     @Query( value = "select a.* from job a where a.creation_user = :userId", nativeQuery = true)
     List<JobModel> findJobForCreationUser(Long userId);
 
+
+//    @Modifying
+//    @Query( value = "update JobModel a set a.requestedUser = null where a.id = :id")
+//    int removeRequestedUser(Long id);
+
 }

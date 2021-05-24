@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Map;
+
 @RestController
 @RequiredArgsConstructor
 @RequestMapping(value = "/api/v1/payment")
@@ -25,6 +27,12 @@ public class PaymentController {
     @GetMapping(value = "/history")
     public ResponseEntity getPaymentHistory(PaymentFilter filter, Pageable p){
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", paymentSvc.getPaymentList(filter, p)));
+    }
+
+    @PostMapping(value = "/cancel-payment")
+    public ResponseEntity getPaymentHistory(@RequestBody Map<String, Long> request){
+        paymentSvc.cancelPayment(request.get("jobId"));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
 
     @GetMapping(value = "test-payout/{jobId}")

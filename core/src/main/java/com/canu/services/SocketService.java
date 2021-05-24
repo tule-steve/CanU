@@ -45,6 +45,10 @@ public class SocketService {
         pushNotificationForJob(job, NotificationDetailModel.Type.CREATE_JOB, Arrays.asList(job.getCreationUser()));
     }
 
+    public void pushNoticeForPickJob(JobModel job) {
+        pushNotificationForJob(job, NotificationDetailModel.Type.PICK_JOB, Arrays.asList(job.getCreationUser()));
+    }
+
     public void pushNoticeForStartJob(JobModel job) {
         List<CanUModel> canus = Arrays.asList(job.getCreationUser(), job.getRequestedUser());
         pushNotificationForJob(job, NotificationDetailModel.Type.REQUESTED_CANI, canus);

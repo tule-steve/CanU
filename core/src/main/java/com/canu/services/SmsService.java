@@ -31,7 +31,7 @@ public class SmsService {
 
     public static final String ACCOUNT_SID = "ACa4c66b9d60b0308fd97d6e8cf8412994";
 
-    public static final String AUTH_TOKEN = "d71f0cbb86c8cc8db03eb7e4f855a8ff";
+    public static final String AUTH_TOKEN = "662f49ee0aee7fb929d26ad066228348";
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);
 
@@ -56,8 +56,8 @@ public class SmsService {
         }
 
         if (cani.getSentSmsCodeAt() != null &&
-            LocalDateTime.now().minusMinutes(10).isBefore(cani.getSentSmsCodeAt())) {
-            throw new GlobalValidationException("please wait 10 minutes for the next phone verifying");
+            LocalDateTime.now().minusMinutes(5).isBefore(cani.getSentSmsCodeAt())) {
+            throw new GlobalValidationException("please wait 5 minutes for the next phone verifying");
         }
 
         cani.setPhone(phoneNumber);

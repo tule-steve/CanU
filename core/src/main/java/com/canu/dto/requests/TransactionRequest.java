@@ -11,4 +11,6 @@ public class TransactionRequest {
     Long jobId;
 
     String couponCode;
+
+    Integer cpoint;
 }

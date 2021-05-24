@@ -82,5 +82,11 @@ public class JobController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getUnpaidJobList(filter)));
     }
 
+    @GetMapping(value = "/test")
+    public Object test() {
+        jobSvc.updateCpoin();
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
 
 }
