@@ -13,7 +13,7 @@ import java.math.BigDecimal;
 @Data
 public class TransactionDetailDto {
 
-    public TransactionDetailDto(PaymentModel payment, JobModel job, EntityManager em, PropertyModel pointExRate) {
+    public TransactionDetailDto(PaymentModel payment, JobModel job, EntityManager em, PropertyModel pointExRate, boolean isAdmin) {
         this.payment = payment;
         if (payment.getUserCoupon() != null && pointExRate != null) {
             couponDetail = payment.getUserCoupon().getCoupon();
@@ -24,7 +24,12 @@ public class TransactionDetailDto {
             em.detach(couponDetail);
         }
         this.fullTotal = BigDecimal.valueOf(job.getTotal());
-        this.job = job;
+        if(isAdmin) {
+            this.job = new JobDto(job);
+            this.paypal = payment.getUserPaypal();
+        } else {
+            this.job = job;
+        }
 
         this.cpointUsed = payment.getCpointUsed();
 
@@ -42,11 +47,13 @@ public class TransactionDetailDto {
 
     BigDecimal fullTotal;
 
-    JobModel job;
+    Object job;
 
     Integer cpointUsed;
 
     BigDecimal cpointInCurrency;
+
+    String paypal;
 
     //    @JsonAnyGetter
     //    public PaymentModel getPayment(){

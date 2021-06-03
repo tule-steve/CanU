@@ -192,9 +192,13 @@ public class CanUService {
             response.put(parentFolder, cerModel);
             if ("canu_avatar".equalsIgnoreCase(parentFolder)) {
                 uUser.setAvatar(cerModel.get(0).getUrl());
-            } else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.isRegisterCanI()) {
-                uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
+                if(uUser.getCanIModel() != null) {
+                    uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
+                }
             }
+//            else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.isRegisterCanI()) {
+//                uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
+//            }
 
         }
 

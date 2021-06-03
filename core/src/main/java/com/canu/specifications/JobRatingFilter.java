@@ -25,12 +25,14 @@ public class JobRatingFilter implements Specification<JobReviewerModel> {
         criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
 
-        if(isGetReview) {
-            predicates.add(builder.equal(root.get("target"), userId));
-        } else {
-            predicates.add(builder.equal(root.get("reviewer"), userId));
-        }
+
         if(userId != null) {
+            if(isGetReview) {
+                predicates.add(builder.equal(root.get("target"), userId));
+            } else {
+                predicates.add(builder.equal(root.get("reviewer"), userId));
+            }
+
             if (isCanI) {
                 predicates.add(builder.equal(root.join("job").get("requestedUser").get("id"), userId));
             } else {

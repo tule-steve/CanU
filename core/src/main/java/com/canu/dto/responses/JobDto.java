@@ -42,8 +42,9 @@ public class JobDto {
                      .stream()
                      .map(r -> new ServiceDto(r.getId(), r.getTitle(), r.getSlug()))
                      .collect(Collectors.toList());
+        completedAt = job.getCompletedAt();
 
-        if (job.getRequestedUser() != null) {
+        if (job.getRequestedUser() != null && !JobModel.JobStatus.PENDING.equals(job.getStatus())) {
             CanUModel r = job.getRequestedUser();
             requestedUser = CanIDto.builder()
                                    .id(r.getId())
@@ -56,6 +57,8 @@ public class JobDto {
                                    .currency(r.getCanIModel().getCurrency())
                                    .jobType(r.getCanIModel().getServiceType())
                                    .rating(r.getCanIModel().getRating())
+                                   .caniTitle(r.getCanIModel().getTitle())
+                                   .service(r.getCanIModel().getSkillSets().stream().map(cani -> cani.getId()).collect(Collectors.toSet()))
                                    .build();
         } else {
             pickupCanI = job.getCanus()
@@ -78,6 +81,8 @@ public class JobDto {
                                               .currency(r.getCanIModel().getCurrency())
                                               .jobType(r.getCanIModel().getServiceType())
                                               .rating(r.getCanIModel().getRating())
+                                              .caniTitle(r.getCanIModel().getTitle())
+                                              .service(r.getCanIModel().getSkillSets().stream().map(cani -> cani.getId()).collect(Collectors.toSet()))
                                               .build();
                             })
                             .collect(Collectors.toList());
@@ -95,6 +100,8 @@ public class JobDto {
             isTopUp = job.getPayments()
                          .stream()
                          .anyMatch(e -> PaymentModel.Status.TOPPED_UP.equals(e.getStatus()));
+        } else if(JobModel.JobStatus.COMPLETED.equals(job.getStatus())){
+            isTopUp = true;
         }
 
     }
@@ -138,5 +145,7 @@ public class JobDto {
     public Map<String, JobReviewerModel> getReview() {
         return review;
     }
+
+    LocalDateTime completedAt;
 
 }

@@ -5,6 +5,7 @@ import com.canu.model.CanUModel;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
+import java.util.stream.Collectors;
 
 @Getter
 public class ProfileDTO {
@@ -34,6 +35,11 @@ public class ProfileDTO {
                           .currency(caniData.getCurrency())
                           .jobType(caniData.getServiceType())
                           .rating(caniData.getRating())
+                          .caniTitle(caniData.getTitle())
+                          .service(caniData.getSkillSets()
+                                           .stream()
+                                           .map(cani -> cani.getId())
+                                           .collect(Collectors.toSet()))
                           .build();
         }
     }

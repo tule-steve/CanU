@@ -26,7 +26,7 @@ public class PaymentController {
 
     @GetMapping(value = "/history")
     public ResponseEntity getPaymentHistory(PaymentFilter filter, Pageable p){
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK", paymentSvc.getPaymentList(filter, p)));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", paymentSvc.getPaymentList(filter, p, false)));
     }
 
     @PostMapping(value = "/cancel-payment")

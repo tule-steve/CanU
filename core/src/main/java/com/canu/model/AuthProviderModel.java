@@ -3,8 +3,6 @@ package com.canu.model;
 import lombok.Data;
 
 import javax.persistence.*;
-import java.util.HashSet;
-import java.util.Set;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -24,6 +22,8 @@ public class AuthProviderModel {
     @Column(name = "provider_key")
     String providerKey;
 
+
+    ///Todo it always fetch -> need change to manytoone
     @OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
     @JoinColumn(name = "user_id")
     private CanUModel user;

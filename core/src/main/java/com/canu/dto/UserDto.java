@@ -1,11 +1,17 @@
 package com.canu.dto;
 
+import lombok.Builder;
 import lombok.Data;
 
-public @Data
-class UserDto {
+@Data
+@Builder
+public class UserDto {
     private final String id;
     private final String name;
     private final String email;
     private final SocialProvider provider;
+    private final String firstName;
+    private final String lastName;
+    private final String avatar;
+
 }

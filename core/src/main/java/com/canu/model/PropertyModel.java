@@ -5,7 +5,6 @@ import lombok.Data;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotBlank;
-import javax.validation.constraints.NotNull;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -41,7 +40,6 @@ public class PropertyModel {
     Type type;
 
     @Transient
-    @NotNull(message = "locale is required")
     @Enumerated(EnumType.STRING)
     CountryModel.Locale locale;
 

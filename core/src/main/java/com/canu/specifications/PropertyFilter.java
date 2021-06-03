@@ -1,6 +1,5 @@
 package com.canu.specifications;
 
-import com.canu.model.CountryModel;
 import com.canu.model.PropertyModel;
 import lombok.Data;
 import org.springframework.data.jpa.domain.Specification;
@@ -14,10 +13,9 @@ import java.util.List;
 
 @Data
 public class PropertyFilter implements Specification<PropertyModel> {
-
-    CountryModel.Locale locale = CountryModel.Locale.en;
-
     PropertyModel.Type type;
+
+    String key;
 
     @Override
     public Predicate toPredicate(Root<PropertyModel> root,
@@ -25,10 +23,13 @@ public class PropertyFilter implements Specification<PropertyModel> {
                                  CriteriaBuilder builder) {
         criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
-        predicates.add(builder.equal(root.get("locale"), locale));
 
         if(type != null){
             predicates.add(builder.equal(root.get("type"), type));
+        }
+
+        if(key != null){
+            predicates.add(builder.equal(root.get("key"), key));
         }
         return builder.and(predicates.toArray(new Predicate[0]));
     }

@@ -29,9 +29,13 @@ public class SmsService {
 
     final private CanIRepository caniRepo;
 
-    public static final String ACCOUNT_SID = "ACa4c66b9d60b0308fd97d6e8cf8412994";
+    //    public static final String ACCOUNT_SID = "ACa4c66b9d60b0308fd97d6e8cf8412994";
+    //
+    //    public static final String AUTH_TOKEN = "662f49ee0aee7fb929d26ad066228348";
 
-    public static final String AUTH_TOKEN = "662f49ee0aee7fb929d26ad066228348";
+    public static final String ACCOUNT_SID = "SK7cde095025c73f83fd1a68fe85f6e5f2";
+
+    public static final String AUTH_TOKEN = "hlN4AhB3WJTtR3A2VxFYGGWEicFKJ1pf";
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);
 
@@ -45,7 +49,7 @@ public class SmsService {
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
         CanIModel cani = uUser.getCanIModel();
-        if(cani == null){
+        if (cani == null) {
             cani = new CanIModel();
             uUser.setCanIModel(cani);
             cani.setStatus(CanIModel.Status.DRAFT);

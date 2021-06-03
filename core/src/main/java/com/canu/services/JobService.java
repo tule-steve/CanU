@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
@@ -204,7 +205,7 @@ public class JobService {
             throw new GlobalValidationException("do not have privilege to complete this job");
         }
 
-        socketSvc.noticeCanUJobComplete(job);
+        socketSvc.noticeCanIJobComplete(job);
     }
 
     public void completeJobByCanU(Long jobId) {
@@ -218,6 +219,7 @@ public class JobService {
             throw new GlobalValidationException("do not have privilege to complete this job");
         }
         job.setStatus(JobModel.JobStatus.COMPLETED);
+        job.setCompletedAt(LocalDateTime.now());
         paymentSvc.payout(job);
         PaymentModel payment = job.getPayments()
                                   .stream()

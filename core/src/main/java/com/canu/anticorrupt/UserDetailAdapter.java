@@ -18,12 +18,15 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
 import org.springframework.security.core.userdetails.User;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 
 import java.util.ArrayList;
 import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Transactional
 public class UserDetailAdapter implements UserDetailsService, SocialLogin {
     private static final Logger logger = LoggerFactory.getLogger(UserDetailAdapter.class);
 
@@ -67,11 +70,37 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
         CanUModel currUser = canURepo.findByEmail(user.getEmail());
 
         if (currUser == null) {
-            CanUModel data = new CanUModel();
-            data.setEmail(user.getEmail());
-            data.setProviderType(user.getProvider().toString());
-            canURepo.save(data);
+            currUser = new CanUModel();
+            currUser.setEmail(user.getEmail());
+            currUser.setProviderType(user.getProvider().toString());
+            if (!StringUtils.isEmpty(user.getFirstName())) {
+                currUser.setFirstName(user.getFirstName());
+            }
+
+            if (!StringUtils.isEmpty(user.getLastName())) {
+                currUser.setLastName(user.getLastName());
+            }
+
+            if (!StringUtils.isEmpty(user.getAvatar())) {
+                currUser.setAvatar(user.getAvatar());
+            }
+        } else {
+            if (!StringUtils.isEmpty(user.getFirstName()) && StringUtils.isEmpty(currUser.getFirstName())) {
+                currUser.setFirstName(user.getFirstName());
+            }
+
+            if (!StringUtils.isEmpty(user.getLastName()) && StringUtils.isEmpty(currUser.getLastName())) {
+                currUser.setLastName(user.getLastName());
+            }
+
+            if (!StringUtils.isEmpty(user.getAvatar()) && StringUtils.isEmpty(currUser.getAvatar())) {
+                currUser.setAvatar(user.getAvatar());
+                if(currUser.getCanIModel() != null) {
+                    currUser.getCanIModel().setAvatar(user.getAvatar());
+                }
+            }
         }
+        canURepo.save(currUser);
 
         return token;
     }

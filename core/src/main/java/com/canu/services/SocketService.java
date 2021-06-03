@@ -54,6 +54,10 @@ public class SocketService {
         pushNotificationForJob(job, NotificationDetailModel.Type.REQUESTED_CANI, canus);
     }
 
+    public void noticeCanIJobComplete(JobModel job) {
+        pushNotificationForJob(job, NotificationDetailModel.Type.CANI_COMPLETE_JOB, Arrays.asList(job.getCreationUser()));
+    }
+
     public void noticeCanUJobComplete(JobModel job) {
         pushNotificationForJob(job, NotificationDetailModel.Type.JOB_COMPLETED, Arrays.asList(job.getCreationUser()));
     }

@@ -100,12 +100,14 @@ public class PaymentService {
             payment.setUserCoupon(null);
         }
 
-        if(request.getCpoint() != null && uUser.getCPoint() > request.getCpoint()){
+        if(request.getCpoint() != null && uUser.getCPoint() >= request.getCpoint()){
             payment.setCpointUsed(request.getCpoint());
+        } else {
+            payment.setCpointUsed(null);
         }
         PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
                                                                              job.getCurrency());
-        TransactionDetailDto response = new TransactionDetailDto(payment, job, em, pointExchangeRate);
+        TransactionDetailDto response = new TransactionDetailDto(payment, job, em, pointExchangeRate, false);
         paymentRepo.save(payment);
 
         return response;
@@ -196,7 +198,7 @@ public class PaymentService {
             String receiver;
             String paymentType;
             Long total = job.getTotal();
-            String transactionId = "job_id_" + jobId + LocalDateTime.now();
+            String transactionId = "job_id_" + jobId;
 
             if (!StringUtils.isEmpty(cani.getPaypalEmail())) {
                 receiver = cani.getPaypalEmail();
@@ -236,6 +238,7 @@ public class PaymentService {
             payment.setStatus(PaymentModel.Status.PAID);
             payment.setPaymentMethod("paypal");
             payment.setTotal(BigDecimal.valueOf(total));
+            payment.setUserPaypal(receiver);
             payment.setTransactionId(payouts.batchHeader().payoutBatchId());
             payment.setCurrency(job.getCurrency());
             paymentRepo.save(payment);
@@ -264,11 +267,14 @@ public class PaymentService {
     }
 
     @Transactional(readOnly = true)
-    public Page<TransactionDetailDto> getPaymentList(PaymentFilter filter, Pageable p) {
+    public Page<TransactionDetailDto> getPaymentList(PaymentFilter filter, Pageable p, boolean isAdmin) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
-        filter.setUserId(uUser);
+        if(!isAdmin){
+            filter.setUserId(uUser.getId());
+        }
+
         Page<PaymentModel> payments = paymentRepo.findAll(filter, p);
         TransactionDetailDto detail;
         List<TransactionDetailDto> dtoResult = new ArrayList<>();
@@ -276,7 +282,7 @@ public class PaymentService {
             PropertyModel pointExchangeRate = propertyRepo.findFirstByTypeAndKey(PropertyModel.Type.POINT_EXCHANGE,
                                                                                  payment.getJob().getCurrency());
 
-            detail = new TransactionDetailDto(payment, payment.getJob(), em, pointExchangeRate);
+            detail = new TransactionDetailDto(payment, payment.getJob(), em, pointExchangeRate, isAdmin);
             dtoResult.add(detail);
         }
 

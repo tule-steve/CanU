@@ -4,6 +4,7 @@ import lombok.Builder;
 import lombok.Value;
 
 import java.math.BigDecimal;
+import java.util.Set;
 
 @Value
 @Builder
@@ -28,6 +29,10 @@ public class CanIDto {
     String currency;
 
     String jobType;
+
+    String caniTitle;
+
+    Set<Long> service;
 
 
 }

@@ -28,7 +28,6 @@ public class PaymentModel {
     @Column(name = "id")
     Long id;
 
-    @JsonIgnore
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     Status status = Status.PENDING;
@@ -69,6 +68,12 @@ public class PaymentModel {
 
     @Column(name = "c_point_reward")
     Integer cpointReward = 0;
+
+    @JsonIgnore
+    @Column(name = "user_paypal")
+    String userPaypal;
+
+
 
     public void setTotal(BigDecimal total){
         if(total.signum() < 0){

@@ -15,6 +15,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
+import java.util.List;
+
 @Service
 @RequiredArgsConstructor
 public class CouponService {
@@ -46,5 +48,14 @@ public class CouponService {
         } else {
             throw new GlobalValidationException("");
         }
+    }
+
+    public Object getCouponForAdmin(CouponFilter filter, Pageable p){
+        filter.setAdmin(true);
+        return couponRepo.findAll(filter, p);
+    }
+
+    public Object upsertCoupon(List<CouponModel> propertyModel){
+        return couponRepo.saveAll(propertyModel);
     }
 }

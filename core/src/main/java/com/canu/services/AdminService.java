@@ -170,4 +170,16 @@ public class AdminService {
     //
     //    }
 
+    public Object upsertExchangeRate(List<PropertyModel> property){
+        property.stream().forEach(r -> r.setType(PropertyModel.Type.POINT_EXCHANGE));
+        return propertyRepo.saveAll(property);
+
+    }
+
+    public Object getExchangeRate(PropertyFilter filter, Pageable p){
+        filter.setType(PropertyModel.Type.POINT_EXCHANGE);
+        return propertyRepo.findAll(filter, p);
+
+    }
+
 }

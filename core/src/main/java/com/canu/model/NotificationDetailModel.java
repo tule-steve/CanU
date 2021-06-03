@@ -25,6 +25,7 @@ public class NotificationDetailModel {
         POST_JOB,
         PICK_JOB,
         TOPPED_UP,
+        CANI_COMPLETE_JOB,
         JOB_COMPLETED,
         PAID_FOR_CANI,
         INVALID_PAYPAL_ACCOUNT,

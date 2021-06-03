@@ -24,6 +24,7 @@ public class CouponModel {
     }
 
     public enum Status {
+        PENDING,
         AVAILABLE,
         REDEEMED,
         CANCEL
@@ -44,10 +45,13 @@ public class CouponModel {
     @Column(name = "value")
     BigDecimal value;
 
-    @Column(name = "from")
+    @Column(name = "remaining_amount")
+    BigDecimal amount;
+
+    @Column(name = "from_date")
     LocalDateTime fromDate;
 
-    @Column(name = "to")
+    @Column(name = "to_date")
     LocalDateTime toDate;
 
     @Column(name = "status")
@@ -58,6 +62,7 @@ public class CouponModel {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "coupon")
     List<UserCouponModel> userCoupons = new ArrayList<>();
 
+    @JsonIgnore
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;

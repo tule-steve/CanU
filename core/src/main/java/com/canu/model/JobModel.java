@@ -132,4 +132,7 @@ public class JobModel {
     @CreationTimestamp
     LocalDateTime createdAt;
 
+    @Column(name = "completed_at")
+    LocalDateTime completedAt;
+
 }
