@@ -3,6 +3,7 @@ package com.canu.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.*;
 import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
@@ -16,6 +17,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
+@Where(clause = "!is_hidden")
 public class JobReviewerModel {
 
     @Id
@@ -43,6 +45,9 @@ public class JobReviewerModel {
 
     @Column(name = "content")
     String content;
+
+    @Column(name = "is_hidden")
+    Boolean isHidden;
 
     @Column(name = "created_at")
     @CreationTimestamp

@@ -17,6 +17,8 @@ public class PropertyFilter implements Specification<PropertyModel> {
 
     String key;
 
+    boolean isFetchMultiLang = false;
+
     @Override
     public Predicate toPredicate(Root<PropertyModel> root,
                                  CriteriaQuery<?> criteriaQuery,
@@ -30,6 +32,10 @@ public class PropertyFilter implements Specification<PropertyModel> {
 
         if(key != null){
             predicates.add(builder.equal(root.get("key"), key));
+        }
+
+        if(isFetchMultiLang){
+            root.fetch("multiLanguage");
         }
         return builder.and(predicates.toArray(new Predicate[0]));
     }

@@ -48,12 +48,11 @@ public class PropertyModel {
     List<UserPropertyModel> userAssoc = new ArrayList<>();
 
 
-    @JsonIgnore
     @ElementCollection
     @MapKeyColumn(name = "field")
     @CollectionTable(name = "multi_properties", joinColumns = @JoinColumn(name = "property_id"))
     @Column(name="property")
-    private Map<String, String> positions = new HashMap<>();
+    private Map<String, String> multiLanguage = new HashMap<>();
 
     @Transient
     Integer value = 0;
@@ -78,9 +77,10 @@ public class PropertyModel {
                      sb.append(":");
                      sb.append(r.getId());
                      value = r.getRating();
-                     property = positions.get(locale);
+                     property = multiLanguage.get(locale);
                  });
         key = sb.toString();
+        multiLanguage = null;
     }
 
     @Override

@@ -15,13 +15,17 @@ import org.springframework.stereotype.Service;
 public class SupportRequestService {
     final SupportRequestRepository supportRepo;
 
+    final SocketService socketSvc;
+
     public Page<SupportRequestModel> getListSupportRequest(SupportRequestFilter filter, Pageable p){
         return supportRepo.findAll(filter, p);
     }
 
-    public SupportRequestModel initialGuideline(SupportRequestModel model){
+    public SupportRequestModel upsertSupportRequest(SupportRequestModel model){
         model.setStatus(JobModel.JobStatus.PENDING);
-        return supportRepo.save(model);
+        SupportRequestModel result = supportRepo.save(model);
+        socketSvc.noticeAdminSupportRequest(model);
+        return result;
     }
 
     public void delete(Long id) {

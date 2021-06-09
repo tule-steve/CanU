@@ -100,7 +100,7 @@ public class PaymentService {
             payment.setUserCoupon(null);
         }
 
-        if(request.getCpoint() != null && uUser.getCPoint() >= request.getCpoint()){
+        if (request.getCpoint() != null && uUser.getCPoint() >= request.getCpoint()) {
             payment.setCpointUsed(request.getCpoint());
         } else {
             payment.setCpointUsed(null);
@@ -136,6 +136,7 @@ public class PaymentService {
                 }
                 paymentRepo.save(paymentModel);
                 job.setStatus(JobModel.JobStatus.PROCESSING);
+                job.getSubStatus().put(SubStatusModel.Status.RECEPTION.toString(), LocalDateTime.now());
                 jobRepo.save(job);
                 if (paymentModel.getUserCoupon() != null) {
                     paymentModel.getUserCoupon().setStatus(CouponModel.Status.REDEEMED);
@@ -271,7 +272,7 @@ public class PaymentService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
-        if(!isAdmin){
+        if (!isAdmin) {
             filter.setUserId(uUser.getId());
         }
 
@@ -325,7 +326,7 @@ public class PaymentService {
            });
         job.setRequestedUser(null);
         jobRepo.save(job);
-//        jobRepo.removeRequestedUser(jobId);
+        //        jobRepo.removeRequestedUser(jobId);
     }
 
     public void save(PaymentModel payment) {

@@ -9,9 +9,7 @@ import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -121,6 +119,13 @@ public class JobModel {
     @Where(clause = "status <> 'CANCEL'")
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "job")
     List<PaymentModel> payments = new ArrayList<>();
+
+    @JsonIgnore
+    @ElementCollection
+    @MapKeyColumn(name = "status")
+    @CollectionTable(name = "sub_status", joinColumns = @JoinColumn(name = "job_id"))
+    @Column(name="created_at")
+    private Map<String, LocalDateTime> subStatus = new HashMap<>();
 
     @Transient
     private Set<String> keyword;

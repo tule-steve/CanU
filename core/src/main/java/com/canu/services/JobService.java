@@ -1,10 +1,6 @@
 package com.canu.services;
 
-import com.canu.dto.requests.AdminJobCancelRequest;
-import com.canu.dto.requests.RatingUserRequest;
-import com.canu.dto.requests.UpdateJobRequest;
-import com.canu.dto.requests.UpdateJobStatusRequest;
-import com.canu.dto.responses.AdminRatingDto;
+import com.canu.dto.requests.*;
 import com.canu.dto.responses.JobDto;
 import com.canu.dto.responses.RatingDto;
 import com.canu.exception.GlobalValidationException;
@@ -130,6 +126,28 @@ public class JobService {
         }
     }
 
+    public JobDto updateSubStatus(UpdateSubStatusRequest request) {
+        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        CanUModel uUser = canURepo.findByEmail(user.getUsername());
+
+        JobModel job = jobRepo.findById(request.getJobId())
+                              .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
+
+        if (!(!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
+              uUser.getId().equals(job.getRequestedUser().getId()))) {
+            throw new GlobalValidationException("do not have privilege for this action");
+        }
+        LocalDateTime now = LocalDateTime.now();
+        for (SubStatusModel.Status subStatus : SubStatusModel.Status.values()) {
+            if (!job.getSubStatus().containsKey(subStatus.toString()) &&
+                subStatus.ordinal() <= request.getStatus().ordinal()) {
+                job.getSubStatus().put(subStatus.toString(), now);
+            }
+        }
+
+        return new JobDto(jobRepo.save(job));
+    }
+
     public void cancelJob(Long jobId, String reason) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
@@ -231,7 +249,7 @@ public class JobService {
         }
 
         BigDecimal totalPoint = paymentSvc.convert2Point(payment.getTotal(), payment.getCurrency());
-        if(totalPoint != null) {
+        if (totalPoint != null) {
             BigDecimal rate = job.getSkillSets()
                                  .stream()
                                  .map(r -> r.getCpointRate())
@@ -259,7 +277,7 @@ public class JobService {
                 return;
             }
             BigDecimal totalPoint = paymentSvc.convert2Point(payment.getTotal(), payment.getCurrency());
-            if(totalPoint != null) {
+            if (totalPoint != null) {
                 BigDecimal rate = job.getSkillSets()
                                      .stream()
                                      .map(r -> r.getCpointRate())
@@ -345,17 +363,44 @@ public class JobService {
         List ratingList = new ArrayList();
         for (JobModel job : data) {
             if (job.getReviewers().size() > 0) {
-                if (job.getReviewers()
-                       .stream()
-                       .anyMatch(r -> job.getCreationUser().getId().equals(r.getReviewer().getId()))) {
-                    ratingList.add(new AdminRatingDto(job));
+                JobReviewerModel review;
+                if (filter.getIsCanI()) {
+                    review = job.getReviewers()
+                                .stream()
+                                .filter(r -> job.getRequestedUser().getId().equals(r.getReviewer().getId()))
+                                .findFirst()
+                                .get();
                 } else {
-                    ratingList.add(new AdminRatingDto(job.getReviewers().get(0)));
+                    review = job.getReviewers()
+                                .stream()
+                                .filter(r -> job.getCreationUser().getId().equals(r.getReviewer().getId()))
+                                .findFirst()
+                                .get();
                 }
+                ratingList.add(new RatingDto(review));
             }
         }
         Page<JobDto> result = new PageImpl<>(ratingList, p, data.getTotalElements());
         return result;
+    }
+
+    public void hideReview(HideReviewRequest request) {
+        JobModel job = jobRepo.findById(request.getJobId())
+                              .orElseThrow(() -> new GlobalValidationException(
+                                      "Cannot find the job with id: " + request.getJobId()));
+        Long userId;
+        if (request.getIsCanI()) {
+            userId = job.getRequestedUser().getId();
+        } else {
+            userId = job.getCreationUser().getId();
+        }
+        JobReviewerModel review = job.getReviewers()
+                                     .stream()
+                                     .filter(r -> r.getReviewer().getId().equals(userId))
+                                     .findFirst()
+                                     .orElseThrow(() -> new GlobalValidationException("Cannot find review"));
+        review.setIsHidden(true);
+        jobReviewRepo.save(review);
     }
 
     public List<JobDto> getUnpaidJobList(JobFilter filter) {

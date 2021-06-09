@@ -2,6 +2,7 @@ package com.canu.controller;
 
 import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.requests.UpdateJobRequest;
+import com.canu.dto.requests.UpdateSubStatusRequest;
 import com.canu.repositories.CanURepository;
 import com.canu.services.JobService;
 import com.canu.specifications.JobFilter;
@@ -10,6 +11,7 @@ import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.Map;
@@ -32,6 +34,12 @@ public class JobController {
     public Object pickupJob(@RequestBody Map<String, Object> request) {
         jobSvc.pickUpJob(Long.parseLong(request.get("id").toString()));
         return ResponseEntity.ok(CommonResponse.buildOkData("picked up job"));
+    }
+
+    @PostMapping(value = "/sub-status")
+    public Object updateSubStatus(@RequestBody @Validated UpdateSubStatusRequest request) {
+
+        return ResponseEntity.ok(CommonResponse.buildOkData("updated sub status", jobSvc.updateSubStatus(request)));
     }
 
     @PostMapping(value = "/cancel-job")

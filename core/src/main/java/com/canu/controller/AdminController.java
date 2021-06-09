@@ -1,6 +1,7 @@
 package com.canu.controller;
 
 import com.canu.dto.requests.AdminJobCancelRequest;
+import com.canu.dto.requests.HideReviewRequest;
 import com.canu.dto.requests.TemplateRequest;
 import com.canu.model.CouponModel;
 import com.canu.model.PropertyModel;
@@ -10,9 +11,11 @@ import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/v1/admin")
@@ -51,9 +54,21 @@ public class AdminController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.initialRatingCriteria(propertyModel)));
     }
 
+    @PostMapping(value = "/rating-criteria/delete")
+    public Object getAppRevie(@RequestBody Map<String, Object> request) {
+        adminSvc.deleteRatingCriteria(Long.parseLong(request.get("id").toString()));
+        return ResponseEntity.ok(CommonResponse.buildOkData("deleted property"));
+    }
+
     @GetMapping(value = "/get-rating/list")
     public Object getReviewList(JobFilter filter, Pageable p) {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getAdminRatingList(filter, p)));
+    }
+
+    @PostMapping(value = "/get-rating/delete")
+    public Object hideReview(@RequestBody @Validated HideReviewRequest request) {
+        jobSvc.hideReview(request);
+        return ResponseEntity.ok(CommonResponse.buildOkData("deleted property"));
     }
 
     @PostMapping(value = "/cancel_job")
@@ -90,6 +105,13 @@ public class AdminController {
     @GetMapping(value = "/review-app/list")
     public Object getAppRevie(SystemReviewFilter filter, Pageable p) {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", SystemRatingSvc.getSystemReview(filter, p)));
+    }
+
+
+
+    @GetMapping(value = "/get-notification")
+    public ResponseEntity getNotification(Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", adminSvc.getNotification(p)));
     }
 
 //    @GetMapping

@@ -2,6 +2,7 @@ package com.canu.services;
 
 import com.canu.dto.requests.TemplateRequest;
 import com.canu.dto.responses.Member;
+import com.canu.dto.responses.NotificationListResponse;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.*;
 import com.canu.repositories.*;
@@ -47,6 +48,8 @@ public class AdminService {
     final TemplateRepository templateRepo;
 
     private final MetadataRepository metadataRepo;
+
+    final private NotificationRepository notiRepo;
 
     public Page<Member> getMembers(Pageable p, Long userId) {
         //        p.getSort()
@@ -141,6 +144,7 @@ public class AdminService {
 
     public Object getRatingCriteria(PropertyFilter filter, Pageable p) {
         filter.setType(PropertyModel.Type.RATING_CRITERIA);
+        filter.setFetchMultiLang(true);
         return propertyRepo.findAll(filter, p);
     }
 
@@ -154,32 +158,48 @@ public class AdminService {
                                                    "The Rating Criteria is not exist"));
         }
 
-        if (existingProperty == null) {
-            existingProperty = propertyRepo.findFirstByKey(entity.getKey());
-        }
+        //        if (existingProperty == null) {
+        //            existingProperty = propertyRepo.findFirstByKeyAndType(entity.getKey(), PropertyModel.Type.RATING_CRITERIA);
+        //        }
         if (existingProperty != null) {
             model = existingProperty;
             model.setKey(entity.getKey());
             model.setLocale(entity.getLocale());
+            if (CountryModel.Locale.en.equals(entity.getLocale())) {
+                model.setProperty(entity.getProperty());
+            }
         }
-        model.getPositions().put(entity.getLocale().toString(), entity.getProperty());
+        model.getMultiLanguage().put(entity.getLocale().toString(), entity.getProperty());
         return propertyRepo.save(model);
+    }
+
+    public void deleteRatingCriteria(Long propertyId) {
+        PropertyModel propertyModel = propertyRepo.findFirstByTypeAndId(PropertyModel.Type.RATING_CRITERIA, propertyId)
+                    .orElseThrow(() -> new GlobalValidationException("cannot find the rating criteria"));
+        propertyRepo.delete(propertyModel);
     }
 
     //    public Object getRevenueData(){
     //
     //    }
 
-    public Object upsertExchangeRate(List<PropertyModel> property){
+    public Object upsertExchangeRate(List<PropertyModel> property) {
         property.stream().forEach(r -> r.setType(PropertyModel.Type.POINT_EXCHANGE));
         return propertyRepo.saveAll(property);
 
     }
 
-    public Object getExchangeRate(PropertyFilter filter, Pageable p){
+    public Object getExchangeRate(PropertyFilter filter, Pageable p) {
         filter.setType(PropertyModel.Type.POINT_EXCHANGE);
         return propertyRepo.findAll(filter, p);
 
+    }
+
+    public Object getNotification(Pageable p) {
+        List<NotificationModel> result = notiRepo.findByIsAdminIsTrue(p);
+        Long unreadCount = notiRepo.countByIsReadFalseAndIsAdminTrue();
+        NotificationListResponse response = new NotificationListResponse(result, unreadCount);
+        return response;
     }
 
 }

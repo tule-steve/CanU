@@ -43,6 +43,7 @@ public class SocketService {
         List<CanUModel> canus = canuRepo.findCanIForJobNotification(job.getService(), job.getCreationUser().getId());
         pushNotificationForJob(job, NotificationDetailModel.Type.POST_JOB, canus);
         pushNotificationForJob(job, NotificationDetailModel.Type.CREATE_JOB, Arrays.asList(job.getCreationUser()));
+        noticeAdminJobComplete(job);
     }
 
     public void pushNoticeForPickJob(JobModel job) {
@@ -60,6 +61,7 @@ public class SocketService {
 
     public void noticeCanUJobComplete(JobModel job) {
         pushNotificationForJob(job, NotificationDetailModel.Type.JOB_COMPLETED, Arrays.asList(job.getCreationUser()));
+        noticeAdminJobComplete(job);
     }
 
     private void pushNotificationForJob(JobModel job, NotificationDetailModel.Type notiType, List<CanUModel> canus) {
@@ -143,10 +145,6 @@ public class SocketService {
         pushNotificationForAdmin(data, NotificationDetailModel.Type.CANCEL_JOB_BY_CANU);
     }
 
-    public void noticeAdmin(SupportRequestModel data) {
-        pushNotificationForAdmin(data, NotificationDetailModel.Type.ADMIN_SUPPORT_REQUEST);
-    }
-
     private void pushNotificationForAdmin(Object job, NotificationDetailModel.Type notiType) {
         try {
             String title = templateRepo.findFirstByType(notiType).getTitle();
@@ -163,20 +161,15 @@ public class SocketService {
     }
 
     private void pushNoticeToAdmin(NotificationDetailModel detail) {
-        NotificationModel notice = null;
-        List<CanUModel> adminList = canuRepo.findByIsAdminIsTrue();
-        if (adminList.size() > 0) {
-            for (CanUModel user : adminList) {
-                notice = new NotificationModel();
-                notice.setDetail(detail);
-                notice.setOwner(user);
-                notice.setTitle(detail.getTitle());
-                notice.setTypeNoti(detail.getType());
-                notice.setDescription(detail.getDescription());
-                notificationRepo.save(notice);
-            }
-            simpMessagingTemplate.convertAndSend("/api/topic/admin/", notice);
-        }
+        NotificationModel notice = new NotificationModel();
+        notice.setDetail(detail);
+        notice.setOwner(null);
+        notice.setTitle(detail.getTitle());
+        notice.setTypeNoti(detail.getType());
+        notice.setDescription(detail.getDescription());
+        notice.setIsAdmin(true);
+        notificationRepo.save(notice);
+        simpMessagingTemplate.convertAndSend("/api/topic/admin/", detail);
     }
 
     //    @ExceptionHandler(Exception.class)

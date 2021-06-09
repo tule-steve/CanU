@@ -27,6 +27,8 @@ public class JobFilter implements Specification<JobModel> {
 
     Long requestedUserId;
 
+    Boolean isCanI;
+
     @Override
     public Predicate toPredicate(Root<JobModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
         criteriaQuery.distinct(true);
@@ -65,9 +67,18 @@ public class JobFilter implements Specification<JobModel> {
         if (requestedUserId != null) {
             predicates.add(builder.equal(root.get("requestedUser"), requestedUserId));
         } else if (pickupUserId != null) {
-            predicates.add(builder.equal(root.join("canus",JoinType.LEFT).get("id"), pickupUserId));
+            predicates.add(builder.equal(root.join("canus", JoinType.LEFT).get("id"), pickupUserId));
         }
 
+        if (isCanI != null) {
+            Path user = root.get("requestedUser");
+            if (isCanI) {
+                user = root.get("requestedUser");
+            } else {
+                user = root.get("creationUser");
+            }
+            predicates.add(builder.equal(root.join("reviewers", JoinType.LEFT).get("reviewer"), user));
+        }
         predicates.add(builder.isNotNull(root.join("creationUser")));
 
         return builder.and(predicates.toArray(new Predicate[0]));

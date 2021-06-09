@@ -14,7 +14,6 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Table(name = "canu_notification")
 public class NotificationModel {
 
-    @JsonIgnore
     @Id
     @GeneratedValue(strategy = IDENTITY)
     @Column(name = "id")
@@ -36,6 +35,9 @@ public class NotificationModel {
 
     @Column(name = "is_read")
     private Boolean isRead = false;
+
+    @Column(name = "is_Admin")
+    private Boolean isAdmin = false;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -71,7 +73,9 @@ public class NotificationModel {
     @PostUpdate
     void setUpdateEntity(){
         this.detailId = detail.getId();
-        this.userId = owner.getId();
+        if(owner != null) {
+            this.userId = owner.getId();
+        }
     }
 
 //    public Long getDetailId() {

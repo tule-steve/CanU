@@ -21,6 +21,12 @@ public interface NotificationRepository extends JpaRepository<NotificationModel,
 
     Long countByIsReadFalseAndOwner(CanUModel canu);
 
+    List<NotificationModel> findByIsAdminIsTrue(Pageable p);
+
+    Long countByIsReadFalseAndIsAdminTrue();
+
+
+
 
 
 }

@@ -144,8 +144,8 @@ public class MetaDataController {
     }
 
     @GetMapping(value = "/rating-criteria/list")
-    public Object getRatingCriteria(PropertyFilter fiter, Pageable p) {
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getRatingCriteria(fiter, p)));
+    public Object getRatingCriteria(PropertyFilter filter, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", adminSvc.getRatingCriteria(filter, p)));
     }
 
     @GetMapping(value = "/support/list")
@@ -160,7 +160,7 @@ public class MetaDataController {
 
     @PostMapping(value = "/support/initial")
     public Object sendSupportRequest(@RequestBody @Validated SupportRequestModel request) {
-        return ResponseEntity.ok(CommonResponse.buildOkData("OK", supportSvc.initialGuideline(request)));
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK", supportSvc.upsertSupportRequest(request)));
     }
 
     @PostMapping(value = "/support/delete")

@@ -43,8 +43,10 @@ public class JobDto {
                      .map(r -> new ServiceDto(r.getId(), r.getTitle(), r.getSlug()))
                      .collect(Collectors.toList());
         completedAt = job.getCompletedAt();
+        job.getSubStatus().size();
+        processStatus = job.getSubStatus();
 
-        if (job.getRequestedUser() != null && !JobModel.JobStatus.PENDING.equals(job.getStatus())) {
+        if (job.getRequestedUser() != null) {
             CanUModel r = job.getRequestedUser();
             requestedUser = CanIDto.builder()
                                    .id(r.getId())
@@ -58,9 +60,15 @@ public class JobDto {
                                    .jobType(r.getCanIModel().getServiceType())
                                    .rating(r.getCanIModel().getRating())
                                    .caniTitle(r.getCanIModel().getTitle())
-                                   .service(r.getCanIModel().getSkillSets().stream().map(cani -> cani.getId()).collect(Collectors.toSet()))
+                                   .service(r.getCanIModel()
+                                             .getSkillSets()
+                                             .stream()
+                                             .map(cani -> cani.getId())
+                                             .collect(Collectors.toSet()))
                                    .build();
-        } else {
+        }
+
+        if (JobModel.JobStatus.PENDING.equals(job.getStatus())) {
             pickupCanI = job.getCanus()
                             .stream()
                             .map(r -> {
@@ -82,7 +90,11 @@ public class JobDto {
                                               .jobType(r.getCanIModel().getServiceType())
                                               .rating(r.getCanIModel().getRating())
                                               .caniTitle(r.getCanIModel().getTitle())
-                                              .service(r.getCanIModel().getSkillSets().stream().map(cani -> cani.getId()).collect(Collectors.toSet()))
+                                              .service(r.getCanIModel()
+                                                        .getSkillSets()
+                                                        .stream()
+                                                        .map(cani -> cani.getId())
+                                                        .collect(Collectors.toSet()))
                                               .build();
                             })
                             .collect(Collectors.toList());
@@ -100,7 +112,7 @@ public class JobDto {
             isTopUp = job.getPayments()
                          .stream()
                          .anyMatch(e -> PaymentModel.Status.TOPPED_UP.equals(e.getStatus()));
-        } else if(JobModel.JobStatus.COMPLETED.equals(job.getStatus())){
+        } else if (JobModel.JobStatus.COMPLETED.equals(job.getStatus())) {
             isTopUp = true;
         }
 
@@ -124,6 +136,8 @@ public class JobDto {
     Long total;
 
     String currency;
+
+    Map<String, LocalDateTime> processStatus;
 
     private List<ServiceDto> service;
 

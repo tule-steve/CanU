@@ -200,7 +200,7 @@ public class CanUController {
     @PostMapping(value = "/complete-payment")
     public ResponseEntity completePayment(@RequestBody @Validated CompletePaymentRequest request) {
         paymentSvc.complete(request);
-        return ResponseEntity.ok(CommonResponse.buildOkData("add review"));
+        return ResponseEntity.ok(CommonResponse.buildOkData("payment completed"));
     }
 
     @PostMapping(value = "/collect-voucher")
