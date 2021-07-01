@@ -145,7 +145,10 @@ public class JobService {
             }
         }
 
-        return new JobDto(jobRepo.save(job));
+        JobDto result = new JobDto(jobRepo.save(job));
+
+        socketSvc.noticeCanUSubStatus(job, request.getStatus());
+        return result;
     }
 
     public void cancelJob(Long jobId, String reason) {
@@ -205,8 +208,10 @@ public class JobService {
             throw new GlobalValidationException("permission denied");
         }
         job.setRequestedUser(requestedUser);
-        job.setTotal(request.getPrice());
-        job.setCurrency(request.getCurrency());
+        if (request.getPrice() != null && request.getCurrency() != null) {
+            job.setTotal(request.getPrice());
+            job.setCurrency(request.getCurrency());
+        }
         //        job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
         socketSvc.pushNoticeForStartJob(job);
@@ -329,6 +334,7 @@ public class JobService {
                                                  .target(targetUser)
                                                  .rating(request.getValue())
                                                  .content(request.getContent())
+                                                 .isHidden(false)
                                                  .build();
 
         jobReviewRepo.save(model);

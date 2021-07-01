@@ -8,6 +8,7 @@ import org.hibernate.annotations.SQLDelete;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
+import javax.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -66,9 +67,11 @@ public class JobModel {
     String city;
 
     @Column(name = "total")
+    @NotNull(message = "total is required")
     Long total;
 
     @Column(name = "currency")
+    @NotNull(message = "currency is required")
     String currency;
 
     @Column(name = "image")

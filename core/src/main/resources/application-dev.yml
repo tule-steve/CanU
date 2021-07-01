@@ -114,3 +114,10 @@ app:
     tokenExpirationMsec: 8640000000000
     #tokenExpirationMsec: 864
 
+
+logging:
+  level:
+    com:
+      amazonaws:
+        util:
+          EC2MetadataUtils: error

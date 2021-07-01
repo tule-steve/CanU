@@ -25,6 +25,10 @@ public class NotificationDetailModel {
         POST_JOB,
         PICK_JOB,
         TOPPED_UP,
+        RECEPTION,
+        PREPARATION,
+        PACKAGED,
+        DELIVERY,
         CANI_COMPLETE_JOB,
         JOB_COMPLETED,
         PAID_FOR_CANI,
@@ -34,6 +38,7 @@ public class NotificationDetailModel {
         CANCEL_JOB_BY_CANU,
         CANCEL_JOB_FEEDBACK_YES,
         CANCEL_JOB_FEEDBACK_NO,
+        ADMIN_CANU_TOPPED_UP,
         ADMIN_JOB_COMPLETED,
         ADMIN_SUPPORT_REQUEST;
 
@@ -69,16 +74,6 @@ public class NotificationDetailModel {
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "detail")
     List<NotificationModel> notifications = new ArrayList<>();
 
-//    @Transient
-//    Object body;
 
-//    @PrePersist
-//    public void prePersist() {
-//        try {
-//            this.setData(new ObjectMapper().writeValueAsString(body));
-//        } catch (JsonProcessingException ex) {
-//            logger.error("error on saving Notification", ex);
-//        }
-//    }
 
 }

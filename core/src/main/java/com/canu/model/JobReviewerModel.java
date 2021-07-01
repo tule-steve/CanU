@@ -46,8 +46,9 @@ public class JobReviewerModel {
     @Column(name = "content")
     String content;
 
+    @JsonIgnore
     @Column(name = "is_hidden")
-    Boolean isHidden;
+    Boolean isHidden = false;
 
     @Column(name = "created_at")
     @CreationTimestamp

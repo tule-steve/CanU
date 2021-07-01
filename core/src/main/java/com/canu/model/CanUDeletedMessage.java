@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
 import javax.persistence.*;
 
@@ -13,7 +14,9 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Data
 @Builder
 @Table(name = "user_deleted_message")
+@NoArgsConstructor
 @AllArgsConstructor
+
 public class CanUDeletedMessage {
     @JsonIgnore
     @Id

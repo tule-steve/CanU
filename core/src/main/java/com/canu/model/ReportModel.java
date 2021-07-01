@@ -19,7 +19,7 @@ public class ReportModel {
     @Column(name = "id")
     Long id;
 
-    @Column(name = "cani_id", columnDefinition = "decimal(15, 2)", precision = 15, scale = 2)
+    @Column(name = "revenue", columnDefinition = "decimal(15, 2)", precision = 15, scale = 2)
     BigDecimal revenue;
 
     @Column(name = "job_id")

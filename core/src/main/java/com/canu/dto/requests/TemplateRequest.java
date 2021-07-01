@@ -16,6 +16,9 @@ public class TemplateRequest {
     @NotNull(message = "title detail is required")
     String title;
 
+    @NotNull(message = "description detail is required")
+    String description;
+
     @NotNull(message = "type detail is required")
     @Enumerated(EnumType.STRING)
     NotificationDetailModel.Type type;

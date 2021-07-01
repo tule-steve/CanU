@@ -66,6 +66,8 @@ public class CanUService {
 
     final private UserPropertyRepository userproRepo;
 
+    final private AmazonS3Service s3Svc;
+
     @Value("${app.baseUrl}")
     private String domainLink;
 
@@ -369,11 +371,11 @@ public class CanUService {
         }
     }
 
-    public Object getNotification(Pageable p) {
+    public Object getNotification(boolean isCanu, Pageable p) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        List<NotificationModel> result = notiRepo.findByOwner(uUser, p);
-        Long unreadCount = notiRepo.countByIsReadFalseAndOwner(uUser);
+        List<NotificationModel> result = notiRepo.findByOwnerAndIsCanu(uUser, isCanu, p);
+        Long unreadCount = notiRepo.countByIsReadFalseAndOwnerAndIsCanu(uUser, isCanu);
         NotificationListResponse response = new NotificationListResponse(result, unreadCount);
 
         return response;

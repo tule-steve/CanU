@@ -19,12 +19,18 @@ public class TemplateFilter implements Specification<TemplateModel> {
     @Enumerated(EnumType.STRING)
     NotificationDetailModel.Type type;
 
+    Long id;
+
     @Override
     public Predicate toPredicate(Root<TemplateModel> root, CriteriaQuery<?> criteriaQuery, CriteriaBuilder builder) {
         criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
         if (type != null) {
             predicates.add(builder.equal(root.get("type"), type));
+        }
+
+        if(id != null){
+            predicates.add(builder.equal(root.get("id"), id));
         }
         return builder.and(predicates.toArray(new Predicate[0]));
     }

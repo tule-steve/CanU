@@ -18,7 +18,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 @Service
 @Transactional
@@ -41,31 +43,85 @@ public class SocketService {
 
     public void pushNoticeForPostJob(JobModel job) {
         List<CanUModel> canus = canuRepo.findCanIForJobNotification(job.getService(), job.getCreationUser().getId());
-        pushNotificationForJob(job, NotificationDetailModel.Type.POST_JOB, canus);
-        pushNotificationForJob(job, NotificationDetailModel.Type.CREATE_JOB, Arrays.asList(job.getCreationUser()));
-        noticeAdminJobComplete(job);
+        pushNotificationForJob(job, NotificationDetailModel.Type.POST_JOB, canus, false);
+        pushNotificationForJob(job,
+                               NotificationDetailModel.Type.CREATE_JOB,
+                               Arrays.asList(job.getCreationUser()),
+                               true);
     }
 
     public void pushNoticeForPickJob(JobModel job) {
-        pushNotificationForJob(job, NotificationDetailModel.Type.PICK_JOB, Arrays.asList(job.getCreationUser()));
+        pushNotificationForJob(job, NotificationDetailModel.Type.PICK_JOB, Arrays.asList(job.getCreationUser()), true);
     }
 
     public void pushNoticeForStartJob(JobModel job) {
-        List<CanUModel> canus = Arrays.asList(job.getCreationUser(), job.getRequestedUser());
-        pushNotificationForJob(job, NotificationDetailModel.Type.REQUESTED_CANI, canus);
+        pushNotificationForJob(job,
+                               NotificationDetailModel.Type.REQUESTED_CANI,
+                               Arrays.asList(job.getCreationUser()), true);
+
+        pushNotificationForJob(job,
+                               NotificationDetailModel.Type.REQUESTED_CANI,
+                               Arrays.asList(job.getRequestedUser()), false);
+    }
+
+    public void noticeToppedUpJob(JobModel job) {
+        try {
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.TOPPED_UP,
+                                   Arrays.asList(job.getCreationUser()), true);
+
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.TOPPED_UP,
+                                   Arrays.asList(job.getRequestedUser()), false);
+
+            noticeAdminCanuTopup(job);
+        } catch (Exception ex) {
+            logger.error("error on send notification for job with id", job.getId());
+        }
+    }
+
+    public void noticeCanUSubStatus(JobModel job, SubStatusModel.Status subStatus) {
+        pushNotificationForJob(job,
+                               NotificationDetailModel.Type.valueOf(subStatus.toString()),
+                               Arrays.asList(job.getCreationUser()), false);
     }
 
     public void noticeCanIJobComplete(JobModel job) {
-        pushNotificationForJob(job, NotificationDetailModel.Type.CANI_COMPLETE_JOB, Arrays.asList(job.getCreationUser()));
+        pushNotificationForJob(job,
+                               NotificationDetailModel.Type.CANI_COMPLETE_JOB,
+                               Arrays.asList(job.getCreationUser()), false);
     }
 
     public void noticeCanUJobComplete(JobModel job) {
-        pushNotificationForJob(job, NotificationDetailModel.Type.JOB_COMPLETED, Arrays.asList(job.getCreationUser()));
+        pushNotificationForJob(job,
+                               NotificationDetailModel.Type.JOB_COMPLETED,
+                               Arrays.asList(job.getCreationUser()),
+                               false);
         noticeAdminJobComplete(job);
     }
 
-    private void pushNotificationForJob(JobModel job, NotificationDetailModel.Type notiType, List<CanUModel> canus) {
+    public void noticeCanIPaidJob(JobModel job) {
         try {
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.PAID_FOR_CANI,
+                                   Arrays.asList(job.getCreationUser()), true);
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.PAID_FOR_CANI,
+                                   Arrays.asList(job.getRequestedUser()), false);
+        } catch (Exception ex) {
+            logger.error("error on send notification for job with id", job.getId());
+        }
+    }
+
+    private void pushNotificationForJob(JobModel job,
+                                        NotificationDetailModel.Type notiType,
+                                        List<CanUModel> canus,
+                                        boolean isCanU) {
+        try {
+            Map<String, Object> data = new HashMap<>();
+            data.put("isCanu", isCanU);
+            data.put("id", job.getId());
+            data.put("title", job.getTitle());
             String title = templateRepo.findFirstByType(notiType).getTitle();
             NotificationDetailModel noti = new NotificationDetailModel();
             noti.setType(notiType);
@@ -73,29 +129,9 @@ public class SocketService {
             noti.setTitle(title);
             noti.setDescription(getNotificationData(noti.getType().toTitleString(), job));
             noti = notiRepo.save(noti);
-            pushNoticeToUser(canus, noti);
+            pushNoticeToUser(canus, noti, data, isCanU);
         } catch (Exception ex) {
             logger.error("error on creating notification", ex);
-        }
-    }
-
-    public void noticeToppedUpJob(JobModel job) {
-        try {
-            pushNotificationForJob(job,
-                                   NotificationDetailModel.Type.TOPPED_UP,
-                                   Arrays.asList(job.getCreationUser(), job.getRequestedUser()));
-        } catch ( Exception ex){
-            logger.error("error on send notification for job with id", job.getId());
-        }
-    }
-
-    public void noticeCanIPaidJob(JobModel job) {
-        try {
-            pushNotificationForJob(job,
-                                   NotificationDetailModel.Type.PAID_FOR_CANI,
-                                   Arrays.asList(job.getCreationUser(), job.getRequestedUser()));
-        } catch ( Exception ex){
-            logger.error("error on send notification for job with id", job.getId());
         }
     }
 
@@ -104,8 +140,12 @@ public class SocketService {
         try {
             pushNotificationForJob(job,
                                    NotificationDetailModel.Type.INVALID_PAYPAL_ACCOUNT,
-                                   Arrays.asList(job.getCreationUser(), job.getRequestedUser()));
-        } catch ( Exception ex){
+                                   Arrays.asList(job.getCreationUser()), true);
+
+            pushNotificationForJob(job,
+                                   NotificationDetailModel.Type.INVALID_PAYPAL_ACCOUNT,
+                                   Arrays.asList(job.getRequestedUser()), false);
+        } catch (Exception ex) {
             logger.error("error on send notification for job with id", job.getId());
         }
     }
@@ -119,7 +159,7 @@ public class SocketService {
         }
     }
 
-    private void pushNoticeToUser(List<CanUModel> users, NotificationDetailModel detail) {
+    private void pushNoticeToUser(List<CanUModel> users, NotificationDetailModel detail, Object data, boolean isCanU) {
         NotificationModel notice;
         for (CanUModel user : users) {
             notice = new NotificationModel();
@@ -128,24 +168,38 @@ public class SocketService {
             notice.setTitle(detail.getTitle());
             notice.setTypeNoti(detail.getType());
             notice.setDescription(detail.getDescription());
+            notice.setData(data);
+            notice.setIsCanu(isCanU);
             notificationRepo.save(notice);
             simpMessagingTemplate.convertAndSend("/api/topic/notification/" + user.getId(), notice);
         }
     }
 
     public void noticeAdminJobComplete(JobModel job) {
-        pushNotificationForAdmin(job, NotificationDetailModel.Type.ADMIN_JOB_COMPLETED);
+        Map<String, Object> extData = new HashMap<>();
+        extData.put("id", job.getId());
+        extData.put("title", job.getTitle());
+
+        pushNotificationForAdmin(job, NotificationDetailModel.Type.ADMIN_JOB_COMPLETED, extData);
+    }
+
+    public void noticeAdminCanuTopup(JobModel job) {
+        Map<String, Object> extData = new HashMap<>();
+        extData.put("id", job.getId());
+        extData.put("title", job.getTitle());
+
+        pushNotificationForAdmin(job, NotificationDetailModel.Type.ADMIN_CANU_TOPPED_UP, extData);
     }
 
     public void noticeAdminSupportRequest(SupportRequestModel data) {
-        pushNotificationForAdmin(data, NotificationDetailModel.Type.ADMIN_SUPPORT_REQUEST);
+        pushNotificationForAdmin(data, NotificationDetailModel.Type.ADMIN_SUPPORT_REQUEST, null);
     }
 
     public void noticeAdminCancelJob(JobModel data) {
-        pushNotificationForAdmin(data, NotificationDetailModel.Type.CANCEL_JOB_BY_CANU);
+        pushNotificationForAdmin(data, NotificationDetailModel.Type.CANCEL_JOB_BY_CANU, null);
     }
 
-    private void pushNotificationForAdmin(Object job, NotificationDetailModel.Type notiType) {
+    private void pushNotificationForAdmin(Object job, NotificationDetailModel.Type notiType, Object extData) {
         try {
             String title = templateRepo.findFirstByType(notiType).getTitle();
             NotificationDetailModel noti = new NotificationDetailModel();
@@ -154,22 +208,23 @@ public class SocketService {
             noti.setTitle(title);
             noti.setDescription(getNotificationData(noti.getType().toTitleString(), job));
             noti = notiRepo.save(noti);
-            pushNoticeToAdmin(noti);
+            pushNoticeToAdmin(noti, extData);
         } catch (Exception ex) {
             logger.error("error on creating notification", ex);
         }
     }
 
-    private void pushNoticeToAdmin(NotificationDetailModel detail) {
+    private void pushNoticeToAdmin(NotificationDetailModel detail, Object extData) {
         NotificationModel notice = new NotificationModel();
         notice.setDetail(detail);
         notice.setOwner(null);
         notice.setTitle(detail.getTitle());
         notice.setTypeNoti(detail.getType());
         notice.setDescription(detail.getDescription());
+        notice.setData(extData);
         notice.setIsAdmin(true);
         notificationRepo.save(notice);
-        simpMessagingTemplate.convertAndSend("/api/topic/admin/", detail);
+        simpMessagingTemplate.convertAndSend("/api/topic/admin/", notice);
     }
 
     //    @ExceptionHandler(Exception.class)

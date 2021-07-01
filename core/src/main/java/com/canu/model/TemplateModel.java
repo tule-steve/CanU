@@ -29,5 +29,14 @@ public class TemplateModel {
     @Enumerated(EnumType.STRING)
     NotificationDetailModel.Type type;
 
+    @Column(name = "to_canu")
+    Boolean toCanu = false;
+
+    @Column(name = "to_cani")
+    Boolean toCani = false;
+
+    @Column(name = "to_admin")
+    Boolean toAdmin = false;
+
 
 }

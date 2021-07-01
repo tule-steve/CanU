@@ -4,10 +4,7 @@ import com.canu.model.PropertyModel;
 import lombok.Data;
 import org.springframework.data.jpa.domain.Specification;
 
-import javax.persistence.criteria.CriteriaBuilder;
-import javax.persistence.criteria.CriteriaQuery;
-import javax.persistence.criteria.Predicate;
-import javax.persistence.criteria.Root;
+import javax.persistence.criteria.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,8 +14,6 @@ public class PropertyFilter implements Specification<PropertyModel> {
 
     String key;
 
-    boolean isFetchMultiLang = false;
-
     @Override
     public Predicate toPredicate(Root<PropertyModel> root,
                                  CriteriaQuery<?> criteriaQuery,
@@ -26,16 +21,17 @@ public class PropertyFilter implements Specification<PropertyModel> {
         criteriaQuery.distinct(true);
         List<Predicate> predicates = new ArrayList<>();
 
-        if(type != null){
+        if (type != null) {
             predicates.add(builder.equal(root.get("type"), type));
         }
 
-        if(key != null){
+        if (key != null) {
             predicates.add(builder.equal(root.get("key"), key));
         }
 
-        if(isFetchMultiLang){
-            root.fetch("multiLanguage");
+        if (Long.class != criteriaQuery.getResultType()) {
+            criteriaQuery.multiselect(root, root.get("multiLanguage"));
+            root.fetch("multiLanguage", JoinType.LEFT);
         }
         return builder.and(predicates.toArray(new Predicate[0]));
     }

@@ -1,6 +1,5 @@
 package com.canu.model;
 
-import com.common.dtos.validation.ExtendedEmailValidator;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
@@ -71,7 +70,7 @@ public class CanIModel {
     @Column(name = "bank_owner")
     String accountName;
 
-    @ExtendedEmailValidator(message = "email's format is not correct")
+//    @ExtendedEmailValidator(message = "email's format is not correct")
     @Column(name = "paypal_email")
     String paypalEmail;
 

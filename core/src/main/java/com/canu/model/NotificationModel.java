@@ -1,11 +1,16 @@
 package com.canu.model;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.util.StringUtils;
 
 import javax.persistence.*;
 import java.time.LocalDateTime;
+import java.util.Map;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -13,6 +18,8 @@ import static javax.persistence.GenerationType.IDENTITY;
 @Data
 @Table(name = "canu_notification")
 public class NotificationModel {
+
+    private static final Logger logger = LoggerFactory.getLogger(NotificationDetailModel.class);
 
     @Id
     @GeneratedValue(strategy = IDENTITY)
@@ -25,6 +32,10 @@ public class NotificationModel {
     @Column(name = "description")
     String description;
 
+    @JsonIgnore
+    @Column(name = "data")
+    String extData;
+
     @Enumerated(EnumType.STRING)
     @Column(name = "type")
     NotificationDetailModel.Type typeNoti;
@@ -36,8 +47,11 @@ public class NotificationModel {
     @Column(name = "is_read")
     private Boolean isRead = false;
 
-    @Column(name = "is_Admin")
+    @Column(name = "is_admin")
     private Boolean isAdmin = false;
+
+    @Column(name = "is_canu")
+    private Boolean isCanu = true;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
@@ -49,16 +63,16 @@ public class NotificationModel {
     @JoinColumn(name = "notification_id", updatable = false, nullable = false)
     NotificationDetailModel detail;
 
-    public void setOwner(CanUModel canu){
+    public void setOwner(CanUModel canu) {
         this.owner = canu;
-        if(owner != null){
+        if (owner != null) {
             this.userId = owner.getId();
         }
     }
 
-    public void setDetail(NotificationDetailModel detail){
+    public void setDetail(NotificationDetailModel detail) {
         this.detail = detail;
-        if(detail != null){
+        if (detail != null) {
             this.detailId = detail.getId();
         }
     }
@@ -71,23 +85,42 @@ public class NotificationModel {
 
     @PostLoad
     @PostUpdate
-    void setUpdateEntity(){
+    void setUpdateEntity() {
         this.detailId = detail.getId();
-        if(owner != null) {
+        if (owner != null) {
             this.userId = owner.getId();
+        }
+
+        if (!StringUtils.isEmpty(extData)) {
+            try {
+                data = NotificationDetailModel.mapper.readValue(extData, Map.class);
+            } catch (JsonProcessingException ex) {
+                logger.error("error on saving Notification", ex);
+            }
         }
     }
 
-//    public Long getDetailId() {
-//        return detail.getId();
-//    }
+    //    public Long getDetailId() {
+    //        return detail.getId();
+    //    }
 
     @Transient
     Long userId;
 
-//    public Long getUserId() {
-//        return owner.getId();
-//    }
+    //    public Long getUserId() {
+    //        return owner.getId();
+    //    }
 
+    @Transient
+    Object data;
+
+    public void setData(Object extData){
+        data = extData;
+        try {
+            setExtData(NotificationDetailModel.mapper.writeValueAsString(extData));
+        } catch (Exception ex){
+            logger.error("error on parse ext data for admin notification", ex);
+        }
+    }
 
 }

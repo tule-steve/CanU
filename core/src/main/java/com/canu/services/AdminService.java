@@ -2,7 +2,6 @@ package com.canu.services;
 
 import com.canu.dto.requests.TemplateRequest;
 import com.canu.dto.responses.Member;
-import com.canu.dto.responses.NotificationListResponse;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.*;
 import com.canu.repositories.*;
@@ -127,10 +126,12 @@ public class AdminService {
     public void setupTemplate(TemplateRequest template) {
         ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toString(),
                                                                         template.getTemplate());
-        //        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toTitleString(), template.getDescription());
+        ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toTitleString(),
+                                                                        template.getDescription());
         TemplateModel updatedTemplate = templateRepo.findFirstByType(template.getType());
         updatedTemplate.setTemplate(template.getTemplate());
         updatedTemplate.setTitle(template.getTitle());
+        updatedTemplate.setDescription(template.getDescription());
         templateRepo.save(updatedTemplate);
     }
 
@@ -144,7 +145,6 @@ public class AdminService {
 
     public Object getRatingCriteria(PropertyFilter filter, Pageable p) {
         filter.setType(PropertyModel.Type.RATING_CRITERIA);
-        filter.setFetchMultiLang(true);
         return propertyRepo.findAll(filter, p);
     }
 
@@ -175,13 +175,10 @@ public class AdminService {
 
     public void deleteRatingCriteria(Long propertyId) {
         PropertyModel propertyModel = propertyRepo.findFirstByTypeAndId(PropertyModel.Type.RATING_CRITERIA, propertyId)
-                    .orElseThrow(() -> new GlobalValidationException("cannot find the rating criteria"));
+                                                  .orElseThrow(() -> new GlobalValidationException(
+                                                          "cannot find the rating criteria"));
         propertyRepo.delete(propertyModel);
     }
-
-    //    public Object getRevenueData(){
-    //
-    //    }
 
     public Object upsertExchangeRate(List<PropertyModel> property) {
         property.stream().forEach(r -> r.setType(PropertyModel.Type.POINT_EXCHANGE));
@@ -196,10 +193,12 @@ public class AdminService {
     }
 
     public Object getNotification(Pageable p) {
-        List<NotificationModel> result = notiRepo.findByIsAdminIsTrue(p);
-        Long unreadCount = notiRepo.countByIsReadFalseAndIsAdminTrue();
-        NotificationListResponse response = new NotificationListResponse(result, unreadCount);
-        return response;
+        Page<NotificationModel> result = notiRepo.findByIsAdminIsTrue(p);
+        return result;
     }
+
+    //    public Object getRevenueData() {
+    //
+    //    }
 
 }

@@ -156,8 +156,8 @@ public class CanUController {
     }
 
     @GetMapping(value = "/get-notification")
-    public ResponseEntity getNotification(Pageable p) {
-        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getNotification(p)));
+    public ResponseEntity getNotification(@RequestParam(defaultValue = "true") boolean isCanu, Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", canUService.getNotification(isCanu, p)));
     }
 
     @GetMapping(value = "/get-notification-detail/{notificationId}")
@@ -213,6 +213,13 @@ public class CanUController {
     public ResponseEntity getVoucher(CouponFilter filter, Pageable p){
 
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", couponSvc.getCoupons(filter, p)));
+    }
+
+    private  final AmazonS3Service amazonS3Svc;
+    @PostMapping(value = "/uploadFileS3")
+    public ResponseEntity uploadFileS3(StandardMultipartHttpServletRequest request) throws IOException {
+        amazonS3Svc.listFile();
+        return ResponseEntity.ok("ok");
     }
 
 }
