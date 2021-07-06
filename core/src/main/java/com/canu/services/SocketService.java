@@ -17,6 +17,7 @@ import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.freemarker.FreeMarkerTemplateUtils;
 
+import javax.persistence.EntityManager;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -39,6 +40,8 @@ public class SocketService {
 
     final NotificationRepository notificationRepo;
 
+    private final EntityManager em;
+
     private static final Logger logger = LoggerFactory.getLogger(SocketService.class);
 
     public void pushNoticeForPostJob(JobModel job) {
@@ -56,7 +59,7 @@ public class SocketService {
 
     public void pushNoticeForStartJob(JobModel job) {
         pushNotificationForJob(job,
-                               NotificationDetailModel.Type.REQUESTED_CANI,
+                               NotificationDetailModel.Type.ASSIGNED_JOB,
                                Arrays.asList(job.getCreationUser()), true);
 
         pushNotificationForJob(job,
@@ -67,7 +70,7 @@ public class SocketService {
     public void noticeToppedUpJob(JobModel job) {
         try {
             pushNotificationForJob(job,
-                                   NotificationDetailModel.Type.TOPPED_UP,
+                                   NotificationDetailModel.Type.CANU_TOPPED_UP,
                                    Arrays.asList(job.getCreationUser()), true);
 
             pushNotificationForJob(job,
@@ -83,27 +86,27 @@ public class SocketService {
     public void noticeCanUSubStatus(JobModel job, SubStatusModel.Status subStatus) {
         pushNotificationForJob(job,
                                NotificationDetailModel.Type.valueOf(subStatus.toString()),
-                               Arrays.asList(job.getCreationUser()), false);
+                               Arrays.asList(job.getCreationUser()), true);
     }
 
     public void noticeCanIJobComplete(JobModel job) {
         pushNotificationForJob(job,
                                NotificationDetailModel.Type.CANI_COMPLETE_JOB,
-                               Arrays.asList(job.getCreationUser()), false);
+                               Arrays.asList(job.getCreationUser()), true);
     }
 
     public void noticeCanUJobComplete(JobModel job) {
         pushNotificationForJob(job,
                                NotificationDetailModel.Type.JOB_COMPLETED,
                                Arrays.asList(job.getCreationUser()),
-                               false);
+                               true);
         noticeAdminJobComplete(job);
     }
 
     public void noticeCanIPaidJob(JobModel job) {
         try {
             pushNotificationForJob(job,
-                                   NotificationDetailModel.Type.PAID_FOR_CANI,
+                                   NotificationDetailModel.Type.CANU_PAID_FOR_CANI,
                                    Arrays.asList(job.getCreationUser()), true);
             pushNotificationForJob(job,
                                    NotificationDetailModel.Type.PAID_FOR_CANI,
@@ -171,6 +174,8 @@ public class SocketService {
             notice.setData(data);
             notice.setIsCanu(isCanU);
             notificationRepo.save(notice);
+            em.flush();
+//            em.clear();
             simpMessagingTemplate.convertAndSend("/api/topic/notification/" + user.getId(), notice);
         }
     }

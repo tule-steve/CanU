@@ -36,7 +36,7 @@ spring:
     port: 587
     # username: canu.otp@gmail.com
     # username: support@ican-u.com
-    # password: CanUI@2021
+    # password: Cani2021
     username: stephenle1412@gmail.com
     password: clvatoecclwcaifb
     properties:

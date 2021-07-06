@@ -101,7 +101,7 @@ public class CanUService {
             throw new GlobalValidationException("do not have privilege for this action");
         }
         updateCanU(request, uUser);
-        if(uUser.getCanIModel() != null){
+        if (uUser.getCanIModel() != null) {
             uUser.getCanIModel().setName(uUser.getName());
             canIService.save(uUser.getCanIModel());
         }
@@ -194,13 +194,13 @@ public class CanUService {
             response.put(parentFolder, cerModel);
             if ("canu_avatar".equalsIgnoreCase(parentFolder)) {
                 uUser.setAvatar(cerModel.get(0).getUrl());
-                if(uUser.getCanIModel() != null) {
+                if (uUser.getCanIModel() != null) {
                     uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
                 }
             }
-//            else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.isRegisterCanI()) {
-//                uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
-//            }
+            //            else if ("cani_avatar".equalsIgnoreCase(parentFolder) && uUser.isRegisterCanI()) {
+            //                uUser.getCanIModel().setAvatar(cerModel.get(0).getUrl());
+            //            }
 
         }
 
@@ -228,12 +228,9 @@ public class CanUService {
             file.setUrl(domainLink + url + "/" + file.getFileName());
             fileList.add(fileRepo.save(file));
 
-            try (InputStream inputStream = multipartFile.getInputStream()) {
-                Path filePath = uploadPath.resolve(fileName).normalize();
-                Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
-            } catch (IOException ioe) {
-                throw new IOException("Could not save image file: " + fileName, ioe);
-            }
+            Path filePath = uploadPath.resolve(fileName).normalize();
+            s3Svc.upload(Optional.empty(), multipartFile, filePath.toString());
+//            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         }
 
         return fileList;
@@ -314,7 +311,8 @@ public class CanUService {
 
     public void resetPassword(ResetPassWordRequest request) {
         CanUModel currUser = canURepo.findByToken(request.getToken())
-                                     .orElseThrow(() -> new GlobalValidationException("Token is expired. Please request again"));
+                                     .orElseThrow(() -> new GlobalValidationException(
+                                             "Token is expired. Please request again"));
 
         String cryptNewPass = encoder.encode(request.getNewPassword());
         currUser.setPassword(cryptNewPass);
@@ -381,13 +379,15 @@ public class CanUService {
         return response;
     }
 
-    public void markNotificationRead(NotificationModel noti){
-        notiRepo.markReadNotification(noti.getUserId(), noti.getDetailId());
+    public void markNotificationRead(NotificationModel noti) {
+        noti = notiRepo.findById(noti.getId()).orElseThrow(() -> new GlobalValidationException("Cannot find notification"));
+        logger.error("mark read for notification {}", noti.getId());
+        notiRepo.markReadNotification(noti.getUserId(), noti.getDetailId(), noti.getIsCanu());
     }
 
-
     public Object getNotificationDetail(Long id) {
-        return notiDetailRepo.findById(id).orElseThrow(() -> new GlobalValidationException("Cannot find the notification"));
+        return notiDetailRepo.findById(id)
+                             .orElseThrow(() -> new GlobalValidationException("Cannot find the notification"));
     }
 
     @Transactional(readOnly = true)
@@ -413,7 +413,7 @@ public class CanUService {
             model.setProperty(propertyModel);
             model.setUser(uUser);
             model.setRating(r.getValue());
-            if(ids.length > 1){
+            if (ids.length > 1) {
                 model.setId(Long.parseLong(ids[1]));
             }
             userproRepo.save(model);
@@ -432,9 +432,8 @@ public class CanUService {
         return ResponseEntity.ok(CommonResponse.buildOkData("Upload file", response));
     }
 
-
     public List<FileModel> updatePublicFile(List<MultipartFile> multipartFiles, String parentFolder) throws
-                                                                                                                 IOException {
+                                                                                                     IOException {
         String url = "/images/static/public/" + parentFolder;
         String uploadDir = System.getProperty("user.dir") + url;
         Path uploadPath = Paths.get(uploadDir);
@@ -463,6 +462,5 @@ public class CanUService {
 
         return fileList;
     }
-
 
 }

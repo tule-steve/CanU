@@ -33,8 +33,11 @@ public class SmsService {
     //
     //    public static final String AUTH_TOKEN = "662f49ee0aee7fb929d26ad066228348";
 
-    public static final String ACCOUNT_SID = "SK7cde095025c73f83fd1a68fe85f6e5f2";
+//    public static final String ACCOUNT_SID = "a04590bd3e5b245bb47c3c9d2d287543";
+//
+//    public static final String AUTH_TOKEN = "683aa2b5914b1a0a8e7f39189b69df12";
 
+    public static final String ACCOUNT_SID = "SK7cde095025c73f83fd1a68fe85f6e5f2";
     public static final String AUTH_TOKEN = "hlN4AhB3WJTtR3A2VxFYGGWEicFKJ1pf";
 
     private static final Logger logger = LoggerFactory.getLogger(SmsService.class);

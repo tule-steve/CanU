@@ -5,6 +5,7 @@ import com.canu.dto.responses.JobDto;
 import com.canu.dto.responses.Member;
 import com.canu.model.CanUModel;
 import com.canu.model.JobModel;
+import com.canu.model.NotificationModel;
 import com.canu.model.PropertyModel;
 import com.canu.services.*;
 import com.canu.specifications.CouponFilter;
@@ -216,9 +217,11 @@ public class CanUController {
     }
 
     private  final AmazonS3Service amazonS3Svc;
-    @PostMapping(value = "/uploadFileS3")
-    public ResponseEntity uploadFileS3(StandardMultipartHttpServletRequest request) throws IOException {
-        amazonS3Svc.listFile();
+    @GetMapping(value = "/uploadFileS3")
+    public ResponseEntity uploadFileS3(){
+        NotificationModel request = new NotificationModel();
+        request.setId(25939L);
+        canUService.markNotificationRead(request);
         return ResponseEntity.ok("ok");
     }
 

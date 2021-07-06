@@ -23,6 +23,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Propagation;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -187,14 +188,17 @@ public class PaymentService {
 
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payout(Long jobId) {
         JobModel job = jobRepo.findById(jobId).orElseThrow(() -> new GlobalValidationException("cannot find the job"));
         payout(job);
     }
 
+    @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payout(JobModel job) {
         long jobId = job.getId();
         try {
+//            job.getPayments().stream().filter(r -> PaymentModel.Status.PAID.equals(r.getStatus())).
             CanIModel cani = job.getRequestedUser().getCanIModel();
             String receiver;
             String paymentType;
