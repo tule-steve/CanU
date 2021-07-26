@@ -14,6 +14,10 @@ import com.paypal.http.exceptions.HttpException;
 import com.paypal.orders.Order;
 import com.paypal.orders.OrdersGetRequest;
 import com.paypal.orders.PurchaseUnit;
+import com.paypal.payments.CapturesRefundRequest;
+import com.paypal.payments.Money;
+import com.paypal.payments.Refund;
+import com.paypal.payments.RefundRequest;
 import com.paypal.payouts.*;
 import lombok.RequiredArgsConstructor;
 import org.jboss.logging.Logger;
@@ -40,6 +44,20 @@ import java.util.List;
 @RequiredArgsConstructor
 public class PaymentService {
 
+    private static final Logger logger = Logger.getLogger(PaymentService.class);
+
+    private static final String EMAIL_PAYMENT_TYPE = "EMAIL";
+
+    private static final String PHONE_PAYMENT_TYPE = "PHONE";
+
+    // Creating a sandbox environment
+    private static final PayPalEnvironment environment = new PayPalEnvironment.Sandbox(
+            "AZ5zj4wGJv_JEdqcmd2f0i1Mie-ug5Ru6i71mumlEuXFKZ9vtw1bR8B5OJqq_-xgwk8SSUjZxl6RJBd-",
+            "EIo0zOxLoQvu44afwwDJ9EFUhtHWq2vhFXBcn0Gv5wE1MliZK4eZ3aj2weQ6tRRiLxLBfwrcEnQ0kqiF");
+
+    // Creating a client for the environment
+    static PayPalHttpClient client = new PayPalHttpClient(environment);
+
     final private JobRepository jobRepo;
 
     final private CanURepository canURepo;
@@ -55,20 +73,6 @@ public class PaymentService {
     final private EntityManager em;
 
     final private PropertyRepository propertyRepo;
-
-    private static final Logger logger = Logger.getLogger(PaymentService.class);
-
-    private static String EMAIL_PAYMENT_TYPE = "EMAIL";
-
-    private static String PHONE_PAYMENT_TYPE = "PHONE";
-
-    // Creating a sandbox environment
-    private static PayPalEnvironment environment = new PayPalEnvironment.Sandbox(
-            "AZ5zj4wGJv_JEdqcmd2f0i1Mie-ug5Ru6i71mumlEuXFKZ9vtw1bR8B5OJqq_-xgwk8SSUjZxl6RJBd-",
-            "EIo0zOxLoQvu44afwwDJ9EFUhtHWq2vhFXBcn0Gv5wE1MliZK4eZ3aj2weQ6tRRiLxLBfwrcEnQ0kqiF");
-
-    // Creating a client for the environment
-    static PayPalHttpClient client = new PayPalHttpClient(environment);
 
     public Object getTransactionDetail(TransactionRequest request) {
         JobModel job = jobRepo.findById(request.getJobId())
@@ -118,7 +122,7 @@ public class PaymentService {
         Order paymentOrder = captureOrder(request.getPaypalOrderId());
         if ("COMPLETED".equalsIgnoreCase(paymentOrder.status())) {
             Long paymentId = Long.parseLong(paymentOrder.purchaseUnits().get(0).customId());
-            PaymentModel paymentModel = paymentRepo.findById(paymentId).orElseThrow(() -> {
+            PaymentModel paymentModel = paymentRepo.findByIdFetchJobAndUser(paymentId).orElseThrow(() -> {
                 //TODO should notify someone
                 logger.error(paymentOrder);
                 return new GlobalValidationException("cannot find the customer id in response");
@@ -150,7 +154,9 @@ public class PaymentService {
                     canu.setCPoint(canu.getCPoint() - paymentModel.getCpointUsed());
                     canURepo.save(canu);
                 }
-                socketSvc.noticeToppedUpJob(paymentModel.getJob());
+                socketSvc.noticeCanUToppedUpJob(paymentModel.getJob());
+                socketSvc.noticeCanIToppedUpJob(paymentModel.getJob());
+                socketSvc.noticeAdminToppedUpJob(paymentModel.getJob());
 
             }
         } else {
@@ -190,7 +196,7 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payout(Long jobId) {
-        JobModel job = jobRepo.findById(jobId).orElseThrow(() -> new GlobalValidationException("cannot find the job"));
+        JobModel job = jobRepo.findByIdFetchCreateAndRequestUser(jobId).orElseThrow(() -> new GlobalValidationException("cannot find the job"));
         payout(job);
     }
 
@@ -198,7 +204,7 @@ public class PaymentService {
     public void payout(JobModel job) {
         long jobId = job.getId();
         try {
-//            job.getPayments().stream().filter(r -> PaymentModel.Status.PAID.equals(r.getStatus())).
+            //            job.getPayments().stream().filter(r -> PaymentModel.Status.PAID.equals(r.getStatus())).
             CanIModel cani = job.getRequestedUser().getCanIModel();
             String receiver;
             String paymentType;
@@ -323,14 +329,61 @@ public class PaymentService {
 
         job.getPayments()
            .stream()
-           .filter(r -> PaymentModel.Status.PENDING.equals(r.getStatus()))
            .forEach(r -> {
-               r.setStatus(PaymentModel.Status.CANCEL);
-               paymentRepo.save(r);
+               if(PaymentModel.Status.PENDING.equals(r.getStatus())){
+                   r.setStatus(PaymentModel.Status.CANCEL);
+                   paymentRepo.save(r);
+               }
            });
         job.setRequestedUser(null);
         jobRepo.save(job);
         //        jobRepo.removeRequestedUser(jobId);
+    }
+
+    public void cancelPaymentForAdmin(Long jobId) {
+        JobModel job = jobRepo.findById(jobId)
+                              .orElseThrow(() -> new GlobalValidationException("do not have privilege for this action"));
+
+        job.getPayments()
+           .stream()
+           .forEach(r -> {
+               if(PaymentModel.Status.TOPPED_UP.equals(r.getStatus())){
+                   refund(r.getTransactionId(), r);
+               }
+               r.setStatus(PaymentModel.Status.CANCEL);
+               paymentRepo.save(r);
+           });
+        jobRepo.save(job);
+        //        jobRepo.removeRequestedUser(jobId);
+    }
+
+    public void refund(String orderId, PaymentModel payment) {
+        Order order = captureOrder(orderId);
+
+        CapturesRefundRequest request = new CapturesRefundRequest(order.purchaseUnits().get(0).payments().captures().get(0).id());
+        request.prefer("return=representation");
+
+        RefundRequest refundRequest = new RefundRequest();
+        Money money = new Money();
+        money.currencyCode(payment.getCurrency());
+        money.value(payment.getTotal().toString());
+        refundRequest.amount(money);
+        request.requestBody(refundRequest);
+        try {
+            // Call API with your client and get a response for your call
+            HttpResponse<Refund> response = client.execute(request);
+        } catch (IOException ioe) {
+            if (ioe instanceof HttpException) {
+                // Something went wrong server-side
+                HttpException he = (HttpException) ioe;
+                logger.error("error on the check payment", ioe);
+            } else {
+                // Something went wrong client-side
+                logger.error("error on the check payment, client side", ioe);
+            }
+            throw new GlobalValidationException("cannot get the payment detail from paypal");
+        }
+
     }
 
     public void save(PaymentModel payment) {

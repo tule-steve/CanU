@@ -36,6 +36,8 @@ public class JobDto {
         createdAt = job.getCreatedAt();
         currency = job.getCurrency();
         image = job.getImage();
+        multiImage = job.getMultiImage();
+        cancelReason = job.getReason();
         city = job.getCity();
         keyword = job.getTags().stream().map(r -> r.getTag()).collect(Collectors.toSet());
         service = job.getSkillSets()
@@ -108,12 +110,14 @@ public class JobDto {
                 }
             });
         }
-        if (JobModel.JobStatus.PROCESSING.equals(job.getStatus())) {
+
+
+        if (JobModel.JobStatus.COMPLETED.equals(job.getStatus())) {
+            isTopUp = true;
+        } else {
             isTopUp = job.getPayments()
                          .stream()
                          .anyMatch(e -> PaymentModel.Status.TOPPED_UP.equals(e.getStatus()));
-        } else if (JobModel.JobStatus.COMPLETED.equals(job.getStatus())) {
-            isTopUp = true;
         }
 
     }
@@ -148,6 +152,10 @@ public class JobDto {
     LocalDateTime createdAt;
 
     String image;
+
+    String multiImage;
+
+    String cancelReason;
 
     String city;
 

@@ -7,6 +7,7 @@ import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.LockedException;
 import org.springframework.validation.ObjectError;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
@@ -55,6 +56,12 @@ class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
     public final ResponseEntity<Object> handleApplicationExceptions(GlobalValidationException ex) {
         logger.error("error on validation: ", ex);
         return new ResponseEntity(CommonResponse.buildBadRequestData(ex.getMessage()), HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(LockedException.class)
+    public final ResponseEntity<Object> handleAcceptedException(LockedException ex) {
+        logger.error("locked user exception: ", ex);
+        return new ResponseEntity(CommonResponse.buildOkData("PENDING"), HttpStatus.OK);
     }
 
     @Override

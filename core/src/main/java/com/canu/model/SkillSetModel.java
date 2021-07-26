@@ -89,4 +89,10 @@ public class SkillSetModel {
 
     @Transient
     private Set<Long> service;
+
+    public void validate(){
+        if(cpointRate == null){
+            cpointRate = BigDecimal.ZERO;
+        }
+    }
 }

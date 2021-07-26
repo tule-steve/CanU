@@ -1,8 +1,6 @@
 package com.canu.controller;
 
-import com.canu.dto.requests.AdminJobCancelRequest;
-import com.canu.dto.requests.HideReviewRequest;
-import com.canu.dto.requests.TemplateRequest;
+import com.canu.dto.requests.*;
 import com.canu.model.CouponModel;
 import com.canu.model.PropertyModel;
 import com.canu.services.*;
@@ -31,6 +29,8 @@ public class AdminController {
     final private CouponService couponSvc;
 
     final private SystemRatingService SystemRatingSvc;
+
+    final private SocketService socketSvc;
 
 
     @GetMapping(value = "/member")
@@ -72,7 +72,7 @@ public class AdminController {
     }
 
     @PostMapping(value = "/cancel_job")
-    public Object cancelJob(AdminJobCancelRequest request){
+    public Object cancelJob(@RequestBody @Validated AdminJobCancelRequest request){
         jobSvc.cancelJobByAdmin(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
@@ -114,8 +114,30 @@ public class AdminController {
         return ResponseEntity.ok(CommonResponse.buildOkData("Ok", adminSvc.getNotification(p)));
     }
 
-//    @GetMapping
-//    public Object getRevenue(){
-//        adminSvc
-//    }
+    @GetMapping(value = "/get-push-notification")
+    public ResponseEntity getPushNotification(Pageable p) {
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", adminSvc.getPushNotification(p)));
+    }
+
+    @GetMapping(value = "/dashboard")
+    public Object getDashBoard(){
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", adminSvc.getDashBoard()));
+    }
+
+    @GetMapping(value = "/revenue")
+    public Object getRevenue(){
+        return ResponseEntity.ok(CommonResponse.buildOkData("Ok", adminSvc.getRevenue()));
+    }
+
+    @PostMapping(value = "/notification-push")
+    public ResponseEntity pushNotification(@RequestBody @Validated AdminPushNotification notification){
+        socketSvc.pushNotificationForAdmin(notification);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
+
+    @PostMapping(value = "/lock-user")
+    public ResponseEntity lockUser(@RequestBody @Validated LockUserRequest lockRequest){
+        adminSvc.lockUser(lockRequest);
+        return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
+    }
 }

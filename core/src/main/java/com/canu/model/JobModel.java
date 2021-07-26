@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.UpdateTimestamp;
 import org.hibernate.annotations.Where;
 
 import javax.persistence.*;
@@ -127,7 +128,7 @@ public class JobModel {
     @ElementCollection
     @MapKeyColumn(name = "status")
     @CollectionTable(name = "sub_status", joinColumns = @JoinColumn(name = "job_id"))
-    @Column(name="created_at")
+    @Column(name = "created_at")
     private Map<String, LocalDateTime> subStatus = new HashMap<>();
 
     @Transient
@@ -142,5 +143,12 @@ public class JobModel {
 
     @Column(name = "completed_at")
     LocalDateTime completedAt;
+
+    @Column(name = "multi_image")
+    String multiImage;
+
+    @Column(name = "updated_at")
+    @UpdateTimestamp
+    LocalDateTime updatedAt;
 
 }

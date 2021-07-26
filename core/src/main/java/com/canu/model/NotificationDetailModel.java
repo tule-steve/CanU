@@ -3,10 +3,12 @@ package com.canu.model;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.Data;
+import org.hibernate.annotations.CreationTimestamp;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import javax.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -21,9 +23,11 @@ public class NotificationDetailModel {
     public static final ObjectMapper mapper = new ObjectMapper();
 
     public enum Type {
+        VERIFIED_EMAIL,
         CREATE_JOB,
         POST_JOB,
         PICK_JOB,
+        PAYMENT_REMINDER,
         CANU_TOPPED_UP,
         TOPPED_UP,
         RECEPTION,
@@ -43,7 +47,8 @@ public class NotificationDetailModel {
         CANCEL_JOB_FEEDBACK_NO,
         ADMIN_CANU_TOPPED_UP,
         ADMIN_JOB_COMPLETED,
-        ADMIN_SUPPORT_REQUEST;
+        ADMIN_SUPPORT_REQUEST,
+        CUSTOM;
 
         @Override
         public String toString() {
@@ -52,6 +57,10 @@ public class NotificationDetailModel {
 
         public String toTitleString() {
             return super.toString() + "_title";
+        }
+
+        public String toEmailString() {
+            return super.toString() + "_email";
         }
     }
 //    @JsonIgnore
@@ -73,9 +82,19 @@ public class NotificationDetailModel {
     @Column(name = "description")
     String description;
 
+    @Column(name = "created_at")
+    @CreationTimestamp
+    LocalDateTime createdAt;
+
     @JsonIgnore
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "detail")
     List<NotificationModel> notifications = new ArrayList<>();
+
+    @Transient
+    String receivedName;
+
+    @Transient
+    Long userId;
 
 
 

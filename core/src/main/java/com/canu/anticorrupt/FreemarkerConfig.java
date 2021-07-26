@@ -28,6 +28,7 @@ public class FreemarkerConfig {
             // Put them in loader
             sTempLoader.putTemplate(template.getType().toString(), template.getTemplate());
             sTempLoader.putTemplate(template.getType().toTitleString() , template.getDescription());
+            sTempLoader.putTemplate(template.getType().toEmailString() , template.getEmail());
         });
         // Set loader
         bean.setPreTemplateLoaders(sTempLoader);

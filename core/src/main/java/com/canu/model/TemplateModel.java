@@ -25,6 +25,9 @@ public class TemplateModel {
     @Column(name = "description")
     String description;
 
+    @Column(name = "email")
+    String email;
+
     @Column(name = "type")
     @Enumerated(EnumType.STRING)
     NotificationDetailModel.Type type;

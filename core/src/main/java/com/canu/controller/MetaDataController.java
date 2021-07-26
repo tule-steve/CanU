@@ -8,6 +8,7 @@ import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,6 +18,7 @@ import java.util.Map;
 @RestController
 @RequestMapping(value = "/api/v1/data")
 @RequiredArgsConstructor
+@Transactional
 public class MetaDataController {
 
     private final SkillSetRepository skillSetRepo;
@@ -49,6 +51,7 @@ public class MetaDataController {
 
     @PostMapping(value = "/update-services")
     public Object updateServices(@RequestBody List<SkillSetModel> list) {
+        list.forEach(r -> r.validate());
         List<SkillSetModel> result = skillSetRepo.saveAll(list);
         return ResponseEntity.ok(CommonResponse.buildOkData("updated data", result));
     }

@@ -1,16 +1,22 @@
 package com.canu.controller;
 
-import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.requests.UpdateJobRequest;
+import com.canu.dto.requests.UpdateJobStatusRequest;
 import com.canu.dto.requests.UpdateSubStatusRequest;
+import com.canu.model.PaymentModel;
 import com.canu.repositories.CanURepository;
+import com.canu.repositories.PaymentRepository;
+import com.canu.repositories.ReportRepository;
+import com.canu.services.AmazonS3Service;
 import com.canu.services.JobService;
+import com.canu.services.PaymentService;
 import com.canu.specifications.JobFilter;
 import com.canu.specifications.JobRatingFilter;
 import com.common.dtos.CommonResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -55,7 +61,7 @@ public class JobController {
     }
 
     @PostMapping(value = "/start-job")
-    public Object startJob(@RequestBody UpdateJobStatusRequest request) {
+    public Object startJob(@RequestBody @Validated UpdateJobStatusRequest request) {
         jobSvc.startJob(request);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
@@ -90,9 +96,21 @@ public class JobController {
         return ResponseEntity.ok(CommonResponse.buildOkData("OK", jobSvc.getUnpaidJobList(filter)));
     }
 
-    @GetMapping(value = "/test")
-    public Object test() {
-        jobSvc.updateCpoin();
+    private final ReportRepository reportRepo;
+    private final AmazonS3Service s3Svc;
+    private final PaymentService paymentSvc;
+    private final PaymentRepository paymentRepo;
+    @Transactional
+    @GetMapping(value = "/test/{id}")
+    public Object test(@PathVariable Long id) {
+//        s3Svc.listOut();
+
+//        LocalDate date = LocalDate.now().minusDays(1);
+//        LocalDateTime startDate = LocalDateTime.of(date, LocalTime.MIDNIGHT);
+//        LocalDateTime enđDate = LocalDateTime.of(date, LocalTime.MAX);
+//        reportRepo.updateAvenue(startDate, enđDate);
+        PaymentModel model = paymentRepo.findById(id).get();
+        paymentSvc.refund(model.getTransactionId(), model);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }
 

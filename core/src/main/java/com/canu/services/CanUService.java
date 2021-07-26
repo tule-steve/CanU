@@ -68,8 +68,12 @@ public class CanUService {
 
     final private AmazonS3Service s3Svc;
 
+    final private SocketService socketSvc;
+
     @Value("${app.baseUrl}")
     private String domainLink;
+
+    public static final String FILE_URI_FORMAT = "public/%s/%s/%s";
 
     public ResponseEntity signUp(CanUSignUpRequest request) {
 
@@ -84,7 +88,7 @@ public class CanUService {
         data.setFirstName(request.getFirstName());
         data.setLastName(request.getLastName());
         canURepo.save(data);
-
+        sendVerificationEmail(request.getEmail());
         return ResponseEntity.ok(new Token(tokenProvider.createToken(request.getEmail()), 86400L));
     }
 
@@ -116,6 +120,7 @@ public class CanUService {
         dest.setAddress(source.getAddress());
         dest.setPhone(source.getPhone());
         dest.setNation(source.getNation());
+        dest.setReceivedEmail(source.getReceivedEmail());
     }
 
     public ResponseEntity changePassword(ChangePassWordRequest request) {
@@ -209,27 +214,20 @@ public class CanUService {
 
     public List<FileModel> uploadImage(List<MultipartFile> multipartFiles, String parentFolder, CanUModel uUser) throws
                                                                                                                  IOException {
-        String url = "/images/static/" + uUser.getId().toString() + "/" + parentFolder;
-        String uploadDir = System.getProperty("user.dir") + url;
-        Path uploadPath = Paths.get(uploadDir);
-        if (!Files.exists(uploadPath)) {
-            Files.createDirectories(uploadPath);
-        }
-
+        String uri;
         List<FileModel> fileList = new ArrayList<>();
 
         for (MultipartFile multipartFile : multipartFiles) {
             String fileName = StringUtils.cleanPath(multipartFile.getOriginalFilename());
-
+            uri = String.format(FILE_URI_FORMAT, uUser.getId().toString(), parentFolder, fileName);
             FileModel file = new FileModel();
             file.setDescription(parentFolder);
             file.setFileName(fileName);
             file.setOwner(uUser);
-            file.setUrl(domainLink + url + "/" + file.getFileName());
+            file.setUrl(domainLink + uri);
             fileList.add(fileRepo.save(file));
 
-            Path filePath = uploadPath.resolve(fileName).normalize();
-            s3Svc.upload(Optional.empty(), multipartFile, filePath.toString());
+            s3Svc.upload(Optional.empty(), multipartFile, uri);
 //            Files.copy(inputStream, filePath, StandardCopyOption.REPLACE_EXISTING);
         }
 
@@ -289,6 +287,7 @@ public class CanUService {
         currUser.setToken(null);
         currUser.setActivated(true);
         canURepo.save(currUser);
+        socketSvc.pushNoticeForRegistration(currUser);
     }
 
     public void sendForgetPassword(String email) {
@@ -461,6 +460,10 @@ public class CanUService {
         }
 
         return fileList;
+    }
+
+    public Boolean isUserActiated(String email){
+        return canURepo.findByEmail(email).getActivated();
     }
 
 }

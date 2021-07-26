@@ -3,9 +3,10 @@ package com.canu.controller;
 import com.canu.dto.requests.LoginRequest;
 import com.canu.dto.responses.Token;
 import com.canu.security.config.TokenProvider;
+import com.canu.services.CanUService;
 import com.canu.services.SocialAuthService;
 import com.common.dtos.CommonResponse;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -16,22 +17,25 @@ import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.Valid;
+import java.util.Collections;
 
 @RestController
+@RequiredArgsConstructor
 public class HomeController {
 
-    @Autowired
-    private SocialAuthService authService;
+    private final SocialAuthService authService;
 
-    @Autowired
-    private TokenProvider tokenProvider;
+    private final TokenProvider tokenProvider;
+
+
 //
 //    @Qualifier("jwtTokenServices")
 //    @Autowired
 //    AuthorizationServerTokenServices tokenServices;
 
-    @Autowired
-    private AuthenticationManager authenticationManager;
+    private final AuthenticationManager authenticationManager;
+
+    private final CanUService canuSvc;
     
 //    @GetMapping(value = "/api/home")
 //    public Object home() {
@@ -62,6 +66,9 @@ public class HomeController {
         );
 
         SecurityContextHolder.getContext().setAuthentication(authentication);
+        if(!canuSvc.isUserActiated(loginRequest.getEmail())){
+            return ResponseEntity.ok(Collections.emptyMap());
+        }
 
         String token = tokenProvider.createToken(loginRequest.getEmail());
         return ResponseEntity.ok(new Token(token, 86400L));

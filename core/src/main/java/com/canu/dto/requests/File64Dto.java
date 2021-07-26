@@ -10,6 +10,8 @@ public class File64Dto {
 
     String encrypt64File;
 
+    String fileType;
+
     @NotNull
     private Long fromUser;
 

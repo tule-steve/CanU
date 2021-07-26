@@ -21,10 +21,7 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -69,7 +66,13 @@ public class JobService {
         addKeywordsIntoJob(request.getKeyword(), request);
         request = jobRepo.save(request);
         JobDto job = getJobDetail(request.getId());
-        socketSvc.pushNoticeForPostJob(request);
+        socketSvc.pushCanUForPostJob(request);
+
+        List<CanUModel> canus = canURepo.findCanIForJobNotification(request.getService(), request.getCreationUser().getId());
+        for(CanUModel cani : canus){
+            socketSvc.pushCanIForPostJob(request, Arrays.asList(cani));
+        }
+
         return job;
     }
 
@@ -117,7 +120,7 @@ public class JobService {
     public void pickUpJob(Long jobId) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        JobModel job = jobRepo.findById(jobId)
+        JobModel job = jobRepo.findByIdFetchCreateUser(jobId)
                               .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         if (!job.getCanus().stream().anyMatch(r -> r.getId() == uUser.getId())) {
             job.getCanus().add(uUser);
@@ -130,7 +133,7 @@ public class JobService {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
 
-        JobModel job = jobRepo.findById(request.getJobId())
+        JobModel job = jobRepo.findByIdFetchCreateUser(request.getJobId())
                               .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
 
         if (!(!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
@@ -164,18 +167,22 @@ public class JobService {
             job.setStatus(JobModel.JobStatus.REQUEST_CANCEL);
             jobRepo.save(job);
         }
+        socketSvc.noticeAdminCancelJob(job);
 
     }
 
     public void cancelJobByAdmin(AdminJobCancelRequest request) {
-        JobModel job = jobRepo.findById(request.getJobId())
+        JobModel job = jobRepo.findByIdFetchCreateAndRequestUser(request.getJobId())
                               .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         if (request.getIsApproval()) {
-            job.setCancelStatus(null);
+            paymentSvc.cancelPaymentForAdmin(job.getId());
             jobRepo.delete(job);
+            socketSvc.noticeUserJobCancelled(job);
         } else {
             job.setCancelStatus(JobModel.CancelStatus.REJECTED);
+            job.setStatus(JobModel.JobStatus.PROCESSING);
             jobRepo.save(job);
+            socketSvc.noticeCanUJobNotCancelled(job);
         }
         job.setAdminReason(request.getNote());
 
@@ -198,7 +205,7 @@ public class JobService {
     public void startJob(UpdateJobStatusRequest request) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        JobModel job = jobRepo.findById(request.getJobId())
+        JobModel job = jobRepo.findByIdFetchCreateUser(request.getJobId())
                               .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
         CanUModel requestedUser = canURepo.findById(request.getRequestedUserId())
                                           .orElseThrow(() -> new GlobalValidationException(
@@ -214,13 +221,14 @@ public class JobService {
         }
         //        job.setStatus(JobModel.JobStatus.PROCESSING);
         jobRepo.save(job);
-        socketSvc.pushNoticeForStartJob(job);
+        socketSvc.pushCanUForStartJob(job);
+        socketSvc.pushCanIForStartJob(job);
     }
 
     public void completeJobByCanI(Long jobId) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel cani = canURepo.findByEmail(user.getUsername());
-        JobModel job = jobRepo.findById(jobId)
+        JobModel job = jobRepo.findByIdFetchCreateUser(jobId)
                               .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
 
         if (!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
@@ -234,7 +242,7 @@ public class JobService {
     public void completeJobByCanU(Long jobId) {
         UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         CanUModel canu = canURepo.findByEmail(user.getUsername());
-        JobModel job = jobRepo.findById(jobId)
+        JobModel job = jobRepo.findByIdFetchCreateAndRequestUser(jobId)
                               .orElseThrow(() -> new GlobalValidationException("job is not existed or deleted"));
 
         if (!JobModel.JobStatus.PROCESSING.equals(job.getStatus()) ||
@@ -423,6 +431,16 @@ public class JobService {
 
         List<JobDto> jobList = nonePaymentJob.stream().map(r -> new JobDto(r)).collect(Collectors.toList());
         return jobList;
+    }
+
+    public Map<String, Map<String, Long>>  getJobForDashboard(){
+        List<Object[]> metadata = jobRepo.findJobReport();
+        Map<String, Map<String, Long>> result = new HashMap<>();
+        for(Object[] row : metadata){
+            Map data = result.computeIfAbsent(row[0].toString(), k -> new HashMap<>());
+            data.put(row[1].toString(), row[2]);
+        }
+        return result;
     }
 
 }

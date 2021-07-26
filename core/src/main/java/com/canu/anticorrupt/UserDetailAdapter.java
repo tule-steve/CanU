@@ -12,12 +12,12 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.oauth2.provider.OAuth2Authentication;
 import org.springframework.stereotype.Service;
-import org.springframework.security.core.userdetails.User;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.util.StringUtils;
 
@@ -41,6 +41,7 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         CanUModel user = canURepo.findByEmail(username);
+
         if (user == null) {
             logger.error("User {} not found", username);
             throw new UsernameNotFoundException("User " + username + " was not found in the database");
@@ -55,8 +56,16 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
             grantList.add(authority);
         }
 
+        //        UserDetails userDetails = new User(user.getEmail(),
+        //                                           user.getPassword() == null ? "" : user.getPassword(),
+        //                                           grantList);
+
         UserDetails userDetails = new User(user.getEmail(),
                                            user.getPassword() == null ? "" : user.getPassword(),
+                                           true,
+                                           true,
+                                           true,
+                                           !user.getIsBlocked(),
                                            grantList);
 
         return userDetails;
@@ -73,6 +82,7 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
             currUser = new CanUModel();
             currUser.setEmail(user.getEmail());
             currUser.setProviderType(user.getProvider().toString());
+            currUser.setActivated(true);
             if (!StringUtils.isEmpty(user.getFirstName())) {
                 currUser.setFirstName(user.getFirstName());
             }
@@ -95,7 +105,7 @@ public class UserDetailAdapter implements UserDetailsService, SocialLogin {
 
             if (!StringUtils.isEmpty(user.getAvatar()) && StringUtils.isEmpty(currUser.getAvatar())) {
                 currUser.setAvatar(user.getAvatar());
-                if(currUser.getCanIModel() != null) {
+                if (currUser.getCanIModel() != null) {
                     currUser.getCanIModel().setAvatar(user.getAvatar());
                 }
             }

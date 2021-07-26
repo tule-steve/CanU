@@ -29,14 +29,17 @@ public class MailService {
     @Value("${app.forgotPassUrl}")
     private String forgetPassUrl;
 
+    @Value("${app.verifyEmailUrl}")
+    private String verifyUrl;
+
     public void sendEmailVerification(String email, String token) {
 
         try {
             MimeMessage msg = javaMailSender.createMimeMessage();
-
+            String link = verifyUrl + token;
             Map<String, String> replacements = new HashMap<String, String>();
             replacements.put("user", "Bro");
-            replacements.put("otpnum", token);
+            replacements.put("verify-link", link);
 
             String message = template.getTemplate(replacements);
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
@@ -57,11 +60,10 @@ public class MailService {
         try {
             MimeMessage msg = javaMailSender.createMimeMessage();
 
-            String link = forgetPassUrl  + token;
+            String link = forgetPassUrl + token;
             Map<String, String> replacements = new HashMap<String, String>();
             replacements.put("user", name);
             replacements.put("reset-link", link);
-
 
             String message = resetPasswordTemplate.getTemplate(replacements);
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
@@ -74,6 +76,22 @@ public class MailService {
         } catch (MessagingException ex) {
             logger.error("Error on sending email", ex);
             throw new GlobalValidationException("Error on sending the verification email");
+        }
+    }
+
+    public void sendEmail(String[] email, String title, String body) {
+        try {
+            MimeMessage msg = javaMailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(msg, true);
+            helper.setFrom("canu.otp@gmail.com");
+            helper.setSubject("[CANU CANI]" + title);
+            helper.setText(body, true);
+            String[] array = {"stephenle1412@gmail.com"};
+            helper.setBcc(email);
+
+            javaMailSender.send(msg);
+        } catch (Exception ex){
+            logger.error("Error on sending email", ex);
         }
     }
 }

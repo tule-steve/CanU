@@ -22,6 +22,6 @@ public class ReportModel {
     @Column(name = "revenue", columnDefinition = "decimal(15, 2)", precision = 15, scale = 2)
     BigDecimal revenue;
 
-    @Column(name = "job_id")
-    LocalDate job_id;
+    @Column(name = "report_date")
+    LocalDate reportDate;
 }

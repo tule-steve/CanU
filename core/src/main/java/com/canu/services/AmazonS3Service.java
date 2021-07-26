@@ -26,7 +26,11 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.util.Map;
 import java.util.Optional;
 
@@ -65,6 +69,27 @@ public class AmazonS3Service {
         }
     }
 
+    public void upload(String fileType, String base64String, String uri) {
+        byte[] decodeFile = Base64.getDecoder()
+                                  .decode(base64String.getBytes(StandardCharsets.UTF_8));
+        InputStream stream = new ByteArrayInputStream(decodeFile);
+        ObjectMetadata objectMetadata = new ObjectMetadata();
+
+        objectMetadata.addUserMetadata("Content-Type", fileType);
+        objectMetadata.addUserMetadata("Content-Length", String.valueOf(decodeFile.length));
+
+        try {
+            PutObjectRequest req = new PutObjectRequest("file-canu-app",
+                                                        uri,
+                                                        stream,
+                                                        objectMetadata).withCannedAcl(CannedAccessControlList.PublicRead);
+            PutObjectResult result = amazonS3.putObject(req);
+            logger.info("Updated file to S3", result);
+        } catch (AmazonServiceException e) {
+            throw new IllegalStateException("Failed to upload the file", e);
+        }
+    }
+
     public void listOut() {
         AWSCredentials awsCredentials =
                 new BasicAWSCredentials("AKIAS6XZBBIMWW4TDFPQ", "H9JPbu47VyyanmpTlSLjBnPT1DnSQik0YXCCWUbR");
@@ -87,6 +112,18 @@ public class AmazonS3Service {
                     .withCredentials(new AWSStaticCredentialsProvider(awsCredentials))
                     .build();
 
+
+            ObjectListing objectListing = amazonS31.listObjects(new ListObjectsRequest().withBucketName("file-canu-app"));
+            while(true) {
+                for (S3ObjectSummary objectSummary : objectListing.getObjectSummaries()) {
+                    amazonS31.deleteObject("file-canu-app", objectSummary.getKey());
+                }
+                if (objectListing.isTruncated()) {
+                    objectListing = amazonS31.listNextBatchOfObjects(objectListing);
+                } else {
+                    break;
+                }
+            }
             security.getCallerIdentity(new GetCallerIdentityRequest());
             security.getSessionToken();
             security.assumeRole(new AssumeRoleRequest().withPolicy("S3FullAccess"));

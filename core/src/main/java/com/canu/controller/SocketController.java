@@ -3,6 +3,7 @@ package com.canu.controller;
 import com.canu.dto.MessageBean;
 import com.canu.dto.requests.File64Dto;
 import com.canu.model.NotificationModel;
+import com.canu.services.AmazonS3Service;
 import com.canu.services.CanUService;
 import com.canu.services.ChatService;
 import lombok.RequiredArgsConstructor;
@@ -16,12 +17,6 @@ import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.RestController;
 
 import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
-import java.util.Base64;
 import java.util.UUID;
 
 @RestController
@@ -33,6 +28,8 @@ public class SocketController {
     final ChatService chatSvc;
 
     final CanUService canuSvc;
+
+    final AmazonS3Service s3Svc;
 
     @Value("${app.baseUrl}")
     private String domainLink;
@@ -52,22 +49,23 @@ public class SocketController {
 
     @MessageMapping("/send-file")
     public void send(@Validated @Payload File64Dto message) throws IOException {
-        byte[] decodeFile = Base64.getDecoder()
-                                  .decode(message.getEncrypt64File().getBytes(StandardCharsets.UTF_8));
+//        String[] base64Components = message.getEncrypt64File().split(",");
+//        if (base64Components.length != 2) {
+//            throw new GlobalValidationException("file's format is not correct");
+//        }
+
+
         MessageBean messageEntity = new MessageBean();
         messageEntity.setToUser(message.getToUser());
         messageEntity.setFromUser(message.getFromUser());
         messageEntity.updateConversationId();
         messageEntity.setIsUploadedFile(true);
 
-        Path uri = Paths.get("/images/static/",messageEntity.getConservationId(),
+        String uri = String.format(CanUService.FILE_URI_FORMAT,messageEntity.getConservationId(),
                              UUID.randomUUID().toString(),
                              message.getFileName());
-        Path destinationFile = Paths.get(System.getProperty("user.dir") ,
-                                         uri.toString());
-        Files.createDirectories(destinationFile.getParent());
-        Files.write(destinationFile, decodeFile, StandardOpenOption.CREATE_NEW);
-        messageEntity.setMessage(domainLink + uri.toString());
+        s3Svc.upload(message.getFileType(), message.getEncrypt64File(), uri);
+        messageEntity.setMessage(domainLink + uri);
         messageEntity = chatSvc.saveMessage(messageEntity);
         simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getToUser(), messageEntity);
         simpMessagingTemplate.convertAndSend("/api/topic/user/" + message.getFromUser(), messageEntity);

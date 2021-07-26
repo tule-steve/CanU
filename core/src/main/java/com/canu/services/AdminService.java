@@ -1,6 +1,8 @@
 package com.canu.services;
 
+import com.canu.dto.requests.LockUserRequest;
 import com.canu.dto.requests.TemplateRequest;
+import com.canu.dto.responses.Dashboard;
 import com.canu.dto.responses.Member;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.*;
@@ -36,6 +38,8 @@ public class AdminService {
 
     final private CanIService caniSvc;
 
+    final private JobService jobSvc;
+
     final private EntityManager em;
 
     final private JobRepository jobRepo;
@@ -50,12 +54,16 @@ public class AdminService {
 
     final private NotificationRepository notiRepo;
 
+    final private NotificationDetailRepository notiDetailRepo;
+
+    final private ReportRepository reportRepo;
+
     public Page<Member> getMembers(Pageable p, Long userId) {
         //        p.getSort()
         //        p.getPageNumber()
         StringBuilder sb = new StringBuilder();
         sb.append(
-                "select u.id as userId, u.first_name as firstName, u.last_name as lastName, u.email as email, u.created_at as createdAt, ");
+                "select u.id as userId, u.first_name as firstName, u.last_name as lastName, u.email as email, u.created_at as createdAt,u.activated as isActivated, u.is_blocked as isBlocked, ");
         sb.append("  u.cani_id as caniId ");
         sb.append(" from user u ");
 
@@ -197,8 +205,37 @@ public class AdminService {
         return result;
     }
 
-    //    public Object getRevenueData() {
-    //
-    //    }
+    public Object getPushNotification(Pageable p) {
+        Page<NotificationDetailModel> result = notiDetailRepo.findByType(NotificationDetailModel.Type.CUSTOM, p);
+        for(NotificationDetailModel noti : result){
+            if(noti.getNotifications().size() == 1){
+                noti.setReceivedName(noti.getNotifications().get(0).getOwner().getName());
+                noti.setUserId(noti.getNotifications().get(0).getOwner().getId());
+            } else {
+                noti.setReceivedName("all");
+            }
+        }
+        return result;
+    }
+
+    public Dashboard getDashBoard() {
+        return Dashboard.builder()
+                        .caniCount(caniRepo.count())
+                        .canuCount(canURepo.count())
+                        .canIByService(caniSvc.countCanIByService())
+                        .job(jobSvc.getJobForDashboard())
+                        .build();
+    }
+
+    public Object getRevenue() {
+        return reportRepo.findAll();
+    }
+
+    public void lockUser(LockUserRequest request) {
+        CanUModel user = canURepo.findById(request.getUserId())
+                                 .orElseThrow(() -> new GlobalValidationException("User is not exist or deleted"));
+        user.setIsBlocked(request.getIsLocked());
+        canURepo.save(user);
+    }
 
 }

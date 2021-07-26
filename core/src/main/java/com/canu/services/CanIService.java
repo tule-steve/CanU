@@ -1,5 +1,6 @@
 package com.canu.services;
 
+import com.canu.dto.responses.CanIServiceDto;
 import com.canu.exception.GlobalValidationException;
 import com.canu.model.*;
 import com.canu.repositories.CanIRepository;
@@ -16,10 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.persistence.EntityManager;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -127,6 +125,16 @@ public class CanIService {
             cani.setJobStatus(jobStatus);
         }
 
+    }
+
+    public List<CanIServiceDto> countCanIByService(){
+        List<Object[]> data = caniRepo.countCanIByService();
+        List<CanIServiceDto> result = new ArrayList<>();
+        for(Object[] row : data){
+            CanIServiceDto dto = new CanIServiceDto((Long)row[0], row[1].toString(), (Long)row[2]);
+            result.add(dto);
+        }
+        return result;
     }
 
     public void save(CanIModel cani){

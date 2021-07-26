@@ -14,8 +14,6 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.support.StandardMultipartHttpServletRequest;
@@ -81,10 +79,9 @@ public class CanUController {
         return canUService.uploadPublicFileList(request.getMultiFileMap());
     }
 
-    @GetMapping(value = "/verify-email")
-    public ResponseEntity verifyEmail() {
-        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        canUService.sendVerificationEmail(user.getUsername());
+    @GetMapping(value = "/verify-email/{email}")
+    public ResponseEntity verifyEmail(@PathVariable String email) {
+        canUService.sendVerificationEmail(email);
         return ResponseEntity.ok(CommonResponse.buildOkData("Sent verification email"));
     }
 

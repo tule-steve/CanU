@@ -18,6 +18,8 @@ public class Member {
     final String lastName;
     final String email;
     final LocalDateTime createdAt;
+    final Boolean isActivated;
+    final Boolean isBlocked;
 
     Integer createdJob;
     long canceledJob;

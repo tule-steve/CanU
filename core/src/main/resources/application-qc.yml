@@ -37,8 +37,10 @@ spring:
     # username: canu.otp@gmail.com
     # username: support@ican-u.com
     # password: CanUI@2021
-    username: stephenle1412@gmail.com
-    password: clvatoecclwcaifb
+    username: support@ican-u.com
+    password: vedpjluhwzdnyncl
+    #username: stephenle1412@gmail.com
+    #password: clvatoecclwcaifb
     properties:
       mail:
         smtp:
@@ -106,8 +108,9 @@ security:
       preEstablishedRedirectUri: https://localhost:9129/
 
 app:
-  baseUrl: https://canui.tech/api
+  baseUrl: https://file-canu-app.s3.ap-northeast-2.amazonaws.com/
   forgotPassUrl: https://canui.tech/reset-password/
+  verifyEmailUrl: https://canui.tech/verify-email/
   auth:
     tokenSecret: rOd/2NOa1Dl7AdOLslCcI8M0f2JFpXuPQStMB2G9X2h5NsYrOLsKcaixyKRLypGtBbX47NGAuZLQHpTlvRp5/Q==
     tokenExpirationMsec: 864000000000

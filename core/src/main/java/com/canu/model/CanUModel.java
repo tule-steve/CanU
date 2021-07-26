@@ -28,7 +28,10 @@ import static javax.persistence.GenerationType.IDENTITY;
                                         @ColumnResult(name = "lastName"),
                                         @ColumnResult(name = "email"),
                                         @ColumnResult(name = "createdAt", type = LocalDateTime.class),
+                                        @ColumnResult(name = "isActivated", type = Boolean.class),
+                                        @ColumnResult(name = "isBlocked", type = Boolean.class),
                                         @ColumnResult(name = "caniId", type = Long.class)
+
                                 }
                         )
                 }
@@ -38,7 +41,7 @@ import static javax.persistence.GenerationType.IDENTITY;
 
 @NamedNativeQueries({
         @NamedNativeQuery(name = "CanUModel.getMembership", query =
-                "select u.id as userId, u.first_name as name, u.email as email, u.created_at as createdAt, " +
+                "select u.id as userId, u.first_name as name, u.email as email, u.created_at as createdAt,u.activated as isActivated, u.is_blocked as isBlocked, " +
                 "  u.cani_id as caniId" +
                 " from user u ",
                 resultSetMapping = "MemberMapping"),
@@ -70,7 +73,7 @@ public class CanUModel {
 
     @JsonIgnore
     @Column(name = "activated")
-    Boolean activated;
+    Boolean activated = false;
 
     @JsonIgnore
     @Column(name = "delete_flag")
@@ -111,9 +114,16 @@ public class CanUModel {
     @Column(name = "is_admin")
     Boolean isAdmin = false;
 
+    @Column(name = "received_email")
+    Boolean receivedEmail = false;
+
     @Column(name = "created_at")
     @CreationTimestamp
     LocalDateTime createdAt;
+
+
+    @Column(name = "is_blocked")
+    Boolean isBlocked = false;
 
     @JsonIgnore
     @OneToOne(fetch = FetchType.LAZY)
