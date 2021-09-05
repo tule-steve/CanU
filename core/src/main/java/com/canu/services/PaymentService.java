@@ -196,7 +196,8 @@ public class PaymentService {
 
     @Transactional(propagation = Propagation.REQUIRES_NEW)
     public void payout(Long jobId) {
-        JobModel job = jobRepo.findByIdFetchCreateAndRequestUser(jobId).orElseThrow(() -> new GlobalValidationException("cannot find the job"));
+        JobModel job = jobRepo.findByIdFetchCreateAndRequestUser(jobId)
+                              .orElseThrow(() -> new GlobalValidationException("cannot find the job"));
         payout(job);
     }
 
@@ -208,7 +209,10 @@ public class PaymentService {
             CanIModel cani = job.getRequestedUser().getCanIModel();
             String receiver;
             String paymentType;
-            Long total = job.getTotal();
+            Long total = BigDecimal.valueOf(job.getTotal())
+                                   .multiply(new BigDecimal((double) 85 / 100).setScale(2, BigDecimal.ROUND_HALF_UP))
+                                   .setScale(0, BigDecimal.ROUND_HALF_UP)
+                                   .longValue();
             String transactionId = "job_id_" + jobId;
 
             if (!StringUtils.isEmpty(cani.getPaypalEmail())) {
@@ -330,7 +334,7 @@ public class PaymentService {
         job.getPayments()
            .stream()
            .forEach(r -> {
-               if(PaymentModel.Status.PENDING.equals(r.getStatus())){
+               if (PaymentModel.Status.PENDING.equals(r.getStatus())) {
                    r.setStatus(PaymentModel.Status.CANCEL);
                    paymentRepo.save(r);
                }
@@ -347,7 +351,7 @@ public class PaymentService {
         job.getPayments()
            .stream()
            .forEach(r -> {
-               if(PaymentModel.Status.TOPPED_UP.equals(r.getStatus())){
+               if (PaymentModel.Status.TOPPED_UP.equals(r.getStatus())) {
                    refund(r.getTransactionId(), r);
                }
                r.setStatus(PaymentModel.Status.CANCEL);
@@ -360,7 +364,12 @@ public class PaymentService {
     public void refund(String orderId, PaymentModel payment) {
         Order order = captureOrder(orderId);
 
-        CapturesRefundRequest request = new CapturesRefundRequest(order.purchaseUnits().get(0).payments().captures().get(0).id());
+        CapturesRefundRequest request = new CapturesRefundRequest(order.purchaseUnits()
+                                                                       .get(0)
+                                                                       .payments()
+                                                                       .captures()
+                                                                       .get(0)
+                                                                       .id());
         request.prefer("return=representation");
 
         RefundRequest refundRequest = new RefundRequest();

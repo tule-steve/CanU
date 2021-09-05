@@ -49,7 +49,7 @@ public class MailService {
             helper.setText(message, true);
 
             javaMailSender.send(msg);
-        } catch (MessagingException ex) {
+        } catch (Exception ex) {
             logger.error("Error on sending email", ex);
             throw new GlobalValidationException("Error on sending the verification email");
         }

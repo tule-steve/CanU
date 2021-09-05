@@ -1,5 +1,6 @@
 package com.canu.dto.requests;
 
+import com.canu.model.CountryModel;
 import com.canu.model.NotificationDetailModel;
 import lombok.Value;
 
@@ -22,4 +23,7 @@ public class TemplateRequest {
     @NotNull(message = "type detail is required")
     @Enumerated(EnumType.STRING)
     NotificationDetailModel.Type type;
+
+    @Enumerated(EnumType.STRING)
+    CountryModel.Locale locale = CountryModel.Locale.en;
 }

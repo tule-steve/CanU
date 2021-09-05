@@ -50,6 +50,8 @@ public class AdminService {
 
     final TemplateRepository templateRepo;
 
+    final TemplateMultiLangRepository templateMultiRepo;
+
     private final MetadataRepository metadataRepo;
 
     final private NotificationRepository notiRepo;
@@ -137,10 +139,23 @@ public class AdminService {
         ((StringTemplateLoader) config.getTemplateLoader()).putTemplate(template.getType().toTitleString(),
                                                                         template.getDescription());
         TemplateModel updatedTemplate = templateRepo.findFirstByType(template.getType());
-        updatedTemplate.setTemplate(template.getTemplate());
-        updatedTemplate.setTitle(template.getTitle());
-        updatedTemplate.setDescription(template.getDescription());
-        templateRepo.save(updatedTemplate);
+        if (CountryModel.Locale.en.equals(template.getLocale())) {
+            updatedTemplate.setTemplate(template.getTemplate());
+            updatedTemplate.setTitle(template.getTitle());
+            updatedTemplate.setDescription(template.getDescription());
+            templateRepo.save(updatedTemplate);
+        } else {
+            TemplateMultiLangModel templateMultiLang = updatedTemplate.getMultiLang()
+                                                             .stream()
+                                                             .filter(r -> r.getLocale().equals(template.getLocale()))
+                                                             .findFirst()
+                                                             .orElseThrow(() -> new GlobalValidationException(
+                                                                     "this language is not supported"));
+            templateMultiLang.setTemplate(template.getTemplate());
+            templateMultiLang.setTitle(template.getTitle());
+            templateMultiLang.setDescription(template.getDescription());
+            templateMultiRepo.save(templateMultiLang);
+        }
     }
 
     public Slice<TemplateModel> getTemplate(TemplateFilter filter, Pageable p) {
@@ -207,8 +222,8 @@ public class AdminService {
 
     public Object getPushNotification(Pageable p) {
         Page<NotificationDetailModel> result = notiDetailRepo.findByType(NotificationDetailModel.Type.CUSTOM, p);
-        for(NotificationDetailModel noti : result){
-            if(noti.getNotifications().size() == 1){
+        for (NotificationDetailModel noti : result) {
+            if (noti.getNotifications().size() == 1) {
                 noti.setReceivedName(noti.getNotifications().get(0).getOwner().getName());
                 noti.setUserId(noti.getNotifications().get(0).getOwner().getId());
             } else {

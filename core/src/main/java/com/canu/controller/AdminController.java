@@ -1,3 +1,4 @@
+
 package com.canu.controller;
 
 import com.canu.dto.requests.*;
@@ -39,7 +40,7 @@ public class AdminController {
     }
 
     @PostMapping(value = "/setup-template")
-    public Object setupTemplate(@RequestBody TemplateRequest template) {
+    public Object setupTemplate(@RequestBody @Validated TemplateRequest template) {
         adminSvc.setupTemplate(template);
         return ResponseEntity.ok(CommonResponse.buildOkData("OK"));
     }

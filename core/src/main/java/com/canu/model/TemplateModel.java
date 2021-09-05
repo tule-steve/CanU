@@ -1,8 +1,11 @@
 package com.canu.model;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import lombok.Data;
 
 import javax.persistence.*;
+import java.util.ArrayList;
+import java.util.List;
 
 import static javax.persistence.GenerationType.IDENTITY;
 
@@ -41,5 +44,8 @@ public class TemplateModel {
     @Column(name = "to_admin")
     Boolean toAdmin = false;
 
+    @JsonManagedReference
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "parent")
+    List<TemplateMultiLangModel> multiLang = new ArrayList<>();
 
 }

@@ -29,7 +29,7 @@ public class AmazonS3Config {
         rule1AM.add(CORSRule.AllowedMethods.POST);
         rule1AM.add(CORSRule.AllowedMethods.DELETE);
         CORSRule rule1 = new CORSRule().withId("CORSRule1").withAllowedMethods(rule1AM)
-                                       .withAllowedOrigins(Arrays.asList("http://canui.tech"));
+                                       .withAllowedOrigins(Arrays.asList("http://canui.tech", "https://ican-u.com/"));
 
         List<CORSRule.AllowedMethods> rule2AM = new ArrayList<CORSRule.AllowedMethods>();
         rule2AM.add(CORSRule.AllowedMethods.GET);
