@@ -83,7 +83,7 @@ public class OAuth2ResourceServer extends WebSecurityConfigurerAdapter {
                     .authenticationEntryPoint(new RestAuthenticationEntryPoint())
                 .and()
             .antMatcher("/**").authorizeRequests()
-            .antMatchers("/login/**", "/logout/**", "/", "/error", "/api/**", "/login", "/api/v1/data/**", "/image/**").permitAll()
+            .antMatchers("/login/**", "/logout/**", "/", "/error", "/api/**", "/login", "/api/v1/data/**", "/image/**", "/api/v1/canu/view-profile/**").permitAll()
             .anyRequest().authenticated()
             .and()
             .addFilterAt(ssoFilter(), BasicAuthenticationFilter.class)

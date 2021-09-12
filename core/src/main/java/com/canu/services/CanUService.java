@@ -359,11 +359,13 @@ public class CanUService {
     }
 
     public void updateFavoriteFlag(Iterable<Member> members) {
-        UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        CanUModel uUser = canURepo.findByEmail(user.getUsername());
-        for (Member member : members) {
-            if (uUser.getFavoriteCanIs().contains(member.getCani())) {
-                member.setIsFavorite(true);
+        if(SecurityContextHolder.getContext().getAuthentication().getPrincipal() instanceof UserDetails){
+            UserDetails user = (UserDetails) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+            CanUModel uUser = canURepo.findByEmail(user.getUsername());
+            for (Member member : members) {
+                if (uUser.getFavoriteCanIs().contains(member.getCani())) {
+                    member.setIsFavorite(true);
+                }
             }
         }
     }

@@ -43,7 +43,7 @@ public class CanIService {
         if (request.getId() != null) {
             CanIModel data = caniRepo.findById(request.getId())
                                      .orElseThrow(() -> new GlobalValidationException("CanI not exist"));
-            request.setAvatar(data.getAvatar());
+            request.setAvatar(currentCanU.getAvatar());
             if(data.getPhone() != null && data.getPhone().equalsIgnoreCase(request.getPhone()) && data.getPhoneVerified()){
                 request.setPhoneVerified(true);
             }
