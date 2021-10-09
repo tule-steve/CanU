@@ -43,7 +43,7 @@ public class MailService {
 
             String message = template.getTemplate(replacements);
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
-            helper.setFrom("canu.otp@gmail.com");
+            helper.setFrom("support@ican-u.com");
             helper.setTo(email);
             helper.setSubject("OTP - Login");
             helper.setText(message, true);
@@ -67,7 +67,7 @@ public class MailService {
 
             String message = resetPasswordTemplate.getTemplate(replacements);
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
-            helper.setFrom("canu.otp@gmail.com");
+            helper.setFrom("support@ican-u.com");
             helper.setTo(email);
             helper.setSubject("[CANU CANI] RESET PASSWORD\n");
             helper.setText(message, true);
@@ -83,11 +83,11 @@ public class MailService {
         try {
             MimeMessage msg = javaMailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(msg, true);
-            helper.setFrom("canu.otp@gmail.com");
+            helper.setFrom("support@ican-u.com");
             helper.setSubject("[CANU CANI]" + title);
             helper.setText(body, true);
-            String[] array = {"stephenle1412@gmail.com"};
-            helper.setBcc(email);
+//            String[] array = {"stephenle1412@gmail.com"};
+//            helper.setBcc(email);
 
             javaMailSender.send(msg);
         } catch (Exception ex){

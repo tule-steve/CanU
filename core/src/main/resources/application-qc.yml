@@ -3,6 +3,7 @@ spring:
     url: jdbc:mysql://localhost:3306/CanUI_DB?useUnicode=true&characterEncoding=UTF-8&useSSL=false&rewriteBatchedStatements=true&useLegacyDatetimeCode=false
     username: root
     password: CanUI@2021
+    type: com.zaxxer.hikari.HikariDataSource
 
   #db configuration
   #spring.
@@ -109,8 +110,8 @@ security:
 
 app:
   baseUrl: https://file-canu-app.s3.ap-northeast-2.amazonaws.com/
-  forgotPassUrl: https://canui.tech/reset-password/
-  verifyEmailUrl: https://canui.tech/verify-email/
+  forgotPassUrl: https://ican-u.com/reset-password/
+  verifyEmailUrl: https://ican-u.com/verify-email/
   auth:
     tokenSecret: rOd/2NOa1Dl7AdOLslCcI8M0f2JFpXuPQStMB2G9X2h5NsYrOLsKcaixyKRLypGtBbX47NGAuZLQHpTlvRp5/Q==
     tokenExpirationMsec: 864000000000

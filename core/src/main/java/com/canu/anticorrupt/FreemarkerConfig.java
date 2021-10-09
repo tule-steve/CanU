@@ -9,6 +9,10 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Primary;
 import org.springframework.ui.freemarker.FreeMarkerConfigurationFactoryBean;
 
+import java.util.Properties;
+
+import static freemarker.core.Configurable.NUMBER_FORMAT_KEY;
+
 @Configuration
 @RequiredArgsConstructor
 public class FreemarkerConfig {
@@ -32,6 +36,11 @@ public class FreemarkerConfig {
         });
         // Set loader
         bean.setPreTemplateLoaders(sTempLoader);
+
+        //set number format
+        Properties props = new Properties();
+        props.setProperty(NUMBER_FORMAT_KEY, "computer");
+        bean.setFreemarkerSettings(props);
         return bean;
     }
 
